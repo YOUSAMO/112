@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>입양 후기 작성/수정</title>
+</head>
+<body>
+
+<h1 th:text="${review.arNo != null} ? '후기 수정' : '후기 작성'">후기 작성</h1>
+
+<!-- 수정 폼 -->
+<form th:if="${review.arNo != null}" th:action="@{/reviews/{arNo}/edit(arNo=${review.arNo})}" method="post">
+  <input type="hidden" th:name="arNo" th:value="${review.arNo}" />
+
+  <label for="uNo_edit">작성자 번호 (uNo):</label><br />
+  <input type="number" id="uNo_edit" name="uNo" th:value="${review.uNo}" required/><br /><br />
+
+  <label for="reviewContent_edit">리뷰 내용:</label><br />
+  <textarea id="reviewContent_edit" name="reviewContent" rows="6" cols="50" required
+            th:text="${review.reviewContent}"></textarea><br /><br />
+
+  <button type="submit">저장</button>
+  <a th:href="@{/reviews}">취소</a>
+</form>
+
+<!-- 새글 작성 폼 -->
+<form th:unless="${review.arNo != null}" th:action="@{/reviews}" method="post">
+
+  <label for="uNo_new">작성자 번호 (uNo):</label><br />
+  <input type="number" id="uNo_new" name="uNo" th:value="${review.uNo}" required/><br /><br />
+
+  <label for="reviewContent_new">리뷰 내용:</label><br />
+  <textarea id="reviewContent_new" name="reviewContent" rows="6" cols="50" required
+            th:text="${review.reviewContent}"></textarea><br /><br />
+
+  <button type="submit">저장</button>
+  <a th:href="@{/reviews}">취소</a>
+</form>
+
+</body>
+</html>

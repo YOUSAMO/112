@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${animal.id == null} ? '새로운 동물 추가' : '동물 정보 수정'"></title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f2f5f7;
+            margin: 0;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        form {
+            background-color: #fff;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            transition: border 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #00aaff;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 70px;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 10px;
+        }
+
+        .form-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button[type="submit"] {
+            background-color: #00aaff;
+            color: #fff;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #008ecc;
+        }
+
+        a {
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #e53935;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .message {
+            color: #43a047;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .file-item img {
+            max-width: 60px;
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+
+        .file-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .file-section {
+            margin-top: 30px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .file-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #444;
+        }
+
+        .file-section button {
+            margin-top: 10px;
+            background-color: #e53935;
+            border: none;
+            padding: 8px 16px;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .file-section button:hover {
+            background-color: #c62828;
+        }
+    </style>
+</head>
+<body>
+
+<h1 th:text="${animal.id == null} ? '새로운 동물 추가' : '동물 정보 수정'"></h1>
+
+<div th:if="${message}" class="message" th:text="${message}"></div>
+<div th:if="${error}" class="error" th:text="${error}"></div>
+
+<form th:action="${animal.id == null} ? @{/animals/add} : @{/animals/edit/{id}(id=${animal.id})}"
+      th:object="${animal}" method="post" enctype="multipart/form-data">
+    <input type="hidden" th:if="${animal.id != null}" th:field="*{id}" />
+
+    <div class="form-section">
+        <label for="name">이름</label>
+        <input type="text" id="name" th:field="*{name}" required />
+        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></span>
+    </div>
+
+    <div class="form-section">
+        <label for="species">종류</label>
+        <select id="species" th:field="*{species}" required>
+            <option value="">-- 선택하세요 --</option>
+            <option value="강아지">강아지</option>
+            <option value="고양이">고양이</option>
+            <option value="기타">기타</option>
+        </select>
+        <span th:if="${#fields.hasErrors('species')}" th:errors="*{species}" class="error"></span>
+    </div>
+
+    <div class="form-section">
+        <label for="age">나이</label>
+        <input type="number" id="age" th:field="*{age}" />
+        <span th:if="${#fields.hasErrors('age')}" th:errors="*{age}" class="error"></span>
+    </div>
+
+    <div class="form-section">
+        <label for="gender">성별</label>
+        <select id="gender" th:field="*{gender}">
+            <option value="">선택</option>
+            <option value="수컷">수컷</option>
+            <option value="암컷">암컷</option>
+        </select>
+    </div>
+
+    <div class="form-section">
+        <label><input type="checkbox" th:field="*{vaccinated}" /> 접종 유무</label>
+    </div>
+
+    <div class="form-section">
+        <label><input type="checkbox" th:field="*{neutered}" /> 중성화 유무</label>
+    </div>
+
+    <div class="form-section">
+        <label for="description">설명</label>
+        <textarea id="description" th:field="*{description}"></textarea>
+    </div>
+
+    <div class="form-section">
+        <label for="arrivalDate">센터 온 날짜</label>
+        <input type="date" id="arrivalDate" th:field="*{arrivalDate}" />
+    </div>
+
+    <div class="form-section">
+        <label for="likes">좋아하는 것</label>
+        <textarea id="likes" th:field="*{likes}"></textarea>
+    </div>
+
+    <div class="form-section">
+        <label for="dislikes">싫어하는 것</label>
+        <textarea id="dislikes" th:field="*{dislikes}"></textarea>
+    </div>
+
+    <div class="form-section">
+        <label for="files">사진 업로드</label>
+        <input type="file" id="files" name="files" accept="image/*" multiple />
+    </div>
+
+    <div class="form-buttons">
+        <button type="submit" th:text="${animal.id == null} ? '등록하기' : '수정완료'"></button>
+        <a th:href="@{/animals}">취소</a>
+    </div>
+
+    <div class="file-section" th:if="${animal.id != null and files != null and !files.isEmpty()}">
+        <h3>현재 사진</h3>
+        <form th:action="@{/animals/delete-file}" method="post">
+            <input type="hidden" name="animalId" th:value="${animal.id}" />
+            <ul>
+                <li th:each="file : ${files}" class="file-item">
+                    <img th:if="${file.fileType != null and file.fileType.startsWith('image/')} "
+                         th:src="@{${file.filePath}}" th:alt="${file.fileName}" />
+                    <label>
+                        <input type="checkbox" name="filePaths" th:value="${file.filePath}" />
+                        <span th:text="${file.fileName}"></span>
+                    </label>
+                </li>
+            </ul>
+            <button type="submit">선택한 파일 삭제</button>
+        </form>
+    </div>
+
+</form>
+
+</body>
+</html>

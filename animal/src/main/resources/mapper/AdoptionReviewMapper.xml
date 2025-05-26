@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.animal.repository.AdoptionReviewRepository">
+
+    <resultMap id="reviewMap" type="com.example.animal.entity.AdoptionReview">
+        <id property="arNo" column="ar_no"/>
+        <result property="uNo" column="u_no"/>
+        <result property="reviewContent" column="review_content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="likeCount" column="like_count"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="reviewMap">
+        SELECT * FROM adoption_review ORDER BY created_at DESC
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="reviewMap">
+        SELECT * FROM adoption_review WHERE ar_no = #{arNo}
+    </select>
+
+    <insert id="insert" parameterType="com.example.animal.entity.AdoptionReview" useGeneratedKeys="true" keyProperty="arNo">
+        INSERT INTO adoption_review (u_no, review_content)
+        VALUES (#{uNo}, #{reviewContent})
+    </insert>
+
+    <update id="update" parameterType="com.example.animal.entity.AdoptionReview">
+        UPDATE adoption_review
+        SET review_content = #{reviewContent}
+        WHERE ar_no = #{arNo}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM adoption_review WHERE ar_no = #{arNo}
+    </delete>
+
+    <!-- 페이징 처리된 입양 후기 목록 조회 -->
+    <select id="selectAllWithPaging" resultMap="reviewMap" parameterType="map">
+        SELECT * FROM adoption_review
+        ORDER BY created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 전체 입양 후기 글 개수 조회 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM adoption_review
+    </select>
+
+    <!-- 검색 + 페이징된 입양 후기 목록 조회 -->
+    <select id="selectReviewsWithSearch" resultMap="reviewMap" parameterType="map">
+        SELECT * FROM adoption_review
+        WHERE (review_content LIKE CONCAT('%', #{keyword}, '%') OR #{keyword} IS NULL OR #{keyword} = '')
+        ORDER BY created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 검색 조건 기반 후기 개수 조회 -->
+    <select id="selectTotalCountWithSearch" resultType="int" parameterType="map">
+        SELECT COUNT(*) FROM adoption_review
+        WHERE (review_content LIKE CONCAT('%', #{keyword}, '%') OR #{keyword} IS NULL OR #{keyword} = '')
+    </select>
+
+    <!-- 조회수 증가 -->
+    <update id="incrementViewCount" parameterType="long">
+        UPDATE adoption_review
+        SET view_count = view_count + 1
+        WHERE ar_no = #{arNo}
+    </update>
+
+    <!-- 좋아요 수 증가 -->
+    <update id="incrementLikeCount" parameterType="long">
+        UPDATE adoption_review
+        SET like_count = like_count + 1
+        WHERE ar_no = #{arNo}
+    </update>
+
+</mapper>

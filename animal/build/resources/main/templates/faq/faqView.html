@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>FAQ 상세</title>
+</head>
+<body>
+<h1>FAQ 상세</h1>
+
+<p><strong>번호:</strong> <span th:text="${faq.faqNo}"></span></p>
+<p><strong>질문:</strong> <span th:text="${faq.question}"></span></p>
+<p><strong>답변:</strong></p>
+<p th:text="${faq.answer}"></p>
+<span th:text="${#temporals.format(faq.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+
+<a th:href="@{/faqs}">목록으로</a> |
+<a th:href="@{/faqs/{id}/edit(id=${faq.faqNo})}">수정</a>
+
+<form th:action="@{/faqs/{id}/delete(id=${faq.faqNo})}" method="post" style="display:inline;">
+  <button type="submit" onclick="return confirm('삭제하시겠습니까?');">삭제</button>
+</form>
+
+</body>
+</html>

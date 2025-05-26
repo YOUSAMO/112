@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>입양 후기 목록</title>
+    <style>
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            color: black;
+        }
+
+        .pagination a.current {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+
+        .pagination a.disabled {
+            pointer-events: none;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<h1>입양 후기 목록</h1>
+
+<form th:action="@{/reviews}" method="get" style="margin-bottom: 20px;">
+<label for="keyword">검색어:</label>
+<input type="text" id="keyword" name="keyword" th:value="${keyword}" placeholder="내용 검색" />
+
+    <label for="species">검색 기준:</label>
+    <select id="species" name="species">
+        <option value="">전체</option>
+        <option value="title" th:selected="${species == 'title'}">제목</option>
+        <option value="content" th:selected="${species == 'content'}">내용</option>
+        <option value="nickname" th:selected="${species == 'nickname'}">닉네임</option>
+        <option value="title_content" th:selected="${species == 'title_content'}">제목 + 내용</option>
+    </select>
+
+<button type="submit">검색</button>
+</form>
+
+<a th:href="@{/reviews/new}">새 후기 작성</a>
+
+<table border="1" cellpadding="10" cellspacing="0">
+    <thead>
+    <tr>
+        <th>게시글 번호</th>
+        <th>작성자 번호</th>
+        <th>내용</th>
+        <th>작성일</th>
+        <th>조회수</th>
+        <th>상세/수정/삭제</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="review, stat : ${reviews}">
+        <!-- 게시글 번호 -->
+        <td th:text="${totalCount - ((currentPage - 1) * pageSize + stat.index)}"></td>
+
+        <!-- 작성자 번호 -->
+        <td th:text="${review['uNo']}"></td>
+
+        <!-- 리뷰 내용 (최대 30자 자르기, null 체크 포함) -->
+        <td th:text="${review['reviewContent'] != null and #strings.length(review['reviewContent']) > 0
+            ? review['reviewContent'].substring(0, (#strings.length(review['reviewContent']) > 30 ? 30 : #strings.length(review['reviewContent']))) : ''}">
+            리뷰 내용
+        </td>
+
+        <!-- 작성일 -->
+        <td th:text="${review['createdAtStr']}"></td>
+        <!-- 조회수 -->
+        <td th:text="${review['viewCount']}"></td>
+
+
+        <td>
+            <a th:href="@{/reviews/{arNo}(arNo=${review['arNo']})}">상세</a> |
+            <a th:href="@{/reviews/{arNo}/edit(arNo=${review['arNo']})}">수정</a> |
+            <form th:action="@{/reviews/{arNo}/delete(arNo=${review['arNo']})}" method="post" style="display:inline">
+                <button type="submit" onclick="return confirm('삭제하시겠습니까?');">삭제</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="pagination" style="margin-top: 20px;">
+    <!-- 이전 페이지 -->
+    <a th:if="${currentPage > 1}"
+       th:href="@{/reviews(page=${currentPage - 1}, keyword=${keyword}, species=${species})}">이전
+    </a>
+    <a th:unless="${currentPage > 1}" class="disabled">이전</a>
+
+    <!-- 페이지 번호 반복 -->
+    <span th:each="i : ${#numbers.sequence(1, totalPages)}">
+    <a th:href="@{/reviews(page=${i}, keyword=${keyword}, species=${species})}"
+       th:text="${i}"
+       th:classappend="${i == currentPage} ? 'current' : ''">
+    </a>
+</span>
+
+    <!-- 다음 페이지 -->
+    <a th:if="${currentPage < totalPages}"
+       th:href="@{/reviews(page=${currentPage + 1}, keyword=${keyword}, species=${species})}">다음</a>
+    <a th:unless="${currentPage < totalPages}" class="disabled">다음 </a>
+</div>
+
+</body>
+</html>

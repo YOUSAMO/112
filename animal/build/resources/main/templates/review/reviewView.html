@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>입양 후기 상세</title>
+</head>
+<body>
+<h1>입양 후기 상세</h1>
+
+<table border="1" cellpadding="10">
+  <tr>
+    <th>번호</th>
+    <td th:text="${review.arNo}"></td>
+  </tr>
+  <tr>
+    <th>작성자 번호</th>
+    <td th:text="${review.uNo}"></td>
+  </tr>
+  <tr>
+    <th>리뷰 내용</th>
+    <td th:text="${review.reviewContent}"></td>
+  </tr>
+  <tr>
+    <th>작성일</th>
+    <td th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+  </tr>
+  <tr>
+    <th>조회수</th>
+    <td th:text="${review.viewCount}"></td>
+  </tr>
+  <tr>
+    <th>좋아요</th>
+    <td>
+      <span id="likeCount" th:text="${review.likeCount}"></span>
+      <button id="likeBtn">좋아요</button>
+    </td>
+  </tr>
+</table>
+
+<br/>
+<a th:href="@{/reviews}">목록으로</a> |
+<a th:href="@{/reviews/{arNo}/edit(arNo=${review.arNo})}">수정</a> |
+<form th:action="@{/reviews/{arNo}/delete(arNo=${review.arNo})}" method="post" style="display:inline">
+  <button type="submit" onclick="return confirm('삭제하시겠습니까?');">삭제</button>
+</form>
+
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function () {
+    const likeBtn = document.getElementById('likeBtn');
+    const likeCountSpan = document.getElementById('likeCount');
+    const arNo = /*[[${review.arNo}]]*/ 0;
+
+    likeBtn.addEventListener('click', function () {
+      fetch(`/reviews/${arNo}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('네트워크 응답 오류');
+                }
+                return response.json();
+              })
+              .then(data => {
+                // 서버에서 새 좋아요 수
+                likeCountSpan.textContent = data.newLikeCount;
+              })
+              .catch(error => {
+                alert('좋아요 처리 중 오류가 발생했습니다.');
+                console.error('Error:', error);
+              });
+    });
+  });
+</script>
+
+</body>
+</html>

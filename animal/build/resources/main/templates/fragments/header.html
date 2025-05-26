@@ -1,0 +1,152 @@
+<div th:fragment="commonHeader">
+  <meta charset="UTF-8" />
+  <header>
+    <h1>Recipe Hub</h1>
+
+    <nav>
+      <a th:href="@{/}">HOME</a>
+      <a th:href="@{/login}">글쓰기</a>
+
+      <div class="dropdown">
+        <a href="#" class="dropbtn">커뮤니티 이동</a>
+        <div class="dropdown-content">
+          <a th:href="@{/reviews}">리뷰 게시판</a>
+          <a th:href="@{/board}">자유 게시판</a>
+          <a th:href="@{/events}">정보공유 게시판</a>
+        </div>
+      </div>
+
+      <a th:href="@{/login}">마이페이지</a>
+      <a th:href="@{/faqs}">고객센터</a>
+      <a th:href="@{/animals}">동물등록</a>
+    </nav>
+
+    <div class="auth-section">
+      <span th:if="${session.user != null}">
+        <span th:text="${session.user} + '님'"></span>
+        <a href="/logout"><button class="login-btn">로그아웃</button></a>
+      </span>
+
+      <a th:if="${session.user == null}" href="/login2">
+        <button class="login-btn">로그인</button>
+      </a>
+    </div>
+  </header>
+
+  <style>
+    /* 전체 헤더 스타일 */
+    header {
+      background-color: coral;
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between; /* 좌측 h1, 중앙 nav, 우측 auth-section */
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      font-family: 'Segoe UI', sans-serif;
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      flex-shrink: 0;
+      /* 좌측 고정 */
+    }
+
+    /* 네비게이션 메뉴 */
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-grow: 1;
+      max-width: 700px;
+      justify-content: center;
+      overflow: visible; /* 드롭다운 잘림 방지 */
+      position: relative;
+    }
+
+    /* 링크 및 드롭다운 버튼 스타일 */
+    nav a,
+    .dropbtn {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 8px 12px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    nav a:hover,
+    .dropbtn:hover {
+      text-decoration: underline;
+    }
+
+    /* 로그인/로그아웃 영역 */
+    .auth-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: 150px;
+      justify-content: flex-end;
+    }
+
+    .login-btn {
+      background-color: darkorange;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .login-btn:hover {
+      background-color: orange;
+    }
+
+    /* 드롭다운 메뉴 */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      z-index: 2000; /* 충분히 큰 z-index */
+      border-radius: 6px;
+      overflow: hidden;
+      top: 100%;
+      left: 0;
+    }
+
+    .dropdown-content a {
+      color: black;
+      padding: 10px 16px;
+      text-decoration: none;
+      display: block;
+      font-weight: normal;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #ddd;
+    }
+
+    /* 호버 시 드롭다운 보이기 */
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+  </style>
+</div>
