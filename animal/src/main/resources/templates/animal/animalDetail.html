@@ -4,8 +4,8 @@
     <title>동물 상세 정보</title>
     <style>
         body {
-            background-color: #f3f4f6;
-            color: #1f2937;
+            background-color: lavenderblush;
+            color: dimgray;
             font-family: 'Helvetica Neue', sans-serif;
         }
 
@@ -18,7 +18,7 @@
         h1 {
             font-size: 1.875rem;
             font-weight: bold;
-            color: #1d4ed8;
+            color: royalblue;
             text-align: center;
             margin-bottom: 2rem;
         }
@@ -30,19 +30,19 @@
         }
 
         .message {
-            background-color: #d1fae5;
-            color: #065f46;
-            border: 1px solid #6ee7b7;
+            background-color: honeydew;
+            color: seagreen;
+            border: 1px solid mediumseagreen;
         }
 
         .error {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fca5a5;
+            background-color: mistyrose;
+            color: firebrick;
+            border: 1px solid lightcoral;
         }
 
         .card {
-            background: #ffffff;
+            background: white;
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 1.5rem;
@@ -62,10 +62,6 @@
             grid-column: span 2;
         }
 
-        .label {
-            color: #374151;
-        }
-
         .image-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -83,8 +79,8 @@
         }
 
         .file-box {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
+            background-color: whitesmoke;
+            border: 1px solid gainsboro;
             border-radius: 0.5rem;
             padding: 0.5rem;
             text-align: center;
@@ -92,7 +88,7 @@
 
         .link-button {
             display: inline-block;
-            background-color: #2563eb;
+            background-color: dodgerblue;
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 0.375rem;
@@ -101,7 +97,7 @@
         }
 
         .link-button:hover {
-            background-color: #1e40af;
+            background-color: mediumblue;
         }
 
         .no-animal {
@@ -109,12 +105,13 @@
             margin-top: 2rem;
         }
 
-        .text-green { color: #059669; }
-        .text-red { color: #dc2626; }
+        .text-green { color: seagreen; }
+        .text-red { color: firebrick; }
     </style>
+
 </head>
 <body>
-
+<div th:replace="~{fragments/header :: commonHeader}"></div>
 <div class="container">
     <h1>동물 상세 정보</h1>
 
@@ -133,11 +130,11 @@
             <p><span class="highlight">나이:</span> <span th:text="${animal.age}"></span></p>
             <p><span class="highlight">성별:</span> <span th:text="${animal.gender}"></span></p>
             <p><span class="highlight">접종 유무:</span>
-                <span th:text="${animal.vaccinated ? '✅ 예' : '❌ 아니오'}"
+                <span th:text="${animal.vaccinated ? '✔ 예' : '✖ 아니오'}"
                       th:classappend="${animal.vaccinated} ? 'text-green' : 'text-red'"></span>
             </p>
             <p><span class="highlight">중성화 유무:</span>
-                <span th:text="${animal.neutered ? '✅ 예' : '❌ 아니오'}"
+                <span th:text="${animal.neutered ? '✔ 예' : '✖ 아니오'}"
                       th:classappend="${animal.neutered} ? 'text-green' : 'text-red'"></span>
             </p>
             <p><span class="highlight">센터 입소일:</span> <span th:text="${animal.arrivalDate}"></span></p>

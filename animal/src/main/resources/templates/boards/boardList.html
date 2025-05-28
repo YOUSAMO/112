@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>게시판 목록</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #343a40;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .write-button {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 12px;
+      background-color: #28a745;
+      color: white;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .write-button:hover {
+      background-color: #218838;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+    }
+
+    table thead {
+      background-color: #e9ecef;
+    }
+
+    table th, table td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #dee2e6;
+    }
+
+    table tr:hover {
+      background-color: #f1f3f5;
+    }
+
+    .pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .pagination a {
+      display: inline-block;
+      margin: 0 4px;
+      padding: 6px 10px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      background-color: white;
+      color: #495057;
+      transition: background-color 0.2s ease;
+    }
+
+    .pagination a:hover {
+      background-color: #e2e6ea;
+    }
+
+    .pagination a.current {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    .pagination a.disabled {
+      pointer-events: none;
+      color: gray;
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<h1>게시판 목록</h1>
+<a th:href="@{/boards/new}" class="write-button">글쓰기</a>
+
+<table>
+  <thead>
+  <tr>
+    <th>번호</th>
+    <th>제목</th>
+    <th>작성자</th>
+    <th>작성일</th>
+    <th>조회수</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="board, stat : ${boards}">
+    <td th:text="${totalCount - ((page - 1) * size) - stat.index}"></td>
+    <td>
+      <a th:href="@{'/boards/' + ${board.bNo}}" th:text="${board.bTitle}"></a>
+    </td>
+    <td th:text="${board.bAuthor}"></td>
+    <td th:text="${#temporals.format(board.bDate, 'yyyy-MM-dd HH:mm')}"></td>
+    <td th:text="${board.viewCount}"></td>
+  </tr>
+  </tbody>
+</table>
+
+<!-- 페이징 -->
+<div class="pagination" th:if="${pageInfo.totalPages > 1}">
+  <a th:if="${pageInfo.currentPage > 1}" th:href="@{|/boards?page=${pageInfo.currentPage - 1}|}">이전</a>
+
+  <span th:each="i : ${#numbers.sequence(1, pageInfo.totalPages)}">
+    <a th:if="${i == pageInfo.currentPage}" class="current" th:text="${i}"></a>
+    <a th:if="${i != pageInfo.currentPage}" th:href="@{|/boards?page=${i}|}" th:text="${i}"></a>
+  </span>
+
+  <a th:if="${pageInfo.currentPage < pageInfo.totalPages}" th:href="@{|/boards?page=${pageInfo.currentPage + 1}|}">다음</a>
+</div>
+
+</body>
+</html>

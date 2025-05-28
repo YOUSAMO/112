@@ -4,32 +4,151 @@
     <meta charset="UTF-8" />
     <title>입양 후기 목록</title>
     <style>
-        .pagination a {
-            margin: 0 5px;
+        body {
+            background-color: whitesmoke;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #343a40;
+        }
+
+        form {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid lightgray;
+            border-radius: 6px;
+        }
+
+        form label {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        form input, form select {
+            margin-right: 10px;
+            padding: 6px;
+            border: 1px solid silver;
+            border-radius: 4px;
+        }
+
+        form button {
+            padding: 6px 12px;
+            background-color: dodgerblue;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        .write-button {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 6px 12px;
+            background-color: mediumseagreen;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
             text-decoration: none;
-            padding: 4px 8px;
-            border: 1px solid #ccc;
-            color: black;
+        }
+
+        .write-button:hover {
+            background-color: seagreen;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            border: 1px solid lightgray;
+            padding: 12px;
+            text-align: center;
+        }
+
+        thead {
+            background-color: gainsboro;
+        }
+
+        tbody tr:hover {
+            background-color: whitesmoke;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .pagination a {
+            display: inline-block;
+            margin: 0 4px;
+            padding: 6px 10px;
+            border: 1px solid silver;
+            border-radius: 4px;
+            background-color: white;
+            color: dimgray;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .pagination a:hover {
+            background-color: lightgray;
         }
 
         .pagination a.current {
+            background-color: dodgerblue;
+            color: white;
             font-weight: bold;
-            background-color: #f0f0f0;
         }
 
         .pagination a.disabled {
             pointer-events: none;
-            color: #aaa;
+            color: gray;
+            background-color: whitesmoke;
+        }
+
+        .action-links a,
+        .action-links form button {
+            margin: 0 4px;
+            font-size: 14px;
+        }
+
+        .action-links form {
+            display: inline;
+        }
+
+        .action-links form button {
+            background: none;
+            border: none;
+            color: crimson;
+            cursor: pointer;
+            padding: 0;
+            font: inherit;
+            text-decoration: underline;
+        }
+
+        .action-links form button:hover {
+            color: darkred;
         }
     </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: commonHeader}"></div>
+
 <h1>입양 후기 목록</h1>
 
-<form th:action="@{/reviews}" method="get" style="margin-bottom: 20px;">
-<label for="keyword">검색어:</label>
-<input type="text" id="keyword" name="keyword" th:value="${keyword}" placeholder="내용 검색" />
+<form th:action="@{/reviews}" method="get">
+    <label for="keyword">검색어:</label>
+    <input type="text" id="keyword" name="keyword" th:value="${keyword}" placeholder="내용 검색" />
 
     <label for="species">검색 기준:</label>
     <select id="species" name="species">
@@ -40,46 +159,33 @@
         <option value="title_content" th:selected="${species == 'title_content'}">제목 + 내용</option>
     </select>
 
-<button type="submit">검색</button>
+    <button type="submit">검색</button>
 </form>
 
-<a th:href="@{/reviews/new}">새 후기 작성</a>
+<a th:href="@{/reviews/new}" class="write-button">새 후기 작성</a>
 
-<table border="1" cellpadding="10" cellspacing="0">
+<table>
     <thead>
     <tr>
-        <th>게시글 번호</th>
-        <th>작성자 번호</th>
+        <th>번호</th>
+        <th>작성자</th>
         <th>내용</th>
         <th>작성일</th>
         <th>조회수</th>
-        <th>상세/수정/삭제</th>
+        <th>기능</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="review, stat : ${reviews}">
-        <!-- 게시글 번호 -->
         <td th:text="${totalCount - ((currentPage - 1) * pageSize + stat.index)}"></td>
-
-        <!-- 작성자 번호 -->
         <td th:text="${review['uNo']}"></td>
-
-        <!-- 리뷰 내용 (최대 30자 자르기, null 체크 포함) -->
-        <td th:text="${review['reviewContent'] != null and #strings.length(review['reviewContent']) > 0
-            ? review['reviewContent'].substring(0, (#strings.length(review['reviewContent']) > 30 ? 30 : #strings.length(review['reviewContent']))) : ''}">
-            리뷰 내용
-        </td>
-
-        <!-- 작성일 -->
+        <td th:text="${#strings.abbreviate(review['reviewContent'], 30)}"></td>
         <td th:text="${review['createdAtStr']}"></td>
-        <!-- 조회수 -->
         <td th:text="${review['viewCount']}"></td>
-
-
-        <td>
+        <td class="action-links">
             <a th:href="@{/reviews/{arNo}(arNo=${review['arNo']})}">상세</a> |
             <a th:href="@{/reviews/{arNo}/edit(arNo=${review['arNo']})}">수정</a> |
-            <form th:action="@{/reviews/{arNo}/delete(arNo=${review['arNo']})}" method="post" style="display:inline">
+            <form th:action="@{/reviews/{arNo}/delete(arNo=${review['arNo']})}" method="post">
                 <button type="submit" onclick="return confirm('삭제하시겠습니까?');">삭제</button>
             </form>
         </td>
@@ -87,25 +193,19 @@
     </tbody>
 </table>
 
-<div class="pagination" style="margin-top: 20px;">
-    <!-- 이전 페이지 -->
-    <a th:if="${currentPage > 1}"
-       th:href="@{/reviews(page=${currentPage - 1}, keyword=${keyword}, species=${species})}">이전
-    </a>
+<!-- 페이징 -->
+<div class="pagination" th:if="${totalPages > 1}">
+    <a th:if="${currentPage > 1}" th:href="@{/reviews(page=${currentPage - 1}, keyword=${keyword}, species=${species})}">이전</a>
     <a th:unless="${currentPage > 1}" class="disabled">이전</a>
 
-    <!-- 페이지 번호 반복 -->
     <span th:each="i : ${#numbers.sequence(1, totalPages)}">
-    <a th:href="@{/reviews(page=${i}, keyword=${keyword}, species=${species})}"
-       th:text="${i}"
-       th:classappend="${i == currentPage} ? 'current' : ''">
-    </a>
-</span>
+        <a th:href="@{/reviews(page=${i}, keyword=${keyword}, species=${species})}"
+           th:text="${i}"
+           th:classappend="${i == currentPage} ? 'current' : ''"></a>
+    </span>
 
-    <!-- 다음 페이지 -->
-    <a th:if="${currentPage < totalPages}"
-       th:href="@{/reviews(page=${currentPage + 1}, keyword=${keyword}, species=${species})}">다음</a>
-    <a th:unless="${currentPage < totalPages}" class="disabled">다음 </a>
+    <a th:if="${currentPage < totalPages}" th:href="@{/reviews(page=${currentPage + 1}, keyword=${keyword}, species=${species})}">다음</a>
+    <a th:unless="${currentPage < totalPages}" class="disabled">다음</a>
 </div>
 
 </body>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>게시글 상세보기</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: aliceblue;
+      margin: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .post-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: black
+      margin-bottom: 1rem;
+    }
+    .meta-info {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      color: slategray;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: whitesmoke;
+      border-radius: 0.5rem;
+    }
+    .meta-info p {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .meta-info i {
+      color: cornflowerblue;
+    }
+    hr {
+      border: 0;
+      border-top: 2px solid lightblue;
+      margin: 2rem 0;
+    }
+    .content {
+      color: slategray;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+    .action-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .action-links a, .action-links button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: cornflowerblue;
+      color: white;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .action-links button {
+      background-color: crimson;
+    }
+    .action-links a:hover, .action-links button:hover {
+      background-color: darkblue;
+      transform: translateY(-2px);
+    }
+    .action-links button:hover {
+      background-color: darkred;
+    }
+    @media (max-width: 640px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .post-card {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+  <div class="post-card">
+    <h1 th:text="${board.bTitle}">게시글 제목</h1>
+
+    <div class="meta-info">
+      <p><i class="fas fa-user"></i> 작성자: <span th:text="${board.bAuthor}">작성자명</span></p>
+      <p><i class="fas fa-clock"></i> 작성일: <span th:text="${#temporals.format(board.bDate, 'yyyy-MM-dd HH:mm')}"></span></p>
+      <p><i class="fas fa-eye"></i> 조회수: <span th:text="${board.viewCount}">0</span></p>
+    </div>
+
+    <hr />
+
+    <div class="content" th:text="${board.bContent}">게시글 내용</div>
+
+    <hr />
+
+    <div class="action-links">
+      <a th:href="@{'/boards/' + ${board.bNo} + '/edit'}"><i class="fas fa-edit"></i> 수정</a>
+      <form th:action="@{'/boards/' + ${board.bNo} + '/delete'}" method="post" style="display:inline;">
+        <button type="submit" onclick="return confirm('삭제하시겠습니까?');"><i class="fas fa-trash"></i> 삭제</button>
+      </form>
+      <a th:href="@{/boards}"><i class="fas fa-list"></i> 목록으로</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>
