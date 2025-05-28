@@ -37,7 +37,8 @@
     <update id="updateBoard" parameterType="com.example.animal.entity.Board">
         UPDATE board
         SET b_title = #{bTitle},
-            b_content = #{bContent}
+            b_content = #{bContent},
+            b_author = #{bAuthor}
         WHERE b_no = #{bNo}
     </update>
 
@@ -52,5 +53,17 @@
         SET view_count = view_count + 1
         WHERE b_no = #{bNo}
     </update>
+
+    <update id="increaseLikeCount" parameterType="long">
+        UPDATE board
+        SET like_count = like_count + 1
+        WHERE b_no = #{bNo}
+    </update>
+
+    <!-- 게시글 좋아요 수 조회 -->
+    <select id="getLikeCount" parameterType="long" resultType="int">
+        SELECT like_count FROM board WHERE b_no = #{bNo}
+    </select>
+
 
 </mapper>

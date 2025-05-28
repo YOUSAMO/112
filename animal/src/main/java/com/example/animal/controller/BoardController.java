@@ -6,8 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Controller
 @RequestMapping("/boards")
@@ -19,11 +23,10 @@ public class BoardController {
     // 게시글 목록 (페이징 적용)
     @GetMapping
     public String listBoards(
-            @RequestParam(defaultValue = "1") int page,  // 1부터 시작
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             Model model) {
 
-        // 게시글 목록 조회 (서비스에서 offset 계산 필요)
         List<Board> boards = boardService.getBoardsByPage(page, size);
         int totalCount = boardService.getTotalBoardCount();
 
@@ -32,12 +35,8 @@ public class BoardController {
         model.addAttribute("page", page);
         model.addAttribute("size", size);
 
-        // 전체 페이지 수 계산
         int totalPages = (int) Math.ceil((double) totalCount / size);
-
-        // pageInfo 객체 생성 (템플릿에서 페이징 관련 정보를 활용하기 위함)
         PageInfo pageInfo = new PageInfo(totalPages, page);
-
         model.addAttribute("pageInfo", pageInfo);
 
         return "boards/boardList";
@@ -52,8 +51,10 @@ public class BoardController {
 
     // 게시글 생성 처리
     @PostMapping
-    public String createBoard(@ModelAttribute Board board) {
-        boardService.createBoard(board);
+    public String createBoard(@ModelAttribute Board board,
+                              @RequestParam(value = "files", required = false) List<MultipartFile> files) throws IOException {
+
+        boardService.createBoard(board, files);
         return "redirect:/boards";
     }
 
@@ -74,11 +75,14 @@ public class BoardController {
         return "boards/boardForm";
     }
 
-    // 게시글 수정 처리
+    // 게시글 수정 처리 (첨부파일 MultipartFile 리스트 받음)
     @PostMapping("/{bNo}/edit")
-    public String updateBoard(@PathVariable Long bNo, @ModelAttribute Board board) {
+    public String updateBoard(@PathVariable Long bNo,
+                              @ModelAttribute Board board,
+                              @RequestParam(value = "files", required = false) List<MultipartFile> files) throws IOException {
+
         board.setBNo(bNo);
-        boardService.updateBoard(board);
+        boardService.updateBoard(board, files);
         return "redirect:/boards/" + bNo;
     }
 
@@ -89,8 +93,15 @@ public class BoardController {
         return "redirect:/boards";
     }
 
+    // 좋아요 처리 (Ajax 등 비동기용)
+    @PostMapping("/{bNo}/like")
+    @ResponseBody
+    public Map<String, Object> likeBoard(@PathVariable Long bNo) {
+        int likeCount = boardService.increaseLikeCount(bNo);
+        return Map.of("likeCount", likeCount);
+    }
 
-    // PageInfo 클래스: 페이징에 필요한 정보 전달용
+    // 페이지 정보 클래스
     public static class PageInfo {
         private int totalPages;
         private int currentPage;
@@ -108,9 +119,6 @@ public class BoardController {
             return currentPage;
         }
 
-        // 아래 메서드들은 템플릿에서 Spring Data Page 객체처럼 쓰도록 돕습니다.
-
-        /** 0-based 페이지 번호 */
         public int getNumber() {
             return currentPage - 1;
         }
