@@ -4,7 +4,7 @@
 
 <mapper namespace="com.example.animal.repository.AdoptionReviewRepository">
 
-    <resultMap id="reviewMap" type="com.example.animal.entity.AdoptionReview">
+    <resultMap id="adoptionReviewResultMap" type="com.example.animal.entity.AdoptionReview">
         <id property="arNo" column="ar_no"/>
         <result property="uNo" column="u_no"/>
         <result property="reviewContent" column="review_content"/>
@@ -13,17 +13,9 @@
         <result property="likeCount" column="like_count"/>
     </resultMap>
 
-    <select id="selectAll" resultMap="reviewMap">
-        SELECT * FROM adoption_review ORDER BY created_at DESC
-    </select>
-
-    <select id="selectById" parameterType="long" resultMap="reviewMap">
-        SELECT * FROM adoption_review WHERE ar_no = #{arNo}
-    </select>
-
     <insert id="insert" parameterType="com.example.animal.entity.AdoptionReview" useGeneratedKeys="true" keyProperty="arNo">
-        INSERT INTO adoption_review (u_no, review_content)
-        VALUES (#{uNo}, #{reviewContent})
+        INSERT INTO adoption_review (u_no, review_content, created_at, view_count, like_count)
+        VALUES (#{uNo}, #{reviewContent}, NOW(), 0, 0)
     </insert>
 
     <update id="update" parameterType="com.example.animal.entity.AdoptionReview">
@@ -32,48 +24,45 @@
         WHERE ar_no = #{arNo}
     </update>
 
+    <select id="selectById" parameterType="long" resultMap="adoptionReviewResultMap">
+        SELECT ar_no, u_no, review_content, created_at, view_count, like_count
+        FROM adoption_review
+        WHERE ar_no = #{arNo}
+    </select>
+
     <delete id="delete" parameterType="long">
         DELETE FROM adoption_review WHERE ar_no = #{arNo}
     </delete>
 
-    <!-- 페이징 처리된 입양 후기 목록 조회 -->
-    <select id="selectAllWithPaging" resultMap="reviewMap" parameterType="map">
-        SELECT * FROM adoption_review
+    <sql id="searchConditionsSql">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND review_content LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="species != null and species != ''">
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectReviewsWithSearch" parameterType="map" resultMap="adoptionReviewResultMap">
+        SELECT ar_no, u_no, review_content, created_at, view_count, like_count
+        FROM adoption_review ar <include refid="searchConditionsSql"/>
         ORDER BY created_at DESC
-            LIMIT #{limit} OFFSET #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 전체 입양 후기 글 개수 조회 -->
-    <select id="countAll" resultType="int">
-        SELECT COUNT(*) FROM adoption_review
+    <select id="selectTotalCountWithSearch" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM adoption_review ar
+        <include refid="searchConditionsSql"/>
     </select>
 
-    <!-- 검색 + 페이징된 입양 후기 목록 조회 -->
-    <select id="selectReviewsWithSearch" resultMap="reviewMap" parameterType="map">
-        SELECT * FROM adoption_review
-        WHERE (review_content LIKE CONCAT('%', #{keyword}, '%') OR #{keyword} IS NULL OR #{keyword} = '')
-        ORDER BY created_at DESC
-            LIMIT #{limit} OFFSET #{offset}
-    </select>
-
-    <!-- 검색 조건 기반 후기 개수 조회 -->
-    <select id="selectTotalCountWithSearch" resultType="int" parameterType="map">
-        SELECT COUNT(*) FROM adoption_review
-        WHERE (review_content LIKE CONCAT('%', #{keyword}, '%') OR #{keyword} IS NULL OR #{keyword} = '')
-    </select>
-
-    <!-- 조회수 증가 -->
     <update id="incrementViewCount" parameterType="long">
-        UPDATE adoption_review
-        SET view_count = view_count + 1
-        WHERE ar_no = #{arNo}
+        UPDATE adoption_review SET view_count = view_count + 1 WHERE ar_no = #{arNo}
     </update>
 
-    <!-- 좋아요 수 증가 -->
     <update id="incrementLikeCount" parameterType="long">
-        UPDATE adoption_review
-        SET like_count = like_count + 1
-        WHERE ar_no = #{arNo}
+        UPDATE adoption_review SET like_count = like_count + 1 WHERE ar_no = #{arNo}
     </update>
 
 </mapper>

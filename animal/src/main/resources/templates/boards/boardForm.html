@@ -93,24 +93,28 @@
     </div>
 
     <div class="mb-4">
-      <label for="files_edit" class="form-label">첨부파일</label>
-      <input type="file" id="files_edit" name="files" multiple class="form-input" />
+      <label for="files_edit1" class="form-label">첨부파일1</label>
+      <input type="file" id="files_edit1" name="files" multiple class="form-input" onchange="previewImages(event, 'edit')" />
     </div>
 
-    <!-- 첨부된 이미지 미리보기 및 삭제 -->
+    <div class="mb-4">
+      <label for="files_edit2" class="form-label">첨부파일2</label>
+      <input type="file" id="files_edit2" name="files" multiple class="form-input" onchange="previewImages(event, 'edit')" />
+    </div>
+
+    <!-- 미리보기 영역 -->
+    <div id="previewContainer_edit" class="flex flex-wrap gap-4 mb-4"></div>
+
     <div class="mb-4">
       <label class="form-label">현재 첨부된 사진들</label>
       <div class="flex flex-wrap gap-4">
         <div th:each="att : ${board.attachments}" class="relative w-[150px]">
           <img th:src="@{'/uploads/' + ${att.filePath}}" alt="첨부파일 이미지"
                class="w-full h-[150px] object-cover border border-gray-300 rounded" />
-          <form th:action="@{'/attachments/' + ${att.id} + '/delete'}" method="post"
-                class="absolute top-1 right-1">
-            <input type="hidden" name="_method" value="delete" /> <!-- DELETE 메서드 지원용 -->
-            <button type="submit"
-                    class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-                    onclick="return confirm('이 파일을 삭제하시겠습니까?');">삭제</button>
-          </form>
+          <button type="button"
+                  class="absolute top-1 right-1 text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                  th:attr="data-id=${att.id}, data-board=${board.bNo}"
+                  onclick="deleteAttachment(this)">삭제</button>
         </div>
         <div th:if="${#lists.isEmpty(board.attachments)}">첨부된 사진이 없습니다.</div>
       </div>
@@ -122,7 +126,7 @@
     </div>
   </form>
 
-  <!-- 새 글 작성 폼 -->
+  <!-- 작성 폼 -->
   <form th:unless="${board.bNo != null}" th:action="@{/boards}" method="post" enctype="multipart/form-data" class="form-card">
     <div class="mb-4">
       <label for="bTitle_new" class="form-label">제목:</label>
@@ -141,8 +145,13 @@
 
     <div class="mb-4">
       <label for="files_new" class="form-label">첨부파일</label>
-      <input type="file" id="files_new" name="files" multiple class="form-input" />
+      <input type="file" id="files_new" name="files" multiple class="form-input" onchange="previewImages(event, 'new')" />
     </div>
+
+
+
+    <!-- 미리보기 영역 -->
+    <div id="previewContainer_new" class="flex flex-wrap gap-4 mb-4"></div>
 
     <div class="flex space-x-4">
       <button type="submit" class="btn-primary">등록</button>
@@ -150,5 +159,51 @@
     </div>
   </form>
 </div>
+
+<script>
+  function deleteAttachment(btn) {
+    if (!confirm("이 파일을 삭제하시겠습니까?")) return;
+
+    const attachmentId = btn.getAttribute('data-id');
+    const boardNo = btn.getAttribute('data-board');
+
+    fetch(`/attachments/${attachmentId}/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({ boardNo: boardNo })
+    })
+            .then(response => {
+              if (response.ok) {
+                window.location.reload();
+              } else {
+                alert('삭제 실패');
+              }
+            })
+            .catch(() => alert('삭제 요청 실패'));
+  }
+
+  // 이미지 미리보기 기능
+  function previewImages(event, mode) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById(`previewContainer_${mode}`);
+    previewContainer.innerHTML = '';
+
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = "w-[150px] h-[150px] object-cover border border-gray-300 rounded";
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+
 </body>
 </html>

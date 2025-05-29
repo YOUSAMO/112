@@ -5,28 +5,28 @@
 
 <mapper namespace="com.example.animal.repository.AttachmentFileRepository">
 
-    <insert id="insertAttachment" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insertAttachment" parameterType="com.example.animal.entity.AttachmentFile" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO attachment_file (board_type, board_id, file_name, file_path, file_type)
         VALUES (#{boardType}, #{boardId}, #{fileName}, #{filePath}, #{fileType})
     </insert>
 
     <select id="findByBoardTypeAndBoardId" resultType="com.example.animal.entity.AttachmentFile">
-        SELECT *
+        SELECT id, board_type, board_id, file_name, file_path, file_type
         FROM attachment_file
-        WHERE board_type = #{boardType}
-          AND board_id = #{boardId}
+        WHERE board_type = #{boardType} AND board_id = #{boardId}
     </select>
 
-    <select id="findByBoardId" parameterType="long" resultType="com.example.animal.entity.AttachmentFile">
-        SELECT *
-        FROM attachment_file
-        WHERE board_id = #{bNo}
-    </select>
-
-    <delete id="deleteByBoardTypeAndBoardId" parameterType="map">
+    <delete id="deleteByBoardTypeAndBoardId">
         DELETE FROM attachment_file
-        WHERE board_type = #{boardType}
-          AND board_id = #{boardId}
+        WHERE board_type = #{boardType} AND board_id = #{boardId}
     </delete>
 
+    <select id="findById" parameterType="long" resultType="com.example.animal.entity.AttachmentFile">
+        SELECT id, board_type, board_id, file_name, file_path, file_type
+        FROM attachment_file
+        WHERE id = #{id} </select>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM attachment_file
+        WHERE id = #{id} </delete>
 </mapper>

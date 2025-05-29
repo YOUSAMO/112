@@ -19,7 +19,7 @@ public interface BoardRepository {
 
     Board findById(Long bNo);
 
-    void updateBoard(Board board);
+    int updateBoard(Board board);
 
     void deleteBoard(Long bNo);    // deleteById 대신 deleteBoard로 변경 (XML과 맞춤)
 
