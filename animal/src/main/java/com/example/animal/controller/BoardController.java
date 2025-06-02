@@ -2,12 +2,11 @@ package com.example.animal.controller;
 
 import com.example.animal.entity.Board;
 import com.example.animal.service.BoardService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*; // @PostMapping 사용을 위해 유지
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -18,7 +17,6 @@ import java.util.Map;
 @Controller
 public class BoardController {
 
-    private static final Logger log = LoggerFactory.getLogger(BoardController.class);
 
     @Autowired
     private BoardService boardService;
@@ -58,11 +56,13 @@ public class BoardController {
             boardService.createBoard(board, files);
             redirectAttributes.addFlashAttribute("successMessage", "게시글이 성공적으로 등록되었습니다.");
         } catch (IOException e) {
-            log.error("파일 처리 중 오류 발생 (게시글 생성)", e);
+
+            e.printStackTrace(); // 예외 스택 트레이스 출력
             redirectAttributes.addFlashAttribute("errorMessage", "파일 처리 중 오류가 발생했습니다.");
             return "redirect:/boards/new";
         } catch (Exception e) {
-            log.error("게시글 등록 중 오류 발생", e);
+
+            e.printStackTrace(); // 예외 스택 트레이스 출력
             redirectAttributes.addFlashAttribute("errorMessage", "게시글 등록 중 오류가 발생했습니다.");
             return "redirect:/boards/new";
         }
@@ -100,15 +100,15 @@ public class BoardController {
             redirectAttributes.addFlashAttribute("successMessage", "게시글이 성공적으로 수정되었습니다.");
             return "redirect:/boards/" + bNo;
         } catch (IOException e) {
-            log.error("파일 처리 중 오류 발생 (게시글 {} 수정)", bNo, e);
+            e.printStackTrace(); // 예외 스택 트레이스 출력
             redirectAttributes.addFlashAttribute("errorMessage", "파일 처리 중 오류가 발생했습니다: " + e.getMessage());
             return "redirect:/boards/" + bNo + "/edit";
         } catch (RuntimeException e) {
-            log.error("게시글 수정 중 오류 발생 (게시글 {})", bNo, e);
+            e.printStackTrace(); // 예외 스택 트레이스 출력
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/boards/" + bNo + "/edit";
         } catch (Exception e) {
-            log.error("예상치 못한 오류 발생 (게시글 {} 수정)", bNo, e);
+            e.printStackTrace(); // 예외 스택 트레이스 출력
             redirectAttributes.addFlashAttribute("errorMessage", "게시글 수정 중 예상치 못한 오류가 발생했습니다.");
             return "redirect:/boards/" + bNo + "/edit";
         }
@@ -120,7 +120,7 @@ public class BoardController {
             boardService.deleteBoard(bNo);
             redirectAttributes.addFlashAttribute("successMessage", "게시글이 성공적으로 삭제되었습니다.");
         } catch (Exception e) {
-            log.error("게시글 {} 삭제 중 오류 발생", bNo, e);
+            e.printStackTrace(); // 예외 스택 트레이스 출력
             redirectAttributes.addFlashAttribute("errorMessage", "게시글 삭제 중 오류가 발생했습니다.");
         }
         return "redirect:/boards";
@@ -134,17 +134,16 @@ public class BoardController {
     }
 
     // === 개별 첨부파일 삭제를 위한 컨트롤러 메소드 ===
-    // HiddenHttpMethodFilter를 사용하지 않으므로 @PostMapping으로 변경합니다.
     @PostMapping("/attachments/{attachmentId}/delete")
     public String deleteAttachment(@PathVariable Long attachmentId,
-                                   @RequestParam Long boardNo, // HTML 폼의 hidden input으로 전송됨
+                                   @RequestParam Long boardNo,
                                    RedirectAttributes redirectAttributes) {
-        log.info("첨부파일 삭제 요청 수신 (POST): attachmentId={}, boardNo={}", attachmentId, boardNo);
+
         try {
             boardService.deleteAttachment(attachmentId);
             redirectAttributes.addFlashAttribute("successMessage", "첨부파일이 성공적으로 삭제되었습니다.");
         } catch (Exception e) {
-            log.error("첨부파일 {} 삭제 처리 중 오류 발생 (게시글 ID: {})", attachmentId, boardNo, e);
+            e.printStackTrace(); // 예외 스택 트레이스 출력
             redirectAttributes.addFlashAttribute("errorMessage", "첨부파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
         }
         return "redirect:/boards/" + boardNo + "/edit"; // 해당 게시글 수정 페이지로 리다이렉트
@@ -162,8 +161,8 @@ public class BoardController {
         }
         public int getTotalPages() { return totalPages; }
         public int getCurrentPage() { return currentPage; }
-        public int getNumber() { return currentPage - 1; }
-        public boolean isFirst() { return currentPage == 1; }
-        public boolean isLast() { return currentPage == totalPages; }
+//        public int getNumber() { return currentPage - 1; } // 0-based index for Pageable
+//        public boolean isFirst() { return currentPage == 1; }
+//        public boolean isLast() { return currentPage == totalPages; }
     }
 }

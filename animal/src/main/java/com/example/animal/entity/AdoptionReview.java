@@ -14,7 +14,7 @@ public class AdoptionReview {
     private Long arNo;
     private Long uNo;
     private String reviewContent;
-    private LocalDateTime createdAt; // DB에서 자동 생성되거나, 서비스에서 설정
+    private LocalDateTime createdAt;
     private int viewCount;
     private int likeCount;
 
