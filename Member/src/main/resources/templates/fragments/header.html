@@ -1,0 +1,144 @@
+<div th:fragment="commonHeader">
+    <meta charset="UTF-8" />
+    <!-- Header -->
+    <header>
+        <a th:href="@{/}"><h1>AdoptBridge</h1></a>
+        <nav>
+            <a th:href="@{/}">HOME</a>
+
+            <div class="dropdown">
+                <a href="#" class="dropbtn">커뮤니티 이동</a>
+                <div class="dropdown-content">
+                    <a th:href="@{/reviews}">리뷰 게시판</a>
+                    <a th:href="@{/boards}">자유 게시판</a>
+                    <a th:href="@{/events}">정보공유 게시판</a>
+                </div>
+            </div>
+            <a th:href="@{/mypage}">마이페이지</a>
+            <a th:href="@{/faqs}">고객센터</a>
+            <a th:href="@{/animals}">동물등록</a>
+            <a th:href="@{/animals}">입양신청</a>
+        </nav>
+
+        <div class="auth-section" th:if="${session.loginMember != null}">
+            <span th:text="${session.loginMember.u_name} + '님 환영합니다!'"></span>
+            <a href="/logout" class="logout-link">로그아웃</a>
+        </div>
+        <div class="auth-section" th:if="${session.loginMember == null}">
+            <a th:href="@{/login}">
+                <button class="login-btn">로그인</button>
+            </a>
+        </div>
+
+    </header>
+
+    <style>
+        /* 헤더 스타일 (기능 유지, 색상만 변경됨) */
+        header {
+            background-color: #FFF8E7;
+            color: #5D4037;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            font-family: 'Segoe UI', sans-serif;
+            box-sizing: border-box;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-grow: 1;
+            max-width: 700px;
+            justify-content: center;
+            overflow: visible;
+            position: relative;
+        }
+
+        nav a,
+        .dropbtn {
+            color: #5D4037;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 12px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        nav a:hover,
+        .dropbtn:hover {
+            text-decoration: underline;
+        }
+
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            min-width: 150px;
+            justify-content: flex-end;
+        }
+
+        .login-btn {
+            background-color: #DDB892;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .login-btn:hover {
+            background-color: #cda374;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+            border-radius: 6px;
+            overflow: hidden;
+            top: 100%;
+            left: 0;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</div>
