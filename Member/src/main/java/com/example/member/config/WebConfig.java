@@ -23,9 +23,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 정적 자원(css, js 등)은 인터셉터에서 제외
+        // 1. 정적 자원(css, js 등)은 classpath에서 로드
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
+
+        // 2. 업로드된 파일은 로컬 디스크에서 로드
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:C:/IdeaProjects/animal/uploads/");
+
     }
 
 }

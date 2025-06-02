@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>게시글 작성/수정</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: lightgray;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    .form-card {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+    .form-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: darkslategray;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid lightsteelblue;
+      border-radius: 0.375rem;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: dodgerblue;
+      box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+    }
+    .form-textarea {
+      resize: vertical;
+      min-height: 150px;
+    }
+    .btn-primary {
+      background-color: dodgerblue;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      transition: background-color 0.2s;
+    }
+    .btn-primary:hover {
+      background-color: royalblue;
+    }
+    .btn-secondary {
+      color: darkslategray;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      transition: color 0.2s;
+    }
+    .btn-secondary:hover {
+      color: black;
+      text-decoration: underline;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: black;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+  <h1 th:text="${board.bNo != null} ? '게시글 수정' : '게시글 작성'">게시글 작성</h1>
+
+  <!-- 수정 폼 -->
+  <form th:if="${board.bNo != null}" th:action="@{'/boards/' + ${board.bNo} + '/edit'}" method="post" enctype="multipart/form-data" class="form-card">
+    <input type="hidden" th:name="bNo" th:value="${board.bNo}" />
+
+    <div class="mb-4">
+      <label for="bTitle_edit" class="form-label">제목:</label>
+      <input type="text" id="bTitle_edit" name="bTitle" th:value="${board.bTitle}" required class="form-input"/>
+    </div>
+
+    <div class="mb-4">
+      <label for="bContent_edit" class="form-label">내용:</label>
+      <textarea id="bContent_edit" name="bContent" rows="6" required th:text="${board.bContent}" class="form-textarea"></textarea>
+    </div>
+
+    <div class="mb-4">
+      <label for="bAuthor_edit" class="form-label">작성자:</label>
+      <input type="text" id="bAuthor_edit" name="bAuthor" th:value="${board.bAuthor}" required class="form-input"/>
+    </div>
+
+    <div class="mb-4">
+      <label for="files_edit1" class="form-label">첨부파일1</label>
+      <input type="file" id="files_edit1" name="files" multiple class="form-input" onchange="previewImages(event, 'edit')" />
+    </div>
+
+    <div class="mb-4">
+      <label for="files_edit2" class="form-label">첨부파일2</label>
+      <input type="file" id="files_edit2" name="files" multiple class="form-input" onchange="previewImages(event, 'edit')" />
+    </div>
+
+    <!-- 미리보기 영역 -->
+    <div id="previewContainer_edit" class="flex flex-wrap gap-4 mb-4"></div>
+
+    <div class="mb-4">
+      <label class="form-label">현재 첨부된 사진들</label>
+      <div class="flex flex-wrap gap-4">
+        <div th:each="att : ${board.attachments}" class="relative w-[150px]">
+          <img th:src="@{'/uploads/' + ${att.filePath}}" alt="첨부파일 이미지"
+               class="w-full h-[150px] object-cover border border-gray-300 rounded" />
+          <button type="button"
+                  class="absolute top-1 right-1 text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                  th:attr="data-id=${att.id}, data-board=${board.bNo}"
+                  onclick="deleteAttachment(this)">삭제</button>
+        </div>
+        <div th:if="${#lists.isEmpty(board.attachments)}">첨부된 사진이 없습니다.</div>
+      </div>
+    </div>
+
+    <div class="flex space-x-4">
+      <button type="submit" class="btn-primary">수정 저장</button>
+      <a th:href="@{/boards}" class="btn-secondary">취소</a>
+    </div>
+  </form>
+
+  <!-- 작성 폼 -->
+  <form th:unless="${board.bNo != null}" th:action="@{/boards}" method="post" enctype="multipart/form-data" class="form-card">
+    <div class="mb-4">
+      <label for="bTitle_new" class="form-label">제목:</label>
+      <input type="text" id="bTitle_new" name="bTitle" th:value="${board.bTitle}" required class="form-input"/>
+    </div>
+
+    <div class="mb-4">
+      <label for="bContent_new" class="form-label">내용:</label>
+      <textarea id="bContent_new" name="bContent" rows="6" required th:text="${board.bContent}" class="form-textarea"></textarea>
+    </div>
+
+    <div class="mb-4">
+      <label for="bAuthor_new" class="form-label">작성자:</label>
+      <input type="text" id="bAuthor_new" name="bAuthor" th:value="${board.bAuthor}" required class="form-input"/>
+    </div>
+
+    <div class="mb-4">
+      <label for="files_new" class="form-label">첨부파일</label>
+      <input type="file" id="files_new" name="files" multiple class="form-input" onchange="previewImages(event, 'new')" />
+    </div>
+
+
+
+    <!-- 미리보기 영역 -->
+    <div id="previewContainer_new" class="flex flex-wrap gap-4 mb-4"></div>
+
+    <div class="flex space-x-4">
+      <button type="submit" class="btn-primary">등록</button>
+      <a th:href="@{/boards}" class="btn-secondary">취소</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  function deleteAttachment(btn) {
+    if (!confirm("이 파일을 삭제하시겠습니까?")) return;
+
+    const attachmentId = btn.getAttribute('data-id');
+    const boardNo = btn.getAttribute('data-board');
+
+    fetch(`/attachments/${attachmentId}/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({ boardNo: boardNo })
+    })
+            .then(response => {
+              if (response.ok) {
+                window.location.reload();
+              } else {
+                alert('삭제 실패');
+              }
+            })
+            .catch(() => alert('삭제 요청 실패'));
+  }
+
+  // 이미지 미리보기 기능
+  function previewImages(event, mode) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById(`previewContainer_${mode}`);
+    previewContainer.innerHTML = '';
+
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = "w-[150px] h-[150px] object-cover border border-gray-300 rounded";
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+
+</body>
+</html>

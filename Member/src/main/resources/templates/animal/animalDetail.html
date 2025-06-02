@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>동물 상세 정보</title>
+    <style>
+        body {
+            background-color: lavenderblush;
+            color: dimgray;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        .container {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: royalblue;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .message, .error {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            background-color: honeydew;
+            color: seagreen;
+            border: 1px solid mediumseagreen;
+        }
+
+        .error {
+            background-color: mistyrose;
+            color: firebrick;
+            border: 1px solid lightcoral;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .highlight {
+            font-weight: bold;
+        }
+
+        .description {
+            grid-column: span 2;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 0.375rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-box {
+            background-color: whitesmoke;
+            border: 1px solid gainsboro;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .link-button {
+            display: inline-block;
+            background-color: dodgerblue;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            margin-top: 1.5rem;
+        }
+
+        .link-button:hover {
+            background-color: mediumblue;
+        }
+
+        .no-animal {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .text-green { color: seagreen; }
+        .text-red { color: firebrick; }
+    </style>
+
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+    <h1>동물 상세 정보</h1>
+
+    <div th:if="${message}" class="message">
+        <p th:text="${message}"></p>
+    </div>
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div th:if="${animal}" class="card">
+        <div class="grid">
+            <p><span class="highlight">ID:</span> <span th:text="${animal.id}"></span></p>
+            <p><span class="highlight">이름:</span> <span th:text="${animal.name}"></span></p>
+            <p><span class="highlight">종류:</span> <span th:text="${animal.species}"></span></p>
+            <p><span class="highlight">나이:</span> <span th:text="${animal.age}"></span></p>
+            <p><span class="highlight">성별:</span> <span th:text="${animal.gender}"></span></p>
+            <p><span class="highlight">접종 유무:</span>
+                <span th:text="${animal.vaccinated ? '✔ 예' : '✖ 아니오'}"
+                      th:classappend="${animal.vaccinated} ? 'text-green' : 'text-red'"></span>
+            </p>
+            <p><span class="highlight">중성화 유무:</span>
+                <span th:text="${animal.neutered ? '✔ 예' : '✖ 아니오'}"
+                      th:classappend="${animal.neutered} ? 'text-green' : 'text-red'"></span>
+            </p>
+            <p><span class="highlight">센터 입소일:</span> <span th:text="${animal.arrivalDate}"></span></p>
+            <p><span class="highlight">좋아하는 것:</span> <span th:text="${animal.likes}"></span></p>
+            <p><span class="highlight">싫어하는 것:</span> <span th:text="${animal.dislikes}"></span></p>
+            <p class="description"><span class="highlight">특징:</span> <span th:text="${animal.description}"></span></p>
+        </div>
+
+        <div th:if="${files != null and !files.isEmpty()}" class="image-grid">
+            <div th:each="file : ${files}" class="file-box">
+                <img th:if="${file.fileType != null and file.fileType.startsWith('image/')}"
+                     th:src="@{${file.filePath}}"
+                     th:alt="${file.fileName}"
+                     class="image-preview"/>
+                <a th:if="${file.fileType == 'application/pdf'}"
+                   th:href="@{${file.filePath}}"
+                   th:text="${file.fileName}"
+                   target="_blank"></a>
+            </div>
+        </div>
+
+        <div th:unless="${files != null and !files.isEmpty()}" class="text-gray-500 mt-2">
+            첨부 파일이 없습니다.
+        </div>
+
+        <div class="text-center">
+            <a th:href="@{/animals}" class="link-button">목록으로 돌아가기</a>
+        </div>
+    </div>
+
+    <div th:unless="${animal}" class="no-animal">
+        <p class="text-red text-lg font-semibold">해당하는 동물을 찾을 수 없습니다.</p>
+        <a th:href="@{/animals}" class="link-button">목록으로 돌아가기</a>
+    </div>
+</div>
+
+</body>
+</html>

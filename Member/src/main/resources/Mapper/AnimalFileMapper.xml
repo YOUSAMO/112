@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.member.repository.AnimalFileRepository">
+
+    <resultMap id="animalFileMap" type="com.example.member.entity.AnimalFile">
+        <id property="id" column="id"/>
+        <result property="animalId" column="animal_id"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="fileType" column="file_type"/>
+    </resultMap>
+
+    <select id="findByAnimalId" parameterType="long" resultMap="animalFileMap">
+        SELECT id, animal_id, file_name, file_path, file_type
+        FROM animal_file
+        WHERE animal_id = #{animalId}
+    </select>
+
+    <insert id="insert" parameterType="com.example.member.entity.AnimalFile" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO animal_file (animal_id, file_name, file_path, file_type)
+        VALUES (#{animalId}, #{fileName}, #{filePath}, #{fileType})
+    </insert>
+
+    <delete id="deleteFilesByPaths" parameterType="list">
+        DELETE FROM animal_file
+        WHERE file_path IN
+        <foreach item="filePath" collection="list" open="(" separator="," close=")">
+            #{filePath}
+        </foreach>
+    </delete>
+</mapper>

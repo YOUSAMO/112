@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>입양 후기 목록</title>
+    <style>
+        body {
+            background-color: whitesmoke;
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif; /* 글꼴 일관성 */
+        }
+        .container { /* 전체 컨텐츠를 감싸는 div 추가 (선택 사항) */
+            max-width: 1200px; /* 너비 조정 */
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #343a40;
+            text-align: center; /* 제목 가운데 정렬 */
+            margin-bottom: 30px; /* 제목과 검색폼 간격 */
+        }
+        .search-form { /* 스타일 일관성 있게 수정 */
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa; /* 배경색 약간 변경 */
+            border: 1px solid #e9ecef; /* 테두리 색상 변경 */
+            border-radius: 6px;
+            display: flex; /* Flexbox 사용 */
+            gap: 10px; /* 요소 간 간격 */
+            align-items: center; /* 세로 중앙 정렬 */
+        }
+        .search-form label {
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .search-form input[type="text"], .search-form select {
+            padding: 8px; /* 패딩 증가 */
+            border: 1px solid #ced4da; /* 테두리 색상 변경 */
+            border-radius: 4px;
+            flex-grow: 1; /* 입력 필드가 남은 공간 차지 */
+        }
+        .search-form select {
+            flex-grow: 0.5; /* 검색 기준 선택 필드는 조금 작게 */
+        }
+        .search-form button {
+            padding: 8px 15px; /* 패딩 조정 */
+            background-color: dodgerblue;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .search-form button:hover {
+            background-color: #0056b3;
+        }
+        .controls-bar { /* 새 글 작성 버튼과 검색폼을 같은 줄에 배치하기 위한 컨테이너 (선택) */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .write-button {
+            padding: 8px 15px; /* 패딩 조정 */
+            background-color: mediumseagreen;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.9em; /* 글꼴 크기 조정 */
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .write-button:hover {
+            background-color: seagreen;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.08); /* 그림자 약간 수정 */
+            border-radius: 6px; /* 테이블 모서리 둥글게 */
+            overflow: hidden; /* border-radius 적용 위해 */
+        }
+        th, td {
+            border: 1px solid #e0e0e0; /* 테두리 색상 약간 연하게 */
+            padding: 10px 12px; /* 패딩 조정 */
+            text-align: center; /* 기본 가운데 정렬 */
+            vertical-align: middle; /* 내용 세로 중앙 정렬 */
+        }
+        th.content-header, td.content-cell { /* 내용 미리보기는 왼쪽 정렬 */
+            text-align: left;
+        }
+        thead {
+            background-color: #f0f0f0; /* 헤더 배경색 변경 */
+        }
+        tbody tr:nth-child(odd) { /* 홀수 행 배경색 (선택적) */
+            background-color: #f9f9f9;
+        }
+        tbody tr:hover {
+            background-color: #eef8ff; /* 호버 색상 변경 */
+        }
+        .thumbnail-cell { /* 썸네일 열 너비 */
+            width: 80px;
+        }
+        .thumbnail-image { /* 썸네일 이미지 스타일 */
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 4px; /* 썸네일 모서리 둥글게 */
+        }
+        .content-preview { /* 내용 미리보기 스타일 */
+            display: block; /* 링크처럼 보이도록 */
+            max-width: 250px; /* 최대 너비 설정 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap; /* 한 줄로 표시 */
+            color: #337ab7; /* 링크 색상 */
+            text-decoration: none;
+        }
+        .content-preview:hover {
+            text-decoration: underline;
+        }
+        .pagination { /* 이전 스타일 유지 */
+            margin-top: 20px; text-align: center;
+        }
+        .pagination a { display: inline-block; margin: 0 4px; padding: 6px 10px; border: 1px solid silver; border-radius: 4px; background-color: white; color: dimgray; text-decoration: none; transition: background-color 0.2s ease; }
+        .pagination a:hover { background-color: lightgray; }
+        .pagination a.current { background-color: dodgerblue; color: white; font-weight: bold; }
+        .pagination a.disabled { pointer-events: none; color: gray; background-color: whitesmoke; }
+        .action-links { white-space: nowrap; } /* 기능 버튼들이 한 줄에 보이도록 */
+        .action-links a, .action-links form button { margin: 0 4px; font-size: 14px; }
+        .action-links form { display: inline; }
+        .action-links form button { background: none; border: none; color: crimson; cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }
+        .action-links form button:hover { color: darkred; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="container"> <h1>입양 후기 목록</h1>
+
+    <div class="controls-bar"> <form th:action="@{/reviews}" method="get" class="search-form" style="flex-grow: 1; margin-bottom: 0;">
+        <label for="keyword">검색어:</label>
+        <input type="text" id="keyword" name="keyword" th:value="${keyword}" placeholder="내용 검색" />
+
+        <label for="species">검색 기준:</label> <select id="species" name="species">
+        <option value="">전체</option>
+        <option value="content" th:selected="${species == 'content'}">내용</option>
+    </select>
+        <input type="hidden" name="size" th:value="${pageSize}" /> <button type="submit">검색</button>
+    </form>
+        <a th:href="@{/reviews/new}" class="write-button" style="margin-left: 10px;">새 후기 작성</a>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>번호</th>
+            <th class="thumbnail-cell">사진</th> <th>작성자 ID</th> <th class="content-header">내용 미리보기</th> <th>작성일</th>
+            <th>조회수</th>
+            <th>좋아요</th>
+            <th>기능</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(reviews)}">
+            <td colspan="8" style="text-align: center;">등록된 후기가 없습니다.</td> </tr>
+        <tr th:each="reviewMap, stat : ${reviews}"> <td th:text="${totalCount - ((currentPage - 1) * pageSize + stat.index)}"></td>
+            <td class="thumbnail-cell">
+                <img th:if="${reviewMap.thumbnailPath != null}"
+                     th:src="@{'/uploads/' + ${reviewMap.thumbnailPath}}" alt="썸네일" class="thumbnail-image"/>
+                <span th:unless="${reviewMap.thumbnailPath != null}">-</span>
+            </td>
+            <td th:text="${reviewMap.uNo}"></td> <td class="content-cell"> <a th:href="@{/reviews/{arNo}(arNo=${reviewMap.arNo})}"
+                                                                              th:title="${reviewMap.reviewContent}"
+                                                                              class="content-preview"
+                                                                              th:text="${reviewMap.reviewContent}"></a>
+            </td>
+            <td th:text="${reviewMap.createdAtStr}"></td>
+            <td th:text="${reviewMap.viewCount}"></td>
+            <td th:text="${reviewMap.likeCount}"></td> <td class="action-links">
+                <a th:href="@{/reviews/{arNo}(arNo=${reviewMap.arNo})}">상세</a>
+                <a th:href="@{/reviews/{arNo}/edit(arNo=${reviewMap.arNo})}">수정</a>
+                <form th:action="@{/reviews/{arNo}/delete(arNo=${reviewMap.arNo})}" method="post">
+                    <button type="submit" onclick="return confirm('이 후기를 삭제하시겠습니까?');">삭제</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" th:if="${totalPages > 0}"> <a th:if="${currentPage > 1}" th:href="@{/reviews(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, species=${species})}" class="page-link">이전</a>
+        <a th:unless="${currentPage > 1}" class="disabled page-link">이전</a>
+
+        <span th:each="i : ${#numbers.sequence(1, totalPages)}">
+            <a th:href="@{/reviews(page=${i}, size=${pageSize}, keyword=${keyword}, species=${species})}"
+               th:text="${i}"
+               th:classappend="${i == currentPage} ? 'current' : ''" class="page-link"></a>
+        </span>
+
+        <a th:if="${currentPage < totalPages}" th:href="@{/reviews(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, species=${species})}" class="page-link">다음</a>
+        <a th:unless="${currentPage < totalPages}" class="disabled page-link">다음</a>
+    </div>
+</div> </body>
+</html>

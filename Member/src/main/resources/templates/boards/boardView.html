@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>게시글 상세보기</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: aliceblue;
+      margin: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .post-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: black;
+      margin-bottom: 1rem;
+    }
+    .meta-info {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      color: slategray;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: whitesmoke;
+      border-radius: 0.5rem;
+    }
+    .meta-info p {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .meta-info i {
+      color: cornflowerblue;
+    }
+    hr {
+      border: 0;
+      border-top: 2px solid lightblue;
+      margin: 2rem 0;
+    }
+    .content {
+      color: slategray;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      white-space: pre-wrap; /* 줄바꿈 유지 */
+    }
+
+    /* === 첨부파일 섹션 스타일 시작 === */
+    .attachments-section {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+    .attachments-section h3 {
+      font-size: 1.5rem; /* h1보다 작은 크기 */
+      font-weight: 600;
+      color: #343a40; /* 제목과 유사한 색상 */
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .attachments-section h3 i {
+      color: cornflowerblue; /* 아이콘 색상 */
+    }
+    .attachments-gallery {
+      display: flex;
+      flex-wrap: wrap; /* 이미지가 넘치면 다음 줄로 */
+      gap: 1rem;       /* 이미지 사이 간격 */
+    }
+    .attachment-item a, .attachment-item img { /* 링크 또는 이미지 자체에 스타일 적용 */
+      display: block; /* 인라인 요소의 불필요한 공백 제거 및 크기 적용 용이 */
+    }
+    .attachment-image {
+      width: 180px;  /* 이미지 너비 고정 */
+      height: 135px; /* 이미지 높이 고정 (4:3 비율 예시) */
+      object-fit: cover; /* 이미지가 비율을 유지하며 영역을 채움 (잘릴 수 있음) */
+      border: 1px solid #e0e0e0; /* 연한 테두리 */
+      border-radius: 0.5rem; /* 모서리 둥글게 */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* 부드러운 그림자 */
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .attachment-image:hover {
+      transform: scale(1.05); /* 마우스 올리면 약간 확대 */
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    .attachment-filename { /* 선택: 파일 이름 표시용 스타일 */
+      text-align: center;
+      font-size: 0.875rem;
+      color: slategray;
+      margin-top: 0.5rem;
+      width: 180px; /* 이미지 너비와 동일하게 */
+      word-break: break-all; /* 긴 파일 이름 줄바꿈 */
+    }
+    /* === 첨부파일 섹션 스타일 끝 === */
+
+    .action-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .action-links a,
+    .action-links button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: cornflowerblue;
+      color: white;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .action-links button.delete {
+      background-color: crimson;
+    }
+    .action-links a:hover,
+    .action-links button:hover {
+      background-color: darkblue;
+      transform: translateY(-2px);
+    }
+    .action-links button.delete:hover {
+      background-color: darkred;
+    }
+    @media (max-width: 640px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .post-card {
+        padding: 1.5rem;
+      }
+      .attachment-image { /* 모바일에서는 이미지 크기 조절 */
+        width: 120px;
+        height: 90px;
+      }
+      .attachment-filename {
+        width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+  <div class="post-card">
+    <h1 th:text="${board.bTitle}">게시글 제목</h1>
+
+    <div class="meta-info">
+      <p><i class="fas fa-user"></i> 작성자: <span th:text="${board.bAuthor}">작성자명</span></p>
+      <p><i class="fas fa-clock"></i> 작성일: <span th:text="${board.bDate != null ? #temporals.format(board.bDate, 'yyyy-MM-dd HH:mm') : ''}"></span></p>
+      <p><i class="fas fa-eye"></i> 조회수: <span th:text="${board.viewCount}">0</span></p>
+    </div>
+
+    <hr />
+
+    <div class="content" th:text="${board.bContent}">게시글 내용</div>
+
+    <div th:if="${board.attachments != null && !#lists.isEmpty(board.attachments)}">
+      <hr /> <div class="attachments-section">
+      <h3><i class="fas fa-paperclip"></i> 첨부된 파일</h3>
+      <div class="attachments-gallery">
+        <div th:each="att : ${board.attachments}" class="attachment-item">
+          <a th:href="@{'/uploads/' + ${att.filePath}}" target="_blank" th:title="${att.fileName}">
+            <img th:src="@{'/uploads/' + ${att.filePath}}" th:alt="${att.fileName}" class="attachment-image" />
+          </a>
+        </div>
+      </div>
+    </div>
+    </div>
+    <hr /> <div class="action-links">
+    <a th:href="@{'/boards/' + ${board.bNo} + '/edit'}"><i class="fas fa-edit"></i> 수정</a>
+
+    <form th:action="@{'/boards/' + ${board.bNo} + '/delete'}" method="post" style="display:inline;">
+      <button type="submit" class="delete" onclick="return confirm('삭제하시겠습니까?');">
+        <i class="fas fa-trash"></i> 삭제
+      </button>
+    </form>
+
+    <form th:action="@{'/boards/' + ${board.bNo} + '/like'}" method="post" style="display:inline;">
+      <button type="button" id="like-button" th:attr="data-board-no=${board.bNo}">
+        <i class="fas fa-thumbs-up"></i> 좋아요 (<span id="like-count" th:text="${board.likeCount}">0</span>)
+      </button>
+    </form>
+
+    <a th:href="@{/boards}"><i class="fas fa-list"></i> 목록으로</a>
+  </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const likeButton = document.getElementById("like-button");
+
+    if (likeButton) { // likeButton이 존재하는지 확인
+      likeButton.addEventListener("click", () => {
+        const boardNo = likeButton.dataset.boardNo;
+
+        fetch(`/boards/${boardNo}/like`, { // URL은 실제 프로젝트의 좋아요 경로와 일치해야 합니다.
+          method: "POST",
+          headers: {
+            // CSRF 토큰이 필요하다면 헤더에 추가해야 합니다.
+            // "Content-Type": "application/json", // 요청 본문이 없다면 필요 없을 수 있습니다.
+            "X-Requested-With": "XMLHttpRequest" // Ajax 요청임을 명시 (선택 사항)
+          }
+          // body: JSON.stringify({}) // POST 요청에 본문이 필요하다면 추가
+        })
+                .then(res => {
+                  if (!res.ok) {
+                    // 서버에서 오류 응답 시 (예: 400, 500 등)
+                    return res.json().then(errData => { // 오류 응답도 JSON일 수 있음
+                      throw new Error(errData.message || "좋아요 요청에 실패했습니다.");
+                    }).catch(() => { // JSON 파싱 실패 등
+                      throw new Error(`좋아요 요청 실패 (상태 코드: ${res.status})`);
+                    });
+                  }
+                  return res.json(); // 성공 시 JSON 파싱
+                })
+                .then(data => {
+                  if (data.likeCount !== undefined) {
+                    document.getElementById("like-count").textContent = data.likeCount;
+                  } else if (data.message) { // 성공했으나 메시지가 있는 경우 (예: 이미 좋아요 누름)
+                    alert(data.message);
+                  }
+                })
+                .catch(err => {
+                  console.error("좋아요 에러:", err);
+                  alert(err.message);
+                });
+      });
+    }
+  });
+</script>
+</body>
+</html>
