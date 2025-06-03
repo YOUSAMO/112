@@ -15,9 +15,15 @@ public class MainController {
 
     //메인 페이지로 넘어감
     @GetMapping("/")
-    public String mainPage() {
+    public String mainPage(HttpSession session, Model model) {
         System.out.println("메인 페이지 호출됨");
-        return "main"; // templates/main.html
+        Member loginMember = (Member) session.getAttribute("loginMember");
+        if (loginMember != null) {
+            model.addAttribute("loginMember", loginMember);
+            System.out.println("세션에 저장된 회원: " + loginMember);
+        }
+        return "main";
+
     }
 
 

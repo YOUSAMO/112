@@ -1,5 +1,6 @@
 package com.example.member.service;
 
+import com.example.member.DTO.LoginFormDTO;
 import com.example.member.DTO.MemberDTO;
 import com.example.member.entity.Member;
 import com.example.member.repository.MemberRepository;
@@ -26,7 +27,7 @@ public class MemberService {
     /**
      * 회원 등록
      */
-    @Transactional
+
     public void registerMember(MemberDTO memberDTO) {
         Member member = new Member();
         member.setU_id(memberDTO.getU_id());
@@ -44,7 +45,7 @@ public class MemberService {
     /**
      * 회원 정보 수정
      */
-    @Transactional
+
     public void updateMember(Member member) {
 
 
@@ -56,7 +57,7 @@ public class MemberService {
     /**
      * 회원 삭제 (고유번호 기준)
      */
-    @Transactional
+
     public void deleteMemberByNo(Integer u_no) {
 
         memberRepository.deleteByno(u_no);
@@ -65,7 +66,7 @@ public class MemberService {
     /**
      * 아이디로 회원 조회 (단일)
      */
-    @Transactional
+
     public Member getMemberById(String u_id) {
 
         return memberRepository.findById(u_id);
@@ -76,7 +77,6 @@ public class MemberService {
     /**
      * 회원 단건 조회 (고유번호 기준)
      */
-    @Transactional
     public Member getMemberByNo(Integer u_no) {
         List<Member> list = memberRepository.findMemberByno(u_no);
         return list.isEmpty() ? null : list.get(0);
@@ -85,7 +85,7 @@ public class MemberService {
     /**
      * 전체 회원 조회
      */
-    @Transactional
+
     public List<Member> getAllMembers() {
 
         return memberRepository.findAll();
@@ -94,24 +94,22 @@ public class MemberService {
     /**
      * 로그인 유효성 검사
      */
-    @Transactional
-    public Member validateLogin(String u_id, String u_pass) {
 
-        return memberRepository.validateLogin(u_id, u_pass);
-
+    public Member validateLogin(LoginFormDTO loginFormDTO) {
+        return memberRepository.validateLogin(loginFormDTO);
     }
 
     /**
      * 아이디 중복 여부 확인
      */
-    @Transactional
+
     public boolean isDuplicateId(String u_id) {
 
         return memberRepository.isDuplicateId(u_id);
 
     }
 
-    @Transactional
+
     public Member findByUserIdAndPass(String u_id, String u_pass) {
         return memberRepository.findByUserIdAndPass(u_id, u_pass);
     }

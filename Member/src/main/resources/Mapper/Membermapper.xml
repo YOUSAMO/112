@@ -40,11 +40,16 @@
             WHERE u_no = #{u_no}
         </delete>
 
+    <select id="validateLogin"
+            parameterType="com.example.member.DTO.LoginFormDTO"
+            resultType="com.example.member.entity.Member">
+        SELECT * FROM users
+        WHERE u_id = #{u_id} AND u_pass = #{u_pass}
 
-
-    <select id="validateLogin" parameterType="map"  resultType="com.example.member.entity.Member">
-        SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender FROM users WHERE u_id = #{u_id} AND u_pass = #{u_pass}
     </select>
+
+
+
 
     <select id="isDuplicateId" parameterType="string" resultType="boolean">
         SELECT COUNT(*) > 0 FROM users WHERE u_id = #{u_id}
@@ -53,6 +58,7 @@
     <select id="findByUserIdAndPass" resultType="com.example.member.entity.Member">
         SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender  FROM users
         WHERE u_id = #{u_id} AND u_pass = #{u_pass}
+
     </select>
 
 
