@@ -1,9 +1,11 @@
 package com.example.animal.controller;
 
-import com.example.animal.DTO.LoginFormDTO;
 import com.example.animal.DTO.MemberDTO;
 import com.example.animal.entity.Member;
 import com.example.animal.service.MemberService;  // ✅ Service import
+
+
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -18,6 +20,7 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+
 
     /*
     @Autowired
@@ -92,11 +95,11 @@ public class MemberController {
             model.addAttribute("error", "회원 등록 실패");
             return "memberjoin";
         }
-        return "redirect:/member/login";
+        return "redirect:/login";
     }
 
 
-
+   /*
     // 회원 목록 보기
     @GetMapping("/memberlist")
     public String memberList(Model model) {
@@ -133,6 +136,7 @@ public class MemberController {
         return "redirect:/member/memberlist";
     }
 
+    */
 
 
     // 아이디 중복 확인
@@ -144,34 +148,10 @@ public class MemberController {
     }
 
 
-    //로그인 페이지로 넘어감
-    @GetMapping("/login")
-    public String loginPage() {
-
-        return "login"; // templates/login.html
-    }
-
-
-
-
-    //로그인 컨트롤러 세션
-    @PostMapping("/login")
-    public String login(@ModelAttribute LoginFormDTO form,
-                        Model model,
-                        HttpSession session) {
-
-
-        Member loginmember = memberService.validateLogin(form.getU_id(), form.getU_pass());
-
-        if (loginmember != null) {
-            session.setAttribute("loginMember", loginmember); // 전체 객체 저장도 가능
-
-
-            return "redirect:/";
-        } else {
-            model.addAttribute("memberError", "아이디 또는 비밀번호가 올바르지 않습니다.");
-            return "login";
-        }
-    }
-
 }
+
+
+
+
+
+

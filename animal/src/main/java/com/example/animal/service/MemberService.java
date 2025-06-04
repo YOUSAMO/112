@@ -91,15 +91,6 @@ public class MemberService {
         return memberRepository.findAll();
     }
 
-    /**
-     * 로그인 유효성 검사
-     */
-    @Transactional
-    public Member validateLogin(String u_id, String u_pass) {
-
-        return memberRepository.validateLogin(u_id, u_pass);
-
-    }
 
     /**
      * 아이디 중복 여부 확인
@@ -111,9 +102,11 @@ public class MemberService {
 
     }
 
-    @Transactional
-    public Member findByUserIdAndPass(String u_id, String u_pass) {
-        return memberRepository.findByUserIdAndPass(u_id, u_pass);
-    }
+    public Member findByLoginIdAndPass(String u_id, String u_pass) {
 
+
+        return memberRepository.findByLoginIdAndPass(u_id, u_pass);
+
+
+    }
 }
