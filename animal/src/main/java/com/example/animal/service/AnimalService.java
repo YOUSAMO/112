@@ -28,6 +28,7 @@ public class AnimalService {
     @Value("${file.upload.dir}")
     private String uploadDir;
 
+    // 생성자는 그대로 유지
     @Autowired
     public AnimalService(AnimalRepository animalRepository, AnimalFileRepository animalFileRepository,
                          @Value("${file.upload.dir}") String uploadDir) {
@@ -36,6 +37,7 @@ public class AnimalService {
         this.uploadDir = uploadDir;
     }
 
+    // getAllAnimals, getAnimalById, getFilesByAnimalId 메소드는 그대로 유지
     public List<Animal> getAllAnimals() {
         System.out.println("getAllAnimals() 호출됨");
         List<Animal> animals = animalRepository.findAll();
@@ -61,33 +63,42 @@ public class AnimalService {
         return files;
     }
 
+    // ★★★ storeFile 메소드 수정 ★★★
     private String storeFile(MultipartFile file, Long animalId) throws IOException {
         String originalFilename = file.getOriginalFilename();
         String uuid = UUID.randomUUID().toString();
-        String fileName = uuid + "_" + originalFilename;
-        String animalDir = uploadDir + "/animal-" + animalId;
-        Path filePath = Paths.get(animalDir, fileName);
+        String fileName = uuid + "_" + originalFilename; // 실제 저장될 파일 이름 (UUID 포함)
 
-        Files.createDirectories(Paths.get(animalDir));
+        // 1. 폴더 경로 수정: "animal" 중간 폴더 추가
+        String baseAnimalDir = uploadDir + "/animal";
+        String specificAnimalDir = baseAnimalDir + "/animal-" + animalId;
+
+        Path directoryPath = Paths.get(specificAnimalDir);
+        Path filePath = directoryPath.resolve(fileName); // Paths.get(specificAnimalDir, fileName)와 동일
+
+        Files.createDirectories(directoryPath); // "animal" 및 "animal-123" 폴더 모두 생성 (필요시)
         file.transferTo(filePath);
 
-        // 데이터베이스에 저장할 상대 경로 생성
-        return "/uploads/animal-" + animalId + "/" + fileName;
+        // 2. 데이터베이스에 저장할 상대 URL 경로 수정
+        // 이 경로는 웹에서 이미지를 불러올 때 사용됩니다.
+        return "/uploads/animal/animal-" + animalId + "/" + fileName;
     }
 
+    // addAnimal, updateAnimal 메소드는 storeFile 호출 부분이 변경된 경로를 사용하게 되므로 그대로 유지 가능
     public void addAnimal(Animal animal, MultipartFile[] files) {
         System.out.println("addAnimal(animal: " + animal + ", files: " + (files != null ? files.length : 0) + ") 호출됨");
         try {
-            animalRepository.insert(animal);
+            animalRepository.insert(animal); // animal.id가 여기서 설정되어야 함
             if (files != null && files.length > 0) {
                 for (MultipartFile file : files) {
                     if (file != null && !file.isEmpty()) {
                         validateFile(file);
-                        String filePath = storeFile(file, animal.getId());
+                        String filePathInDb = storeFile(file, animal.getId()); // 수정된 storeFile 호출
                         AnimalFile animalFile = new AnimalFile();
                         animalFile.setAnimalId(animal.getId());
-                        animalFile.setFileName(file.getOriginalFilename());
-                        animalFile.setFilePath(filePath);
+                        animalFile.setFileName(file.getOriginalFilename()); // DB에는 원본 파일명 또는 저장된 파일명(uuid포함) 중 선택 저장
+                        // 여기서는 원본 파일명을 저장하고 있음
+                        animalFile.setFilePath(filePathInDb); // storeFile에서 반환된 URL 경로
                         animalFile.setFileType(file.getContentType());
                         animalFileRepository.insert(animalFile);
                         System.out.println("파일 저장됨: " + animalFile);
@@ -110,14 +121,14 @@ public class AnimalService {
                 for (MultipartFile file : files) {
                     if (file != null && !file.isEmpty()) {
                         validateFile(file);
-                        String filePath = storeFile(file, animal.getId());
+                        String filePathInDb = storeFile(file, animal.getId()); // 수정된 storeFile 호출
                         AnimalFile animalFile = new AnimalFile();
                         animalFile.setAnimalId(animal.getId());
                         animalFile.setFileName(file.getOriginalFilename());
-                        animalFile.setFilePath(filePath);
+                        animalFile.setFilePath(filePathInDb);
                         animalFile.setFileType(file.getContentType());
-                        animalFileRepository.insert(animalFile);
-                        System.out.println("파일 업데이트됨: " + animalFile);
+                        animalFileRepository.insert(animalFile); // 새 파일은 항상 insert (기존 파일 관리 정책 필요시 추가)
+                        System.out.println("파일 업데이트(추가)됨: " + animalFile);
                     }
                 }
             } else {
@@ -129,25 +140,32 @@ public class AnimalService {
         }
     }
 
+    // ★★★ deleteAnimal 메소드 수정 ★★★
     public void deleteAnimal(Long id) {
         System.out.println("deleteAnimal(" + id + ") 호출됨");
         try {
-            Path dirPath = Paths.get(uploadDir, "animal-" + id);
+            // 1. 삭제할 폴더 경로 수정: "animal" 중간 폴더 포함
+            Path dirPath = Paths.get(uploadDir, "animal", "animal-" + id);
+
             if (Files.exists(dirPath)) {
+                // 디렉토리 및 하위 파일/디렉토리 모두 삭제
                 Files.walk(dirPath)
-                        .sorted(Comparator.reverseOrder())
+                        .sorted(Comparator.reverseOrder()) // 하위 항목부터 삭제하기 위해 역순 정렬
                         .forEach(path -> {
                             try {
                                 Files.delete(path);
                                 System.out.println("파일/디렉토리 삭제됨: " + path);
                             } catch (IOException e) {
-                                System.out.println("삭제 실패: " + path + ", " + e.getMessage());
+                                System.err.println("삭제 실패: " + path + ", " + e.getMessage());
                             }
                         });
             } else {
                 System.out.println("삭제할 디렉토리 없음: " + dirPath);
             }
-            animalRepository.deleteById(id);
+            // TODO: AnimalFile 테이블에서 해당 animalId에 대한 레코드들도 삭제해야 합니다.
+            // animalFileRepository.deleteByAnimalId(id); 와 같은 메소드 호출 필요
+
+            animalRepository.deleteById(id); // Animal 테이블에서 동물 정보 삭제
             System.out.println("ID " + id + " 동물 삭제 완료");
         } catch (Exception e) {
             System.out.println("동물 삭제 중 오류: " + e.getMessage());
@@ -155,6 +173,7 @@ public class AnimalService {
         }
     }
 
+    // validateFile, getAnimalsWithPaging, getTotalAnimalCount 등 나머지 메소드는 그대로 유지
     private void validateFile(MultipartFile file) {
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType)) {
@@ -173,12 +192,10 @@ public class AnimalService {
         return animalRepository.countAll();
     }
 
-    // 검색 조건에 따른 동물 목록 (페이징 포함)
     public List<Animal> getAnimalsByCondition(int offset, int size, String keyword, String species) {
         return animalRepository.getAnimalsByCondition(offset, size, keyword, species);
     }
 
-    // 검색 조건에 따른 총 동물 수 조회
     public int getTotalCountByCondition(String keyword, String species) {
         return animalRepository.getTotalCountByCondition(keyword, species);
     }

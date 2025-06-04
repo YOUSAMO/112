@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>마이페이지 - 유기동물 중개소</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap');
+        body {
+            font-family: 'Nanum Gothic', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f3eb;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        main.container {
+            background-color: #fffefb;
+            max-width: 900px;
+            width: 100%;
+            margin-top: 200px;
+            margin-bottom: 40px;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 40px;
+        }
+        nav.sidebar {
+            flex: 0 0 220px;
+            background-color: #f0ead9;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: inset 3px 3px 8px #d6cfc1, inset -3px -3px 8px #fff9e7;
+        }
+        nav.sidebar h3 {
+            margin-top: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #6b5e47;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        nav.sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav.sidebar ul li {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        nav.sidebar ul li a {
+            text-decoration: none;
+            color: #6b5e47;
+            font-size: 16px;
+            padding: 6px 12px;
+            display: block;
+            border-radius: 6px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        nav.sidebar ul li.active a,
+        nav.sidebar ul li a:hover {
+            background-color: #6b5e47;
+            color: #fffefb;
+        }
+        section.main-content {
+            flex: 1;
+            min-height: 450px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #d6cfc1;
+            padding-bottom: 20px;
+        }
+        .profile img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 20px;
+            border: 3px solid #a69f8e;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .profile-text {
+            flex: 1;
+        }
+        .profile-text h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #6b5e47;
+        }
+
+        .content {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .content.active {
+            display: block;
+        }
+        .content h3 {
+            font-size: 20px;
+            color: #6b5e47;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #d6cfc1;
+            padding-bottom: 8px;
+        }
+        .content p, .content ul {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.5;
+        }
+        .content ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        .content ul li {
+            margin-bottom: 12px;
+        }
+        .content a {
+            color: #6b5e47;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .content a:hover {
+            text-decoration: underline;
+        }
+        p.logout {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #7a6f58;
+            text-align: center;
+        }
+        p.logout a {
+            color: #6b5e47;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        p.logout a:hover {
+            text-decoration: underline;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        .edit-button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: #6b5e47;
+            color: #ffffff;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<main class="container" th:if="${session.loginMember != null}">
+
+    <nav class="sidebar">
+        <h3>마이페이지 메뉴</h3>
+        <ul>
+            <li class="active"><a href="#" data-tab="adopted">입양한 동물 정보</a></li>
+            <li><a href="#" data-tab="application">입양 신청 내역</a></li>
+            <li><a href="#" data-tab="favorites">관심 동물 목록</a></li>
+            <li><a href="#" data-tab="activity">나의 활동 기록</a></li>
+            <li><a href="#" data-tab="points">포인트 적립 현황</a></li>
+            <li><a href="#" data-tab="profile">개인정보 관리</a></li>
+        </ul>
+    </nav>
+
+    <section class="main-content">
+        <div class="profile">
+            <div class="profile-text">
+                <h2 th:text="${session.loginMember.u_name} + ' 님, 안녕하세요!'">회원명, 안녕하세요!</h2>
+
+            </div>
+        </div>
+        <article id="adopted-contentinfo" class="content active">
+            <h3>입양한 동물 정보</h3>
+            <p >입양한 동물이 없습니다.</p>
+            <ul>
+                <li>
+                    <strong>이름:</strong>
+                    <strong>종류:</strong>
+                    <strong>입양 날짜:</strong>
+                    <strong>건강 상태:</strong>
+                </li>
+                <li>
+
+                    접종 기록: <a href="#">확인하기</a>
+                </li>
+                <li>
+                    입양 후기: <a href ="#">작성하기</a> |
+                    작성된 후기: <a href="#">보기</a>
+                </li>
+            </ul>
+        </article>
+
+        <article id="adopted-contentconfirm" class="content active">
+            <h3>입양한 동물 정보</h3>
+            <ul>
+                <li><strong>이름:</strong> 뽀삐 | <strong>종류:</strong> 강아지 | <strong>입양 날짜:</strong> 2023-10-01 | <strong>건강 상태:</strong> 양호</li>
+                <li>접종 기록: <a href="#">확인하기</a></li>
+                <li>입양 후기: <a href="#">작성하기</a> | 작성된 후기: <a href="#">보기</a></li>
+            </ul>
+        </article>
+
+        <article id="application-content" class="content">
+            <h3>입양 신청 내역</h3>
+            <ul>
+                <li><strong>동물:</strong> 나비 | <strong>종류:</strong> 고양이 | <strong>신청 날짜:</strong> 2023-09-15 | <strong>상태:</strong> 승인대기 | <strong>담당자 연락처:</strong> 010-1234-5678</li>
+            </ul>
+        </article>
+
+
+        <article id="favorites-content" class="content">
+            <h3>관심 동물 목록</h3>
+            <ul>
+                <li><strong>코코</strong> | 상태: 보호중 | 업데이트: 건강검진 완료</li>
+            </ul>
+        </article>
+
+        <article id="activity-content" class="content">
+            <h3>나의 활동 기록</h3>
+            <p>입양 후기: <strong>2</strong>건 | 댓글: <strong>5</strong>건</p>
+            <ul>
+                <li>귀여운 코코 이야기 - 2023-08-10</li>
+                <li>입양을 고민하는 분들께 - 2023-08-01</li>
+            </ul>
+        </article>
+
+
+        <!-- 기타 섹션 생략 -->
+
+        <article id="profile-content" class="content active">
+            <h3>개인정보 및 알림 설정</h3>
+            <ul>
+                <li><strong>아이디:</strong> <span th:text="${session.loginMember.u_id}"></span></li>
+                <li><strong>이름:</strong> <span th:text="${session.loginMember.u_name}"></span></li>
+                <li><strong>비밀번호:</strong> <span>보안상 비공개</span></li>
+                <li><strong>전화번호:</strong> <span th:text="${session.loginMember.u_pnumber}"></span></li>
+                <li><strong>성별:</strong> <span th:text="${session.loginMember.u_gender}"></span></li>
+                <li><strong>이메일:</strong> <span th:text="${session.loginMember.u_email}"></span></li>
+                <li><a href="#">비밀번호 변경하기</a></li>
+
+
+
+            </ul>
+        </article>
+        <a href="#">회원정보 수정</a>
+        <p class="logout">로그아웃 하시겠습니까? <a th:href="@{/logout}">로그아웃</a></p>
+    </section>
+</main>
+
+
+
+<script>
+    const links = document.querySelectorAll('.sidebar ul li a');
+    const contents = document.querySelectorAll('.content');
+
+    links.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            links.forEach(l => l.parentElement.classList.remove('active'));
+            link.parentElement.classList.add('active');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(link.getAttribute('data-tab') + '-content').classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>

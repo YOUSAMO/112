@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.animal.repository.AdminRepository">
+
+    <select id="findAll" resultType="com.example.animal.entity.Admin">
+        SELECT a_id,a_pass,a_name FROM admin
+    </select>
+
+    <insert id="insert" parameterType="com.example.animal.entity.Admin">
+        INSERT INTO admin (a_id, a_pass, a_name)
+        VALUES (#{a_id}, #{a_pass}, #{a_name})
+    </insert>
+
+    <select id="countAdmins" resultType="int">
+        SELECT COUNT(*) FROM admin
+    </select>
+
+
+
+
+</mapper>

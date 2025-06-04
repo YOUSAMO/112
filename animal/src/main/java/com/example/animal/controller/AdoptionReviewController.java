@@ -1,7 +1,6 @@
 package com.example.animal.controller;
 
 import com.example.animal.entity.AdoptionReview;
-import com.example.animal.entity.AttachmentFile;
 import com.example.animal.service.AdoptionReviewService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
