@@ -11,7 +11,7 @@
                 <div class="dropdown-content">
                     <a th:href="@{/reviews}">리뷰 게시판</a>
                     <a th:href="@{/boards}">자유 게시판</a>
-                    <a th:href="@{/events}">정보공유 게시판</a>
+                    <a th:href="@{/events}">유기동물 실종/보호 게시판</a>
                 </div>
             </div>
             <a th:href="@{/mypage}">마이페이지</a>
@@ -21,7 +21,7 @@
         </nav>
 
         <div class="auth-section" th:if="${session.loginMember != null}">
-            <span th:text="${session.loginMember.u_name} + '님 환영합니다!'"></span>
+            <span th:text="${session.loginMember.u_name} + '님 안녕하세요'"></span>
             <a href="/logout" class="logout-link">로그아웃</a>
         </div>
         <div class="auth-section" th:if="${session.loginMember == null}">

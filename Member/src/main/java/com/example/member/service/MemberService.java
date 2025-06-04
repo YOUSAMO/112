@@ -1,13 +1,10 @@
 package com.example.member.service;
 
-import com.example.member.DTO.LoginFormDTO;
 import com.example.member.DTO.MemberDTO;
 import com.example.member.entity.Member;
 import com.example.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -91,13 +88,6 @@ public class MemberService {
         return memberRepository.findAll();
     }
 
-    /**
-     * 로그인 유효성 검사
-     */
-
-    public Member validateLogin(LoginFormDTO loginFormDTO) {
-        return memberRepository.validateLogin(loginFormDTO);
-    }
 
     /**
      * 아이디 중복 여부 확인
@@ -109,9 +99,17 @@ public class MemberService {
 
     }
 
+    /**
+     * 로그인 유효성 검사
+     */
 
-    public Member findByUserIdAndPass(String u_id, String u_pass) {
-        return memberRepository.findByUserIdAndPass(u_id, u_pass);
+
+    public Member findByLoginIdAndPass(String u_id, String u_pass) {
+
+
+        return memberRepository.findByLoginIdAndPass(u_id, u_pass);
+
+
     }
 
 }

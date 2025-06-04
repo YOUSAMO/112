@@ -7,6 +7,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 public class AdminLoginInterceptor implements HandlerInterceptor {
+    /*
     private static final AntPathMatcher matcher = new AntPathMatcher();
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -23,5 +24,7 @@ public class AdminLoginInterceptor implements HandlerInterceptor {
         }
         return true;
     }
+    */
+
 
 }

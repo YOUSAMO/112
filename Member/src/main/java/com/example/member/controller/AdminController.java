@@ -3,11 +3,8 @@ package com.example.member.controller;
 
 import com.example.member.DTO.AdminDTO;
 import com.example.member.DTO.LoginAdminFormDTO;
-import com.example.member.DTO.LoginFormDTO;
 import com.example.member.entity.Admin;
-import com.example.member.entity.Member;
 import com.example.member.service.AdminService;
-import com.example.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -33,6 +30,8 @@ public class AdminController {
     }
 
 
+
+    /*
     @PostMapping("/register")
     public String registerAdmin(@ModelAttribute AdminDTO adminDTO,HttpSession session, Model model) {
 
@@ -52,6 +51,8 @@ public class AdminController {
         }
         return "redirect:/login";
     }
+
+    */
 
     @GetMapping("/login")
     public String showLoginForm(Model model) {

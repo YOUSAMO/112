@@ -14,7 +14,7 @@ import java.util.List;
 public class LoginCheckInterceptor implements HandlerInterceptor {
 
 
-
+    /*
     // AntPathMatcher: Spring에서 제공하는 경로 매칭 도구 클래스야. 패턴 문자열("/mypage/**", "/css/*" 등)과 실제URI를 비교할 때 사용해
     // new AntPathMatcher(): 이 클래스의 인스턴스를 하나 생성하는 거야.
 
@@ -37,6 +37,8 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
         }
         return true;
     }
+    */
+
 
 }
 

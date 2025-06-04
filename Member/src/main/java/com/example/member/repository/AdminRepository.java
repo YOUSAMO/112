@@ -19,7 +19,7 @@ public interface AdminRepository {
     List<Admin> findAll();
     void insert(Admin admin);
     int countAdmins();
-    Admin validateLogin(@Param("a_id") String a_id, @Param("a_pass") String a_pass);
+
 
 
 }
