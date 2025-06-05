@@ -3,6 +3,7 @@ package com.example.animal.repository;
 import com.example.animal.entity.AttachmentFile;
 import com.example.animal.entity.LostFoundAnimal;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

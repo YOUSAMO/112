@@ -2,305 +2,161 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
-  <title>입양 후기 작성/수정</title>
+  <title th:text="${review != null && review.arNo != null ? '입양 후기 수정' : '입양 후기 작성'}">입양 후기 작성/수정</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif; /* 부드러운 글꼴 */
-      max-width: 760px; /* 폼 최대 너비 약간 증가 */
-      margin: 30px auto; /* 상하 여백 조정 */
-      padding: 25px;   /* 내부 패딩 조정 */
-      background-color: #f4f7f6; /* 은은한 배경색 */
-      color: #333; /* 기본 글자색 */
+    .btn {
+      padding: 0.625rem 1.25rem; border-radius: 0.375rem; font-weight: 500;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
     }
-
-    h1 {
-      text-align: center;
-      color: #2c3e50; /* 제목 색상 */
-      margin-bottom: 25px; /* 제목과 폼 사이 간격 */
-      font-size: 1.8em; /* 제목 크기 */
-    }
-
-    form {
-      background-color: #ffffff; /* 폼 배경색 흰색 */
-      padding: 30px; /* 폼 내부 패딩 증가 */
-      border-radius: 8px; /* 폼 모서리 둥글게 */
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 효과 */
-    }
-
-    label {
-      font-weight: 600; /* 글꼴 두께 약간 증가 */
-      margin-top: 20px; /* 각 레이블 위쪽 간격 */
-      margin-bottom: 8px; /* 레이블과 입력 필드 사이 간격 */
-      display: block;
-      color: #4A5568; /* 레이블 색상 */
-      font-size: 0.95rem;
-    }
-
-    input[type="number"],
-    input[type="file"],
-    textarea {
-      width: 100%;
-      padding: 12px; /* 입력 필드 패딩 증가 */
-      margin-top: 0; /* 레이블과의 간격은 레이블 아래쪽 마진으로 제어 */
-      margin-bottom: 20px; /* 입력 필드 아래쪽 간격 */
-      border: 1px solid #CBD5E0; /* 테두리 색상 변경 */
-      border-radius: 6px; /* 모서리 약간 더 둥글게 */
-      box-sizing: border-box;
-      font-size: 1rem;
-      transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-    input[type="number"]:focus,
-    input[type="file"]:focus,
-    textarea:focus {
-      border-color: #3498db; /* 포커스 시 테두리 색상 */
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); /* 포커스 시 그림자 효과 */
-      outline: none;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 150px; /* 최소 높이 증가 */
-    }
-
-    input[type="file"] {
-      background-color: #fff;
-      padding: 10px;
-    }
-
-    input[type="file"]::file-selector-button {
-      background-color: #e2e8f0;
-      color: #4A5568;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-right: 10px;
-      transition: background-color 0.2s;
-    }
-    input[type="file"]::file-selector-button:hover {
-      background-color: #CBD5E0;
-    }
-
-
-    .form-actions { /* 버튼들을 감싸는 div */
-      margin-top: 30px; /* 버튼 그룹 위 간격 */
-      text-align: right; /* 버튼 오른쪽 정렬 */
-    }
-
-    .form-actions button,
-    .form-actions a.cancel-link {
-      background-color: #3498db; /* 저장/등록 버튼 파란색 계열 */
-      color: white;
-      border: none;
-      padding: 12px 22px; /* 버튼 패딩 */
-      font-size: 1rem;
-      font-weight: 500;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-left: 10px; /* 버튼 사이 간격 */
-      text-decoration: none;
-      display: inline-block;
-      transition: background-color 0.2s, transform 0.1s;
-    }
-    .form-actions button:hover,
-    .form-actions a.cancel-link:hover {
-      background-color: #2980b9;
-      transform: translateY(-1px);
-    }
-    .form-actions a.cancel-link {
-      background-color: #95a5a6; /* 취소 버튼 회색 계열 */
-    }
-    .form-actions a.cancel-link:hover {
-      background-color: #7f8c8d;
-    }
-
-    .current-attachments-label {
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: #4A5568;
-      margin-top: 25px;
-      margin-bottom: 10px;
-    }
-    .attachments-gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px; /* 이미지 간 간격 */
-      margin-bottom: 20px;
-      padding: 10px;
-      background-color: #fdfdff; /* 갤러리 배경 약간 다르게 */
-      border: 1px dashed #d0d7e0; /* 점선 테두리 */
-      border-radius: 6px;
-    }
-    .attachment-item {
-      position: relative;
-      width: 90px; /* 썸네일 아이템 너비 */
-      text-align: center;
-    }
-    .attachment-item img {
-      width: 90px;  /* 이미지 너비 */
-      height: 90px; /* 이미지 높이 */
-      object-fit: cover;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px; /* 이미지 모서리 더 둥글게 */
-      display: block;
-      margin-bottom: 6px; /* 이미지와 버튼 사이 간격 */
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .attachment-item button.delete-btn { /* JavaScript 호출 버튼 스타일 */
-      background-color: #e74c3c; /* 삭제 버튼 빨간색 계열 */
-      font-size: 0.75rem; /* 글꼴 약간 작게 */
-      padding: 4px 8px; /* 패딩 조정 */
-      width: auto; /* 내용에 맞게 자동 너비 */
-      min-width: 60px; /* 최소 너비 */
-      border-radius: 4px;
-      cursor: pointer;
-      color: white;
-      border: none;
-      display: inline-block;
-      transition: background-color 0.2s;
-    }
-    .attachment-item button.delete-btn:hover {
-      background-color: #c0392b;
-    }
+    .btn-primary { background-color: dodgerblue; color: white; }
+    .btn-primary:hover { background-color: royalblue; }
+    .btn-secondary { background-color: #e2e8f0; color: #2d3748; border: 1px solid #cbd5e1; }
+    .btn-secondary:hover { background-color: #cbd5e1; color: #1a202c; }
   </style>
-
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800">
 
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
-<h1 th:text="${review.arNo != null} ? '입양 후기 수정' : '입양 후기 작성'">입양 후기 작성</h1>
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24"> <h1 class="text-2xl font-bold text-gray-900 mb-6"
+                                                                             th:text="${review != null && review.arNo != null ? '입양 후기 수정' : '입양 후기 작성'}">입양 후기 작성</h1>
 
-<form th:if="${review.arNo != null}"
-      th:action="@{'/reviews/' + ${review.arNo} + '/edit'}"
-      th:object="${review}"
-      method="post"
-      enctype="multipart/form-data">
+  <form th:if="${review != null && review.arNo != null}"
+        th:action="@{'/reviews/' + ${review.arNo} + '/edit'}"
+        th:object="${review}" method="post" enctype="multipart/form-data"
+        class="bg-white shadow-xl rounded-lg p-6 sm:p-8 space-y-6">
+    <input type="hidden" th:field="*{arNo}" />
 
-  <input type="hidden" th:field="*{arNo}" />
+    <div>
+      <label for="arTitle_edit" class="block text-sm font-medium text-gray-700 mb-1">제목:</label>
+      <input type="text" id="arTitle_edit" th:field="*{arTitle}" required
+             class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+    </div>
 
-  <div>
-    <label for="uNo_edit">작성자 번호 (uNo):</label>
-    <input type="number" id="uNo_edit" th:field="*{uNo}" readonly required />
-  </div>
+    <div>
+      <label for="reviewContent_edit" class="block text-sm font-medium text-gray-700 mb-1">내용:</label>
+      <textarea id="reviewContent_edit" th:field="*{reviewContent}" rows="10" required
+                class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-y min-h-[200px]"></textarea>
+    </div>
 
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">작성자:</label>
+      <input type="text" th:value="${review.authorName != null ? review.authorName : ''} + (${review.authorUid != null ? ' (' + review.authorUid + ')' : ''})"
+             readonly class="w-full p-3 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"/>
+    </div>
 
-  <div>
-    <label for="reviewContent_edit">리뷰 내용:</label>
-    <textarea id="reviewContent_edit" th:field="*{reviewContent}" rows="8" required></textarea>
-  </div>
+    <div>
+      <label for="files_edit1" class="block text-sm font-medium text-gray-700 mb-1">첨부파일1 (새로 추가)</label>
+      <input type="file" id="files_edit1" name="files" multiple
+             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+             onchange="previewImages(event, 'edit')" />
+    </div>
+    <div>
+      <label for="files_edit2" class="block text-sm font-medium text-gray-700 mb-1">첨부파일2 (새로 추가)</label>
+      <input type="file" id="files_edit2" name="files" multiple
+             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+             onchange="previewImages(event, 'edit')" />
+    </div>
+    <div id="previewContainer_edit" class="flex flex-wrap gap-4 mt-2"></div>
 
-  <div>
-    <label for="files_edit">새 첨부파일 (기존 파일에 추가됩니다):</label>
-    <input type="file" id="files_edit" name="files" multiple />
-  </div>
-
-  <div th:if="*{attachments != null && !#lists.isEmpty(attachments)}">
-    <label class="current-attachments-label">현재 첨부된 파일:</label>
-    <div class="attachments-gallery">
-      <div th:each="att : *{attachments}" class="attachment-item">
-        <img th:src="@{'/uploads/' + ${att.filePath}}" th:alt="${att.fileName}" />
-        <button type="button" class="delete-btn"
-                th:onclick="'deleteAttachmentFile(' + ${att.id} + ', ' + *{arNo} + ');'">
-          삭제
-        </button>
+    <div th:if="${review.attachments != null and not #lists.isEmpty(review.attachments)}">
+      <label class="block text-sm font-medium text-gray-700 mb-2">현재 첨부된 사진들</label>
+      <div class="flex flex-wrap gap-4">
+        <div th:each="att : ${review.attachments}" class="relative w-[150px] h-[150px]">
+          <img th:src="@{'/uploads/' + ${att.filePath}}" alt="첨부파일 이미지"
+               class="w-full h-full object-cover border border-gray-300 rounded-md" />
+          <button type="button"
+                  class="absolute top-1 right-1 text-xs bg-red-600 text-white px-2 py-1 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                  th:attr="data-id=${att.id}, data-review-id=${review.arNo}"
+                  onclick="deleteReviewAttachment(this)">삭제</button>
+        </div>
       </div>
     </div>
-  </div>
+    <div th:if="${review.attachments == null or #lists.isEmpty(review.attachments)}" class="text-sm text-gray-500 mt-2">
+      첨부된 사진이 없습니다.
+    </div>
 
-  <div class="form-actions">
-    <button type="submit" th:text="*{arNo != null} ? '수정 완료' : '등록'">저장</button>
-    <a th:href="@{/reviews}" class="cancel-link">취소</a>
-  </div>
-</form>
+    <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+      <a th:href="@{/reviews}" class="btn btn-secondary">취소</a>
+      <button type="submit" class="btn btn-primary">수정 저장</button>
+    </div>
+  </form>
 
-<form th:unless="${review.arNo != null}"
-      th:action="@{/reviews}"
-      th:object="${review}" method="post"
-      enctype="multipart/form-data">
+  <form th:unless="${review != null && review.arNo != null}"
+        th:action="@{/reviews}" th:object="${review}" method="post" enctype="multipart/form-data"
+        class="bg-white shadow-xl rounded-lg p-6 sm:p-8 space-y-6">
+    <div>
+      <label for="arTitle_new" class="block text-sm font-medium text-gray-700 mb-1">제목:</label>
+      <input type="text" id="arTitle_new" th:field="*{arTitle}" required
+             class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+    </div>
+    <div>
+      <label for="reviewContent_new" class="block text-sm font-medium text-gray-700 mb-1">내용:</label>
+      <textarea id="reviewContent_new" th:field="*{reviewContent}" rows="10" required
+                class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-y min-h-[200px]"></textarea>
+    </div>
+    <div>
+      <label for="files_new" class="block text-sm font-medium text-gray-700 mb-1">첨부파일</label>
+      <input type="file" id="files_new" name="files" multiple
+             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+             onchange="previewImages(event, 'new')" />
+    </div>
+    <div id="previewContainer_new" class="flex flex-wrap gap-4 mt-2"></div>
 
-  <div>
-    <label for="uNo_create">작성자 번호 (uNo):</label>
-    <input type="number" id="uNo_create" name="uNo"
-           th:value="${review.uNo != null ? review.uNo : ''}" required />
-  </div>
+    <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+      <a th:href="@{/reviews}" class="btn btn-secondary">취소</a>
+      <button type="submit" class="btn btn-primary">등록</button>
+    </div>
+  </form>
+</div>
 
-  <div>
-    <label for="reviewContent_create">리뷰 내용:</label>
-    <textarea id="reviewContent_create" th:field="*{reviewContent}" rows="8" required></textarea>
-  </div>
-
-  <div>
-    <label for="files_create">첨부파일:</label>
-    <input type="file" id="files_create" name="files" multiple />
-  </div>
-
-  <div class="form-actions">
-    <button type="submit">등록</button>
-    <a th:href="@{/reviews}" class="cancel-link">취소</a>
-  </div>
-</form>
-</body>
-</html>
 <script>
-  function deleteAttachmentFile(attachmentId, reviewArNo) {
-    console.log('[JAVASCRIPT] deleteAttachmentFile 함수 호출됨.');
-    console.log('[JAVASCRIPT] 전달된 attachmentId:', attachmentId);
-    console.log('[JAVASCRIPT] 전달된 reviewArNo:', reviewArNo);
+  function deleteReviewAttachment(btn) {
+    if (!confirm("이 파일을 삭제하시겠습니까?")) return;
+    const attachmentId = btn.getAttribute('data-id');
+    const reviewId = btn.getAttribute('data-review-id');
 
-    if (!attachmentId && attachmentId !== 0) { // ID가 0일 수도 있으므로 명시적 체크
-      alert('오류: 첨부파일 ID가 유효하지 않습니다. (JavaScript에서 확인)');
-      console.error('[JAVASCRIPT] attachmentId가 유효하지 않음:', attachmentId);
-      return;
-    }
-    if (!reviewArNo && reviewArNo !== 0) {
-      alert('오류: 후기 번호(arNo)가 유효하지 않습니다. (JavaScript에서 확인)');
-      console.error('[JAVASCRIPT] reviewArNo가 유효하지 않음:', reviewArNo);
-      return;
-    }
+    // 실제 첨부파일 삭제 API 경로로 수정해야 합니다.
+    // 예: /reviews/attachments/${attachmentId}/delete 또는 /api/review-attachments/${attachmentId}
+    // 여기서는 Controller에서 /attachments/{id}/delete 와 같은 경로를 사용한다고 가정.
+    fetch(`/attachments/${attachmentId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ reviewId: reviewId }) // 또는 arNo: reviewId
+    })
+            .then(response => {
+              if (response.ok) {
+                alert('첨부파일이 삭제되었습니다.');
+                window.location.reload();
+              } else {
+                response.json().then(err => alert(err.message || '삭제 실패')).catch(() => alert('삭제 실패'));
+              }
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              alert('삭제 요청 실패');
+            });
+  }
 
-    if (confirm('이 파일을 정말 삭제하시겠습니까?')) {
-      const basePath = /*[[@{/reviews/review-attachments/}]]*/ '/reviews/review-attachments/'; // Thymeleaf가 처리
-      const url = basePath + attachmentId + '/delete';
-      console.log('[JAVASCRIPT] 생성된 삭제 요청 URL:', url);
-
-      const formData = new FormData();
-      formData.append('arNo', reviewArNo);
-
-      fetch(url, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-          // CSRF 토큰이 필요하다면 여기에 추가
-          // const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-          // const csrfHeaderName = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-          // if(csrfToken && csrfHeaderName) { headers[csrfHeaderName] = csrfToken; }
-        }
-      })
-              .then(response => {
-                console.log('[JAVASCRIPT] Fetch 응답 상태:', response.status);
-                if (response.ok) {
-                  // 성공 시 서버에서 JSON 응답을 기대하지 않는다면, .text()도 필요 없음
-                  alert('파일이 삭제되었습니다.');
-                  window.location.reload(); // 페이지 새로고침하여 변경사항 확인
-                } else {
-                  // 서버에서 오류 메시지를 텍스트로 보낼 경우
-                  response.text().then(text => {
-                    console.error('[JAVASCRIPT] 파일 삭제 실패 응답:', text);
-                    alert('파일 삭제에 실패했습니다: ' + (text || '서버 오류'));
-                  }).catch(err => { // text() 파싱 실패 또는 기타 오류
-                    console.error('[JAVASCRIPT] 파일 삭제 실패 응답 처리 중 오류:', err);
-                    alert('파일 삭제에 실패했습니다: 상태 코드 ' + response.status);
-                  });
-                }
-              })
-              .catch(error => {
-                console.error('[JAVASCRIPT] Fetch 중 네트워크 또는 JavaScript 오류:', error);
-                alert('파일 삭제 요청 중 오류가 발생했습니다. (네트워크 확인)');
-              });
-    } else {
-      console.log('[JAVASCRIPT] 사용자가 파일 삭제를 취소했습니다.');
-    }
+  function previewImages(event, mode) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById(`previewContainer_${mode}`);
+    previewContainer.innerHTML = '';
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = "w-[150px] h-[150px] object-cover border border-gray-300 rounded-md";
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
   }
 </script>
+
+</body>
+</html>

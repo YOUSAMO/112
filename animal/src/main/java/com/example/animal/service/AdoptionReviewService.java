@@ -1,169 +1,84 @@
-package com.example.animal.service;
+package com.example.animal.service; // 예시 패키지
 
 import com.example.animal.entity.AdoptionReview;
-import com.example.animal.entity.AttachmentFile;
-import com.example.animal.repository.AttachmentFileRepository;
 import com.example.animal.repository.AdoptionReviewRepository;
-import org.springframework.beans.factory.annotation.Value;
+// import com.example.animal.repository.UserRepository; // 필요시 사용자 정보 추가 조회
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+// import org.springframework.security.access.AccessDeniedException; // 또는 일반 RuntimeException
+import java.util.List;
 
 @Service
+@Transactional
 public class AdoptionReviewService {
 
-    private final AdoptionReviewRepository reviewRepository;
-    private final AttachmentFileRepository attachmentFileRepository;
+    private final AdoptionReviewRepository adoptionReviewRepository;
+    // private final UserRepository userRepository; // 필요시 주입
 
-    @Value("${file.upload.dir}")
-    private String baseUploadDir;
-
-    private final String ATTACHMENT_TYPE_REVIEW = "adoption_review";
-    private final String UPLOAD_SUB_PATH_REVIEW = "adoption_review_files";
-
-    public AdoptionReviewService(AdoptionReviewRepository reviewRepository,
-                                 AttachmentFileRepository attachmentFileRepository) {
-        this.reviewRepository = reviewRepository;
-        this.attachmentFileRepository = attachmentFileRepository;
+    public AdoptionReviewService(AdoptionReviewRepository adoptionReviewRepository) {
+        this.adoptionReviewRepository = adoptionReviewRepository;
     }
 
-    // 입양 후기 작성
-    @Transactional
-    public void createReview(AdoptionReview review, List<MultipartFile> files) throws IOException {
-        reviewRepository.insert(review);
-        Long arNo = review.getArNo();
-        if (arNo == null) {
-            throw new IllegalStateException("입양 후기 저장 후 ID(arNo)를 가져올 수 없습니다.");
+    public void createReview(AdoptionReview review, String loggedInUserUid) {
+        if (loggedInUserUid == null || loggedInUserUid.trim().isEmpty()) {
+            throw new IllegalArgumentException("리뷰 작성은 로그인이 필요합니다.");
         }
-        saveAttachments(arNo, files);
+        review.setAuthorUid(loggedInUserUid);
+        // review.setAuthorName(...); // authorName은 DB 저장 시 불필요, 조회 시 JOIN으로 가져옴
+        adoptionReviewRepository.insertReview(review);
+        // 첨부파일 로직이 있다면 여기서 처리
     }
 
-    public AdoptionReview getReviewById(Long arNo) {
-        AdoptionReview review = reviewRepository.selectById(arNo);
-        if (review != null) {
-            List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, arNo);
-            review.setAttachments(attachments != null ? attachments : Collections.emptyList());
-        }
-        return review;
-    }
-
-    @Transactional
-    public void updateReview(AdoptionReview review, List<MultipartFile> newFiles) throws IOException {
-        int updatedRows = reviewRepository.update(review);
-        if (updatedRows == 0) {
-            throw new RuntimeException("ID가 " + review.getArNo() + "인 입양 후기를 찾을 수 없거나 업데이트에 실패했습니다.");
-        }
-        saveAttachments(review.getArNo(), newFiles);
-    }
-
-    @Transactional
-    public void deleteReview(Long arNo) throws IOException {
-        List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, arNo);
-        if (attachments != null) {
-            for (AttachmentFile att : attachments) {
-                deletePhysicalFile(att.getFilePath());
-            }
-        }
-        attachmentFileRepository.deleteByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, arNo);
-        reviewRepository.delete(arNo);
-    }
-
-    @Transactional
-    public void deleteAdoptionReviewAttachment(Long attachmentId) throws IOException {
-        AttachmentFile attachment = attachmentFileRepository.findById(attachmentId);
-        if (attachment == null) {
-            throw new RuntimeException("ID가 " + attachmentId + "인 첨부파일을 찾을 수 없습니다.");
-        }
-        if (!ATTACHMENT_TYPE_REVIEW.equals(attachment.getBoardType())) {
-            throw new SecurityException("잘못된 타입의 첨부파일 삭제 시도입니다.");
-        }
-        deletePhysicalFile(attachment.getFilePath());
-        int deletedDbRows = attachmentFileRepository.deleteById(attachmentId);
-        if (deletedDbRows == 0) {
-            throw new RuntimeException("데이터베이스에서 첨부파일 레코드 삭제에 실패했습니다: attachmentId=" + attachmentId);
-        }
-    }
-
-    private void deletePhysicalFile(String filePath) throws IOException {
-        if (filePath != null && !filePath.isEmpty()) {
-            File fileToDelete = new File(baseUploadDir, filePath);
-            if (fileToDelete.exists() && !fileToDelete.delete()) {
-                throw new IOException("파일 삭제에 실패했습니다: " + fileToDelete.getAbsolutePath());
-            }
-        }
-    }
-
-    private void saveAttachments(Long arNo, List<MultipartFile> files) throws IOException {
-        if (files != null && !files.isEmpty()) {
-            String reviewSpecificFolder = UPLOAD_SUB_PATH_REVIEW + File.separator + "arNo_" + arNo;
-            File uploadPathDir = new File(baseUploadDir, reviewSpecificFolder);
-
-            if (!uploadPathDir.exists()) {
-                boolean made = uploadPathDir.mkdirs();
-                if (!made) {
-                    throw new IOException("첨부파일 폴더 생성에 실패했습니다: " + uploadPathDir.getAbsolutePath());
-                }
-            }
-
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    String originalFilename = file.getOriginalFilename();
-                    String saveName = UUID.randomUUID().toString() + "_" + originalFilename;
-                    File dest = new File(uploadPathDir, saveName);
-                    file.transferTo(dest);
-
-                    AttachmentFile att = new AttachmentFile();
-                    att.setBoardType(ATTACHMENT_TYPE_REVIEW);
-                    att.setBoardId(arNo);
-                    att.setFileName(originalFilename);
-                    att.setFilePath(reviewSpecificFolder + File.separator + saveName);
-                    att.setFileType(file.getContentType());
-
-                    attachmentFileRepository.insertAttachment(att);
-                }
-            }
-        }
-    }
-
-    public List<AdoptionReview> getReviewsWithSearch(String keyword, String species, int limit, int offset) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("keyword", keyword);
-        params.put("species", species);
-        params.put("limit", limit);
-        params.put("offset", offset);
-
-        List<AdoptionReview> reviews = reviewRepository.selectReviewsWithSearch(params);
-        if (reviews != null && !reviews.isEmpty()) {
-            for (AdoptionReview review : reviews) {
-                List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, review.getArNo());
-                if (attachments != null && !attachments.isEmpty()) {
-                    review.setAttachments(List.of(attachments.get(0))); // 목록에서 첫 번째 썸네일만 설정
-                } else {
-                    review.setAttachments(Collections.emptyList());
-                }
-            }
-        }
+    @Transactional(readOnly = true)
+    public List<AdoptionReview> getReviewsByPage(int page, int size) {
+        int offset = (page - 1) * size;
+        // MyBatis 매퍼가 JOIN을 통해 authorName을 채워줌
+        List<AdoptionReview> reviews = adoptionReviewRepository.findReviewsByPage(size, offset);
+        // 첨부파일 로드 로직이 있다면 여기서 추가
         return reviews;
     }
 
-    public int getTotalCountWithSearch(String keyword, String species) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("keyword", keyword);
-        params.put("species", species);
-        return reviewRepository.selectTotalCountWithSearch(params);
+    @Transactional(readOnly = true)
+    public int getTotalReviewCount() {
+        return adoptionReviewRepository.countReviews();
     }
 
-    @Transactional
-    public void incrementViewCount(Long arNo) {
-        reviewRepository.incrementViewCount(arNo);
+    @Transactional(readOnly = true)
+    public AdoptionReview getReviewById(Long arNo) {
+        // MyBatis 매퍼가 JOIN을 통해 authorName을 채워줌
+        AdoptionReview review = adoptionReviewRepository.findReviewById(arNo);
+        // 첨부파일 로드 로직이 있다면 여기서 추가
+        return review;
     }
 
-    @Transactional
-    public void incrementLikeCount(Long arNo) {
-        reviewRepository.incrementLikeCount(arNo);
+    public void updateReview(Long arNo, AdoptionReview reviewDetails, String loggedInUserUid) {
+        AdoptionReview existingReview = adoptionReviewRepository.findReviewById(arNo);
+        if (existingReview == null) {
+            throw new RuntimeException("수정할 리뷰를 찾을 수 없습니다: " + arNo);
+        }
+        if (loggedInUserUid == null || !loggedInUserUid.equals(existingReview.getAuthorUid())) {
+            throw new RuntimeException("이 리뷰를 수정할 권한이 없습니다."); // AccessDeniedException 대신
+        }
+        existingReview.setReviewContent(reviewDetails.getReviewContent());
+        // 필요한 다른 필드 업데이트
+        adoptionReviewRepository.updateReview(existingReview);
+        // 첨부파일 업데이트 로직이 있다면 여기서 처리
+    }
+
+    public void deleteReview(Long arNo, String loggedInUserUid) {
+        AdoptionReview reviewToDelete = adoptionReviewRepository.findReviewById(arNo);
+        if (reviewToDelete == null) {
+            // 이미 삭제되었거나 없는 리뷰
+            return;
+        }
+        if (loggedInUserUid == null || !loggedInUserUid.equals(reviewToDelete.getAuthorUid())) {
+            throw new RuntimeException("이 리뷰를 삭제할 권한이 없습니다."); // AccessDeniedException 대신
+        }
+        // 첨부파일 삭제 로직이 있다면 먼저 처리
+        adoptionReviewRepository.deleteReview(arNo);
+    }
+
+    public void increaseViewCount(Long arNo) {
+        adoptionReviewRepository.incrementReviewViewCount(arNo);
     }
 }

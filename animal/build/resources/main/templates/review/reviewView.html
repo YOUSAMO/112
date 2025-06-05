@@ -1,255 +1,199 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
-  <title>입양 후기 상세</title>
+  <title th:text="${review != null ? ((review.arTitle != null ? review.arTitle : '제목 없음') + ' - 입양 후기') : '입양 후기 상세보기'}">입양 후기 상세보기</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f3f4f6;
-      color: #374151;
-      margin: 0;
-      padding: 0;
+    .action-links a, .action-links button {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.9rem; font-weight: 500; padding: 0.625rem 1.25rem;
+      border-radius: 0.375rem; border: none; cursor: pointer;
+      text-decoration: none; text-align: center;
+      transition: background-color 0.2s, transform 0.1s;
+      color: white;
     }
+    .action-links a.edit-action { background-color: #0ea5e9; }
+    .action-links button.delete-action { background-color: #ef4444; }
+    .action-links button#like-button { background-color: #3b82f6; }
+    .action-links button#like-button.liked { background-color: #ec4899; }
+    .action-links a.list-action { background-color: #64748b; }
 
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      background-color: #ffffff;
-      padding: 24px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    .action-links a.edit-action:hover { background-color: #0284c7; transform: translateY(-1px); }
+    .action-links button.delete-action:hover { background-color: #dc2626; transform: translateY(-1px); }
+    .action-links button#like-button:hover { opacity: 0.8;  transform: translateY(-1px);}
+    .action-links a.list-action:hover { background-color: #475569; transform: translateY(-1px); }
+
+    .attachment-image {
+      width: 180px; height: 135px; object-fit: cover;
+      border: 1px solid #e5e7eb; border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     }
-
-    h1 {
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 24px;
-      border-bottom: 1px solid #e5e7eb;
-      padding-bottom: 12px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 24px;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 12px 8px;
-      vertical-align: top;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    th {
-      width: 25%;
-      color: #6b7280;
-      font-weight: 600;
-    }
-
-    .like-section {
-      display: flex;
-      align-items: center;
-    }
-
-    .like-btn {
-      margin-left: 12px;
-      padding: 6px 12px;
-      background-color: #ec4899;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .like-btn:hover {
-      background-color: #db2777;
-    }
-
-    .custom-attachments-section {
-      margin-top: 24px;
-      padding-top: 24px;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .custom-attachments-section h3 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #374151;
-    }
-
-    .custom-attachments-gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .custom-attachment-item {
-      width: 120px;
-    }
-
-    .custom-attachment-image {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease-out;
-    }
-
-    .custom-attachment-image:hover {
+    .attachment-image:hover {
       transform: scale(1.05);
-    }
-
-    .button-group {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid #e5e7eb;
-      padding-top: 24px;
-      margin-top: 32px;
-    }
-
-    .btn {
-      padding: 8px 16px;
-      font-size: 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .btn-list {
-      background-color: #e5e7eb;
-      color: #374151;
-    }
-
-    .btn-list:hover {
-      background-color: #d1d5db;
-    }
-
-    .btn-edit {
-      background-color: #f59e0b;
-      color: white;
-    }
-
-    .btn-edit:hover {
-      background-color: #d97706;
-    }
-
-    .btn-delete {
-      background-color: #ef4444;
-      color: white;
-    }
-
-    .btn-delete:hover {
-      background-color: #dc2626;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     }
   </style>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800">
 
-<div class="container">
-  <h1>입양 후기 상세</h1>
-  <table>
-    <tbody>
-    <tr>
-      <th>번호</th>
-      <td th:text="${review.arNo}"></td>
-    </tr>
-    <tr>
-      <th>작성자 번호</th>
-      <td th:text="${review.uNo}"></td>
-    </tr>
-    <tr>
-      <th>리뷰 내용</th>
-      <td style="white-space: pre-wrap;" th:text="${review.reviewContent}"></td>
-    </tr>
-    <tr>
-      <th>작성일</th>
-      <td th:text="${review.createdAt != null ? #temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm') : ''}"></td>
-    </tr>
-    <tr>
-      <th>조회수</th>
-      <td th:text="${review.viewCount}"></td>
-    </tr>
-    <tr>
-      <th>좋아요</th>
-      <td class="like-section">
-        <span id="likeCount" th:text="${review.likeCount}" class="font-semibold"></span>
-        <button id="likeBtn"
-                th:attr="data-ar-no=${review.arNo}"
-                class="like-button"> ❤️
-        </button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
 
-  <div th:if="${review.attachments != null and !#lists.isEmpty(review.attachments)}" class="custom-attachments-section">
-    <h3>첨부된 파일</h3>
-    <div class="custom-attachments-gallery">
-      <div th:each="file : ${review.attachments}" class="custom-attachment-item">
-        <a th:href="@{'/uploads/' + ${file.filePath}}" target="_blank" th:title="${file.fileName}">
-          <img th:src="@{'/uploads/' + ${file.filePath}}" th:alt="${file.fileName}" class="custom-attachment-image"/>
-        </a>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
+
+  <div th:if="${review != null}" class="bg-white shadow-xl rounded-xl p-6 md:p-10 mb-8">
+    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 break-words"
+        th:text="${review.arTitle != null ? review.arTitle : '제목 없음'}">입양 후기 제목</h1>
+
+    <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-6 p-4 bg-gray-50 rounded-md border border-gray-200">
+      <p class="flex items-center"><i class="fas fa-user mr-2 text-indigo-500"></i> 작성자:
+        <span class="font-semibold text-gray-800 ml-1" th:text="${review.authorName}">작성자명</span>
+        <span class="text-gray-500 ml-1" th:text="'(' + ${review.authorUid} + ')'"></span>
+      </p>
+      <p class="flex items-center"><i class="fas fa-clock mr-2 text-indigo-500"></i> 작성일:
+        <span class="font-semibold text-gray-800 ml-1" th:text="${review.createdAt != null ? #temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm') : ''}"></span>
+      </p>
+      <p class="flex items-center"><i class="fas fa-eye mr-2 text-indigo-500"></i> 조회수:
+        <span class="font-semibold text-gray-800 ml-1" th:text="${review.viewCount != null ? review.viewCount : 0}">0</span>
+      </p>
+    </div>
+
+    <hr class="my-8 border-gray-200" />
+
+    <div class="prose prose-lg max-w-none text-gray-700 mb-8 whitespace-pre-wrap break-words" th:text="${review.reviewContent}">리뷰 내용</div>
+
+    <div th:if="${review.attachments != null and not #lists.isEmpty(review.attachments)}">
+      <hr class="my-8 border-gray-200" />
+      <div class="attachments-section mt-8 mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center"><i class="fas fa-paperclip mr-2 text-indigo-500"></i> 첨부된 파일</h3>
+        <div class="flex flex-wrap gap-4">
+          <div th:each="att : ${review.attachments}" class="attachment-item">
+            <a th:href="@{'/uploads/' + ${att.filePath}}" target="_blank" th:title="${att.fileName}">
+              <img th:src="@{'/uploads/' + ${att.filePath}}" th:alt="${att.fileName}" class="attachment-image" />
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  <div th:if="${review.attachments == null or #lists.isEmpty(review.attachments)}" class="custom-attachments-section">
-    <p style="color: #6b7280;">첨부파일이 없습니다.</p>
+
+    <hr class="my-8 border-gray-200" />
+
+    <div class="action-links mt-8">
+      <th:block th:if="${currentUserId != null and review.authorUid == currentUserId}">
+        <a class="edit-action" th:href="@{'/reviews/' + ${review.arNo} + '/edit'}"><i class="fas fa-edit"></i> 수정</a>
+        <form th:action="@{'/reviews/' + ${review.arNo} + '/delete'}" method="post" class="inline" onsubmit="return confirm('정말로 이 후기를 삭제하시겠습니까?');">
+          <button type="submit" class="delete-action">
+            <i class="fas fa-trash"></i> 삭제
+          </button>
+        </form>
+      </th:block>
+
+      <button type="button" id="like-button"
+              th:classappend="${likeStatus != null && likeStatus.currentUserLiked == true} ? 'liked'"
+              th:attr="data-ar-no=${review.arNo}, data-board-type=${defaultBoardType != null ? defaultBoardType : 'adoptionReview'}">
+        <i class="fas fa-heart mr-1"></i>
+        <span class="like-button-text" th:text="${likeStatus != null && likeStatus.currentUserLiked == true ? '좋아요 취소' : '좋아요'}">좋아요</span>
+        (<span id="like-count" th:text="${likeStatus != null && likeStatus.totalLikeCount != null ? likeStatus.totalLikeCount : (review.likeCount != null ? review.likeCount : 0)}">0</span>)
+      </button>
+
+      <a class="list-action" th:href="@{/reviews}"><i class="fas fa-list"></i> 목록으로</a>
+    </div>
   </div>
 
-  <div class="button-group">
-    <a th:href="@{/reviews}" class="btn btn-list">목록으로</a>
-    <div>
-      <a th:href="@{/reviews/{arNo}/edit(arNo=${review.arNo})}" class="btn btn-edit">수정</a>
-      <form th:action="@{/reviews/{arNo}/delete(arNo=${review.arNo})}" method="post" style="display: inline;">
-        <button type="submit" class="btn btn-delete" onclick="return confirm('이 후기를 삭제하시겠습니까?');">삭제</button>
-      </form>
-    </div>
+  <div th:unless="${review != null}" class="bg-white shadow-xl rounded-xl p-10 mb-8 text-center">
+    <p class="text-xl text-gray-600">해당 입양 후기를 찾을 수 없습니다.</p>
+    <a th:href="@{/reviews}" class="mt-4 inline-block px-6 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600">목록으로 돌아가기</a>
   </div>
 </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const likeBtn = document.getElementById('likeBtn');
-    const likeCountSpan = document.getElementById('likeCount');
-    const arNo = likeBtn ? likeBtn.getAttribute('data-ar-no') : null;
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  const defaultBoardTypeForReviewView = /*[[${defaultBoardType}]]*/ null;
+  const boardTypeToUseForReview = defaultBoardTypeForReviewView || 'adoptionReview';
 
-    if (likeBtn && arNo) {
-      likeBtn.addEventListener('click', function () {
-        fetch(`/reviews/${arNo}/like`, {
-          method: 'POST',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
+  const initialReviewLikeStatusForView = /*[[${likeStatus}]]*/ null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const likeButton = document.getElementById("like-button");
+    const likeButtonTextSpan = likeButton ? likeButton.querySelector('.like-button-text') : null;
+    const likeCountElement = document.getElementById("like-count");
+
+    if (likeButton && likeButtonTextSpan && likeCountElement) {
+      if (initialReviewLikeStatusForView && initialReviewLikeStatusForView.currentUserLiked != null) {
+        if (initialReviewLikeStatusForView.currentUserLiked) {
+          likeButtonTextSpan.textContent = '좋아요 취소';
+          likeButton.classList.add('liked');
+        } else {
+          likeButtonTextSpan.textContent = '좋아요';
+          likeButton.classList.remove('liked');
+        }
+      } else {
+        likeButtonTextSpan.textContent = '좋아요';
+        likeButton.classList.remove('liked');
+      }
+
+      if (initialReviewLikeStatusForView && initialReviewLikeStatusForView.totalLikeCount !== undefined) {
+        likeCountElement.textContent = initialReviewLikeStatusForView.totalLikeCount;
+      } else if (/*[[${review}]]*/ null != null && /*[[${review.likeCount}]]*/ null != null) {
+        likeCountElement.textContent = /*[[${review.likeCount}]]*/ '0';
+      } else {
+        likeCountElement.textContent = '0';
+      }
+    }
+
+    if (likeButton) {
+      likeButton.addEventListener("click", () => {
+        const reviewId = likeButton.dataset.arNo;
+        const boardTypeFromButton = likeButton.dataset.boardType;
+        const finalBoardType = boardTypeFromButton && boardTypeFromButton.trim() !== '' ? boardTypeFromButton : boardTypeToUseForReview;
+
+        fetch(`/api/likes/${finalBoardType}/${reviewId}`, {
+          method: "POST",
+          headers: { "X-Requested-With": "XMLHttpRequest" }
         })
-                .then(response => {
-                  if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text || '네트워크 응답 오류'); });
+                .then(res => {
+                  if (res.status === 401) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = /*[[@{/login}]]*/ '/login';
+                    throw new Error('로그인 필요');
                   }
-                  return response.json();
+                  if (!res.ok) {
+                    return res.json().then(errData => {
+                      throw new Error(errData.message || "좋아요 요청에 실패했습니다.");
+                    }).catch(() => {
+                      throw new Error(`좋아요 요청 실패 (상태 코드: ${res.status})`);
+                    });
+                  }
+                  return res.json();
                 })
                 .then(data => {
-                  if (data.newLikeCount !== undefined) {
-                    likeCountSpan.textContent = data.newLikeCount;
+                  if (data.success && data.likeCount !== undefined) {
+                    if (likeCountElement) likeCountElement.textContent = data.likeCount;
+                    if (likeButtonTextSpan) {
+                      if (data.liked) {
+                        likeButtonTextSpan.textContent = '좋아요 취소';
+                        likeButton.classList.add('liked');
+                      } else {
+                        likeButtonTextSpan.textContent = '좋아요';
+                        likeButton.classList.remove('liked');
+                      }
+                    }
                   } else if (data.message) {
                     alert(data.message);
                   }
                 })
-                .catch(error => {
-                  console.error('Error:', error);
-                  alert('좋아요 처리 중 오류가 발생했습니다: ' + error.message);
+                .catch(err => {
+                  if (err.message !== '로그인 필요') {
+                    console.error("좋아요 에러:", err);
+                    alert(err.message || '좋아요 처리 중 오류가 발생했습니다.');
+                  }
                 });
       });
     }
   });
+  /*]]>*/
 </script>
-
 </body>
 </html>

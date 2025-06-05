@@ -74,11 +74,11 @@
                     likeCountElem.textContent = parseInt(likeCountElem.textContent) + 1;
                   }
                 } else {
-                  console.warn('Like action did not return "success":', data);
+                  console.warn('성공:', data);
                 }
               })
               .catch(error => {
-                console.error('Like action failed:', error);
+                console.error('실패:', error);
               });
     });
   }

@@ -90,4 +90,7 @@
         DELETE FROM attachment_file
         WHERE id = #{attachmentId} </delete>
 
+
+
+
 </mapper>

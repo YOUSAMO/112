@@ -3,207 +3,167 @@
 <head>
     <meta charset="UTF-8" />
     <title>입양 후기 목록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <style>
-        body {
-            background-color: whitesmoke;
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif; /* 글꼴 일관성 */
+        .action-btn {
+            font-size: 0.8rem; padding: 0.2rem 0.4rem; margin: 0 0.1rem;
+            border-radius: 0.2rem; color: white; text-decoration: none;
+            border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;
         }
-        .container { /* 전체 컨텐츠를 감싸는 div 추가 (선택 사항) */
-            max-width: 1200px; /* 너비 조정 */
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .edit-btn { background-color: #06b6d4; } /* Tailwind: bg-cyan-500 */
+        .edit-btn:hover { background-color: #0891b2; }
+        .delete-btn { background-color: #ef4444; } /* Tailwind: bg-red-500 */
+        .delete-btn:hover { background-color: #dc2626; }
+        .like-btn {
+            background-color: #3b82f6; color: white; padding: 0.2rem 0.4rem; font-size: 0.8rem; border-radius: 0.2rem;
+            border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;
         }
-        h1 {
-            color: #343a40;
-            text-align: center; /* 제목 가운데 정렬 */
-            margin-bottom: 30px; /* 제목과 검색폼 간격 */
-        }
-        .search-form { /* 스타일 일관성 있게 수정 */
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f8f9fa; /* 배경색 약간 변경 */
-            border: 1px solid #e9ecef; /* 테두리 색상 변경 */
-            border-radius: 6px;
-            display: flex; /* Flexbox 사용 */
-            gap: 10px; /* 요소 간 간격 */
-            align-items: center; /* 세로 중앙 정렬 */
-        }
-        .search-form label {
-            margin-right: 5px;
-            font-weight: bold;
-        }
-        .search-form input[type="text"], .search-form select {
-            padding: 8px; /* 패딩 증가 */
-            border: 1px solid #ced4da; /* 테두리 색상 변경 */
-            border-radius: 4px;
-            flex-grow: 1; /* 입력 필드가 남은 공간 차지 */
-        }
-        .search-form select {
-            flex-grow: 0.5; /* 검색 기준 선택 필드는 조금 작게 */
-        }
-        .search-form button {
-            padding: 8px 15px; /* 패딩 조정 */
-            background-color: dodgerblue;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .search-form button:hover {
-            background-color: #0056b3;
-        }
-        .controls-bar { /* 새 글 작성 버튼과 검색폼을 같은 줄에 배치하기 위한 컨테이너 (선택) */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .write-button {
-            padding: 8px 15px; /* 패딩 조정 */
-            background-color: mediumseagreen;
-            color: white;
-            border-radius: 4px;
-            font-size: 0.9em; /* 글꼴 크기 조정 */
-            text-decoration: none;
-            transition: background-color 0.2s;
-        }
-        .write-button:hover {
-            background-color: seagreen;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.08); /* 그림자 약간 수정 */
-            border-radius: 6px; /* 테이블 모서리 둥글게 */
-            overflow: hidden; /* border-radius 적용 위해 */
-        }
-        th, td {
-            border: 1px solid #e0e0e0; /* 테두리 색상 약간 연하게 */
-            padding: 10px 12px; /* 패딩 조정 */
-            text-align: center; /* 기본 가운데 정렬 */
-            vertical-align: middle; /* 내용 세로 중앙 정렬 */
-        }
-        th.content-header, td.content-cell { /* 내용 미리보기는 왼쪽 정렬 */
-            text-align: left;
-        }
-        thead {
-            background-color: #f0f0f0; /* 헤더 배경색 변경 */
-        }
-        tbody tr:nth-child(odd) { /* 홀수 행 배경색 (선택적) */
-            background-color: #f9f9f9;
-        }
-        tbody tr:hover {
-            background-color: #eef8ff; /* 호버 색상 변경 */
-        }
-        .thumbnail-cell { /* 썸네일 열 너비 */
-            width: 80px;
-        }
-        .thumbnail-image { /* 썸네일 이미지 스타일 */
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-            border-radius: 4px; /* 썸네일 모서리 둥글게 */
-        }
-        .content-preview { /* 내용 미리보기 스타일 */
-            display: block; /* 링크처럼 보이도록 */
-            max-width: 250px; /* 최대 너비 설정 */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap; /* 한 줄로 표시 */
-            color: #337ab7; /* 링크 색상 */
-            text-decoration: none;
-        }
-        .content-preview:hover {
-            text-decoration: underline;
-        }
-        .pagination { /* 이전 스타일 유지 */
-            margin-top: 20px; text-align: center;
-        }
-        .pagination a { display: inline-block; margin: 0 4px; padding: 6px 10px; border: 1px solid silver; border-radius: 4px; background-color: white; color: dimgray; text-decoration: none; transition: background-color 0.2s ease; }
-        .pagination a:hover { background-color: lightgray; }
-        .pagination a.current { background-color: dodgerblue; color: white; font-weight: bold; }
-        .pagination a.disabled { pointer-events: none; color: gray; background-color: whitesmoke; }
-        .action-links { white-space: nowrap; } /* 기능 버튼들이 한 줄에 보이도록 */
-        .action-links a, .action-links form button { margin: 0 4px; font-size: 14px; }
-        .action-links form { display: inline; }
-        .action-links form button { background: none; border: none; color: crimson; cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }
-        .action-links form button:hover { color: darkred; }
+        .like-btn.liked { background-color: #ec4899; } /* Tailwind: bg-pink-500 */
+        .like-btn:hover { opacity: 0.8; }
+        .thumbnail-image { width: 48px; height: 48px; object-fit: cover; border-radius: 0.25rem; }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800">
+
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
-<div class="container"> <h1>입양 후기 목록</h1>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
 
-    <div class="controls-bar"> <form th:action="@{/reviews}" method="get" class="search-form" style="flex-grow: 1; margin-bottom: 0;">
-        <label for="keyword">검색어:</label>
-        <input type="text" id="keyword" name="keyword" th:value="${keyword}" placeholder="내용 검색" />
-
-        <label for="species">검색 기준:</label> <select id="species" name="species">
-        <option value="">전체</option>
-        <option value="content" th:selected="${species == 'content'}">내용</option>
-    </select>
-        <input type="hidden" name="size" th:value="${pageSize}" /> <button type="submit">검색</button>
-    </form>
-        <a th:href="@{/reviews/new}" class="write-button" style="margin-left: 10px;">새 후기 작성</a>
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">입양 후기 목록</h1>
+        <div class="action-button-container">
+            <a th:if="${currentUserId != null}" th:href="@{/reviews/new}"
+               class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 shadow-sm">
+                <i class="fas fa-pen mr-1"></i>새 후기 작성
+            </a>
+            <a th:unless="${currentUserId != null}" th:href="@{/login}"
+               class="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 shadow-sm">
+                <i class="fas fa-sign-in-alt mr-1"></i>로그인 후 작성
+            </a>
+        </div>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>번호</th>
-            <th class="thumbnail-cell">사진</th> <th>작성자 ID</th> <th class="content-header">내용 미리보기</th> <th>작성일</th>
-            <th>조회수</th>
-            <th>좋아요</th>
-            <th>기능</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:if="${#lists.isEmpty(reviews)}">
-            <td colspan="8" style="text-align: center;">등록된 후기가 없습니다.</td> </tr>
-        <tr th:each="reviewMap, stat : ${reviews}"> <td th:text="${totalCount - ((currentPage - 1) * pageSize + stat.index)}"></td>
-            <td class="thumbnail-cell">
-                <img th:if="${reviewMap.thumbnailPath != null}"
-                     th:src="@{'/uploads/' + ${reviewMap.thumbnailPath}}" alt="썸네일" class="thumbnail-image"/>
-                <span th:unless="${reviewMap.thumbnailPath != null}">-</span>
-            </td>
-            <td th:text="${reviewMap.uNo}"></td> <td class="content-cell"> <a th:href="@{/reviews/{arNo}(arNo=${reviewMap.arNo})}"
-                                                                              th:title="${reviewMap.reviewContent}"
-                                                                              class="content-preview"
-                                                                              th:text="${reviewMap.reviewContent}"></a>
-            </td>
-            <td th:text="${reviewMap.createdAtStr}"></td>
-            <td th:text="${reviewMap.viewCount}"></td>
-            <td th:text="${reviewMap.likeCount}"></td> <td class="action-links">
-                <a th:href="@{/reviews/{arNo}(arNo=${reviewMap.arNo})}">상세</a>
-                <a th:href="@{/reviews/{arNo}/edit(arNo=${reviewMap.arNo})}">수정</a>
-                <form th:action="@{/reviews/{arNo}/delete(arNo=${reviewMap.arNo})}" method="post">
-                    <button type="submit" onclick="return confirm('이 후기를 삭제하시겠습니까?');">삭제</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div class="pagination" th:if="${totalPages > 0}"> <a th:if="${currentPage > 1}" th:href="@{/reviews(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, species=${species})}" class="page-link">이전</a>
-        <a th:unless="${currentPage > 1}" class="disabled page-link">이전</a>
-
-        <span th:each="i : ${#numbers.sequence(1, totalPages)}">
-            <a th:href="@{/reviews(page=${i}, size=${pageSize}, keyword=${keyword}, species=${species})}"
-               th:text="${i}"
-               th:classappend="${i == currentPage} ? 'current' : ''" class="page-link"></a>
-        </span>
-
-        <a th:if="${currentPage < totalPages}" th:href="@{/reviews(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, species=${species})}" class="page-link">다음</a>
-        <a th:unless="${currentPage < totalPages}" class="disabled page-link">다음</a>
+    <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">번호</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-20">사진</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">제목</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">작성자</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">작성일</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">조회수</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">좋아요</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">기능</th>
+            </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+            <tr th:each="review, stat : ${reviews}" class="hover:bg-gray-50 transition-colors duration-150">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 text-center"
+                    th:text="${totalCount - ((pageInfo.currentPage - 1) * pageInfo.size) - stat.index}"></td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <div th:if="${review.attachments != null && !#lists.isEmpty(review.attachments)}" class="flex justify-center">
+                        <img th:src="@{'/uploads/' + ${review.attachments[0].filePath}}" alt="대표사진" class="thumbnail-image" />
+                    </div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-left">
+                    <a th:href="@{'/reviews/' + ${review.arNo}}"
+                       th:text="${review.arTitle != null ? review.arTitle : '제목 없음'}" class="text-indigo-600 hover:text-indigo-800 font-medium">후기 제목</a>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" th:text="${review.authorName}">작성자 이름</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500"
+                    th:text="${review.createdAt != null ? #temporals.format(review.createdAt, 'yyyy-MM-dd') : ''}">작성일</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" th:text="${review.viewCount ?: 0}">0</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                    <button type="button" class="like-button"
+                            th:classappend="${likeStatuses != null && likeStatuses[review.arNo]?.currentUserLiked == true} ? 'liked'"
+                            th:attr="data-ar-no=${review.arNo}, data-board-type=${defaultBoardType}">
+                        <i class="fas fa-heart mr-1"></i>
+                        <span th:text="${likeStatuses != null && likeStatuses[review.arNo]?.totalLikeCount != null ? likeStatuses[review.arNo].totalLikeCount : 0}">0</span>
+                    </button>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-center">
+                    <div th:if="${currentUserId != null and review.authorUid == currentUserId}" class="flex justify-center space-x-2">
+                        <a th:href="@{/reviews/{arNo}/edit(arNo=${review.arNo})}" class="action-btn edit-btn"><i class="fas fa-edit"></i> 수정</a>
+                        <form th:action="@{/reviews/{arNo}/delete(arNo=${review.arNo})}" method="post" class="inline" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                            <button type="submit" class="action-btn delete-btn"><i class="fas fa-trash"></i> 삭제</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${reviews == null or #lists.isEmpty(reviews)}">
+                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">등록된 후기가 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
-</div> </body>
+
+    <div class="mt-6 flex justify-center items-center space-x-1" th:if="${pageInfo != null && pageInfo.totalPages > 1}">
+        <a th:if="${pageInfo.currentPage > 1}" th:href="@{|/reviews?page=${pageInfo.currentPage - 1}&size=${pageInfo.size}|}"
+           class="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 rounded-md text-sm font-medium">이전</a>
+        <a th:unless="${pageInfo.currentPage > 1}"
+           class="px-4 py-2 border border-gray-300 bg-gray-50 text-gray-400 rounded-md cursor-not-allowed text-sm font-medium">이전</a>
+        <th:block th:each="i : ${#numbers.sequence(1, pageInfo.totalPages)}">
+            <a th:if="${i == pageInfo.currentPage}"
+               class="px-4 py-2 border border-blue-500 bg-blue-500 text-white rounded-md text-sm font-medium" th:text="${i}"></a>
+            <a th:if="${i != pageInfo.currentPage}" th:href="@{|/reviews?page=${i}&size=${pageInfo.size}|}"
+               class="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 rounded-md text-sm font-medium" th:text="${i}"></a>
+        </th:block>
+        <a th:if="${pageInfo.currentPage < pageInfo.totalPages}" th:href="@{|/reviews?page=${pageInfo.currentPage + 1}&size=${pageInfo.size}|}"
+           class="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 rounded-md text-sm font-medium">다음</a>
+        <a th:unless="${pageInfo.currentPage < pageInfo.totalPages}"
+           class="px-4 py-2 border border-gray-300 bg-gray-50 text-gray-400 rounded-md cursor-not-allowed text-sm font-medium">다음</a>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const defaultBoardTypeForReviewList = /*[[${defaultBoardType}]]*/ 'adoptionReview';
+
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const reviewId = this.dataset.arNo;
+            const boardType = this.dataset.boardType || defaultBoardTypeForReviewList;
+            const likeButton = this;
+            const likeCountSpan = this; // 버튼 전체를 가리키므로, 내부의 숫자만 있는 span을 찾아야 함. 여기서는 버튼 자체의 innerHTML을 변경.
+
+            fetch(`/api/likes/${boardType}/${reviewId}`, {
+                method: 'POST',
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        alert('로그인이 필요합니다.');
+                        window.location.href = /*[[@{/login}]]*/ '/login';
+                        throw new Error('로그인 필요');
+                    }
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || '좋아요 처리 실패'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        likeCountSpan.innerHTML = `<i class="fas fa-heart mr-1"></i> ${data.likeCount}`; // 아이콘과 숫자 함께 업데이트
+                        if (data.liked) {
+                            likeButton.classList.add('liked');
+                        } else {
+                            likeButton.classList.remove('liked');
+                        }
+                    } else {
+                        alert(data.message || '좋아요 처리에 실패했습니다.');
+                    }
+                })
+                .catch(error => {
+                    if (error.message !== '로그인 필요') {
+                        console.error('Like Error:', error);
+                        alert(error.message || '오류가 발생했습니다.');
+                    }
+                });
+        });
+    });
+    /*]]>*/
+</script>
+</body>
 </html>

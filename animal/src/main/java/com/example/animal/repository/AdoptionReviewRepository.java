@@ -2,22 +2,22 @@ package com.example.animal.repository;
 
 import com.example.animal.entity.AdoptionReview;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface AdoptionReviewRepository {
+    void insertReview(AdoptionReview review);
+    List<AdoptionReview> findAllReviews();
+    List<AdoptionReview> findReviewsByPage(@Param("limit") int limit, @Param("offset") int offset);
+    int countReviews();
+    AdoptionReview findReviewById(Long arNo);
+    int updateReview(AdoptionReview review);
+    void deleteReview(Long arNo);
+    void incrementReviewViewCount(Long arNo);
 
-    AdoptionReview selectById(Long arNo); // 서비스에서 getReviewById 호출 시 사용
-    int insert(AdoptionReview review);     // 서비스에서 createReview 호출 시 사용
-    int update(AdoptionReview review);     // 서비스에서 updateReview 호출 시 사용
-    int delete(Long arNo);             // 서비스에서 deleteReview 호출 시 사용
-
-    // 검색 및 페이징 (컨트롤러에서 Map으로 파라미터를 넘기는 방식과 일치)
-    List<AdoptionReview> selectReviewsWithSearch(Map<String, Object> params);
-    int selectTotalCountWithSearch(Map<String, Object> params);
-
-
-    void incrementViewCount(Long arNo);
-    void incrementLikeCount(Long arNo);
+    // === 👇 좋아요 관련 메소드 선언 추가/수정 ===
+    void incrementReviewLikeCount(Long arNo); // '좋아요' 수 1 증가
+    void decrementReviewLikeCount(Long arNo); // '좋아요' 수 1 감소 (0 미만 방지 로직은 XML에서)
+    Integer getReviewLikeCount(Long arNo);   // 현재 '좋아요' 수 조회 (반환 타입을 Integer로 하여 null 처리 가능하게)
 }
