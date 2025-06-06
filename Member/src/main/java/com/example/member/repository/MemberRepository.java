@@ -15,5 +15,12 @@ public interface MemberRepository {
     List<Member> findMemberByno(Integer u_no);
     Member findByLoginIdAndPass(@Param("u_id") String u_id, @Param("u_pass") String u_pass);
     boolean isDuplicateId(@Param("u_id") String u_id);
+    List<Member> findIdsByNameAndEmail(@Param("u_name") String u_name, @Param("u_email") String u_email);
+
+
+
+    List<Member> findPws(@Param("u_id") String u_id, @Param("u_name") String u_name,
+                         @Param("u_email") String u_email);
+
 
 }

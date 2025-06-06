@@ -9,6 +9,7 @@ import lombok.Setter;
 
 public class Member {
 
+
     private Integer u_no;
     private String u_id;
     private String u_pass;

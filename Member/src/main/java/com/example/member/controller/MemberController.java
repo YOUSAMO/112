@@ -32,45 +32,6 @@ public class MemberController {
 
 
 
-    /*
-    // 2) 아이디 찾기 처리
-    @PostMapping("/findId")
-    public String processFindId(@RequestParam String u_name, Model model) {
-        List<String> ids = memberService.findById(u_name);
-        if (ids.isEmpty()) {
-            model.addAttribute("error", "해당 이름으로 등록된 아이디가 없습니다.");
-        } else {
-            model.addAttribute("foundIds", ids);
-        }
-        return "findIdResult";  // templates/findIdResult.html
-    }
-    */
-
-
-
-
-
-    /*
-    // 4) 비밀번호 찾기 (임시 비밀번호 발급) 처리
-    @PostMapping("/findPw")
-    public String processFindPw(
-            @RequestParam String u_name,
-            @RequestParam String u_email,
-            Model model) {
-
-        boolean ok = memberService.issueTempPassword(u_name, u_email);
-        if (ok) {
-            model.addAttribute("message", "입력하신 이메일로 임시 비밀번호가 발송되었습니다.");
-        } else {
-            model.addAttribute("error", "이름 또는 이메일이 일치하지 않습니다.");
-        }
-        return "findPwResult";  // templates/findPwResult.html
-    }
-    */
-
-
-
-
     // 회원 가입 페이지 이동
     @GetMapping("/join")
     public String joinPage(Model model) {
@@ -95,7 +56,7 @@ public class MemberController {
             model.addAttribute("error", "회원 등록 실패");
             return "memberjoin";
         }
-        return "redirect:/member/login";
+        return "redirect:/login";
     }
 
 
@@ -146,6 +107,8 @@ public class MemberController {
         boolean exists = memberService.isDuplicateId(u_id);
         return exists ? "duplicated" : "available";
     }
+
+
 
 
 }

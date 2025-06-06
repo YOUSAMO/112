@@ -105,8 +105,8 @@
         <input type="text" id="a_name" name="a_name" th:field="*{a_name}" placeholder="이름" required />
         <span class="msg" id="nameError"></span>
 
-        <button type="submit" id="btnRegister" onclick="btn1()" >등록하기</button>
-        <button type="submit" id="btnRegister2" >조회하기</button>
+        <button type="submit" id="btnRegister">등록하기</button>
+        <button type="button" id="btnRegister2" onclick="location.href='/admin/list'">조회하기</button>
 
 
     </form>
@@ -122,26 +122,13 @@
 <script>
 
 
-    function btn1() {
-        let id = document.getElementById("a_id").value;
-        let name = document.getElementById("a_name").value;
-        let pass = document.getElementById("a_pass").value;
-
-        if(id === ""  || name === "" || pass === ""){
-            alert("다시 입력해주세요")
-        }
-
-    }
-
-
-
-    document.querySelector("form").addEventListener("submit", function(e){
-
+    document.getElementById("valid").addEventListener("submit", function(e){
         let isValid = true;
+
         // 1) 아이디 유효성 (5~15자 영문/숫자)
         const idInput  = document.getElementById('a_id');
         const idError  = document.getElementById('idError');
-        const idVal    = idInput.value;
+        const idVal    = idInput.value.trim();
         const idRegex  = /^[a-zA-Z0-9]{5,15}$/;
 
         if (!idRegex.test(idVal)) {
@@ -154,7 +141,7 @@
         // 2) 비밀번호 유효성 (8자 이상, 영문+숫자+특수문자)
         const passInput = document.getElementById('a_pass');
         const passError = document.getElementById('passError');
-        const passVal   = passInput.value;
+        const passVal   = passInput.value.trim();
         const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
 
         if (!passRegex.test(passVal)) {
@@ -164,9 +151,10 @@
             passError.textContent = "";
         }
 
+        // 3) 이름 유효성 (한글 2~10자)
         const nameInput = document.getElementById('a_name');
         const nameError = document.getElementById('nameError');
-        const nameVal = nameInput.value;
+        const nameVal = nameInput.value.trim();
         const nameRegex = /^[가-힣]{2,10}$/;
 
         if (!nameRegex.test(nameVal)) {
@@ -176,12 +164,10 @@
             nameError.textContent = "";
         }
 
-
         // 검증 실패 시 폼 제출 중단
         if (!isValid) {
             e.preventDefault();
         }
-
     });
 
 

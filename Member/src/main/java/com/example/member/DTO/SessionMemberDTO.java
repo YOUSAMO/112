@@ -1,11 +1,16 @@
 package com.example.member.DTO;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SessionMemberDTO {
 
     private String u_id;

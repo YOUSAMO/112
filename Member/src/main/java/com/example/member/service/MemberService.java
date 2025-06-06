@@ -112,4 +112,13 @@ public class MemberService {
 
     }
 
+
+    public List<Member> findIdsByNameAndEmail(String u_name, String u_email) {
+        return memberRepository.findIdsByNameAndEmail(u_name, u_email);
+    }
+
+    public List<Member> findPws(String u_id,String u_name,String u_email){
+        return memberRepository.findPws(u_id,u_name,u_email);
+    }
+
 }

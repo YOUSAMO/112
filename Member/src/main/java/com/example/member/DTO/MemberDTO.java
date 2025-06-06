@@ -26,6 +26,14 @@ public class MemberDTO {
     private String u_email_id;
     private String u_email_domain;
 
+    public void setU_email(String u_email) {
+        if (u_email != null) {
+            this.u_email = u_email.trim().replaceAll(",$", "");
+        } else {
+            this.u_email = null;
+        }
+    }
+
 
 
 
@@ -38,7 +46,8 @@ public class MemberDTO {
 
     public String getFullEmail() {
         if (u_email_id != null && u_email_domain != null) {
-            return u_email_id + "@" +u_email_domain;
+            String email = u_email_id + "@" + u_email_domain;
+            return email.trim().replaceAll(",$", "");
         }
         return null;
     }

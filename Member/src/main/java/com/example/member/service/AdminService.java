@@ -20,7 +20,7 @@ public class AdminService {
 
 
     private final AdminRepository adminRepository;
-    private final MemberRepository memberRepository;
+
 
      /*
     @Autowired

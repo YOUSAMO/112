@@ -13,6 +13,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            margin-top: 100px
         }
 
         .container {
@@ -73,35 +74,37 @@
 
 <div class="container">
     <h2>회원정보 수정</h2>
-    <form th:action="@{/member/update}" th:object="${member}" method="post">
+    <form th:action="@{/mupdate}" th:object="${member}" method="post">
         <label for="u_id">아이디</label>
-        <input type="text" id="u_id" th:field="*{u_id}">
-
-        <label for="u_pass">비밀번호</label>
-        <input type="password" id="u_pass" th:field="*{u_pass}" placeholder="8~20자, 영문+숫자 포함" required>
-
-        <label for="u_pass_check">비밀번호 확인</label>
-        <input type="password" id="u_pass_check" required>
+        <input type="text" id="u_id" th:field="*{u_id}" readonly>
 
         <label for="u_name">이름</label>
-        <input type="text" id="u_name" th:field="*{u_name}" required>
+        <input type="text" id="u_name" th:field="*{u_name}" readonly>
 
         <label for="u_pnumber">전화번호</label>
-        <input type="tel" id="u_pnumber" th:field="*{u_pnumber}" maxlength="13" placeholder="010-0000-0000" required>
+        <input type="tel" id="u_pnumber" th:field="*{u_pnumber}" readonly>
 
         <label for="u_email">이메일</label>
-        <input type="email" id="u_email" th:field="*{u_email}" required>
+        <input type="email" id="u_email" th:field="*{u_email}" readonly>
 
         <label for="u_gender">성별</label>
-        <select id="u_gender" th:field="*{u_gender}" required>
+        <select id="u_gender" th:field="*{u_gender}" disabled>
             <option value="">성별 선택</option>
             <option value="M">남</option>
             <option value="F">여</option>
         </select>
 
-        <button type="submit">수정</button>
+        <label for="u_pass">새 비밀번호</label>
+        <input type="password" id="u_pass" name="u_pass" placeholder="8~20자, 영문+숫자 포함" required>
+
+        <label for="u_pass_check">비밀번호 확인</label>
+        <input type="password" id="u_pass_check" name="u_pass_check" required>
+
+        <button type="submit">비밀번호 변경</button>
         <button type="reset">초기화</button>
+        <button type="reset">탈퇴</button>
     </form>
+
 </div>
 
 <script>

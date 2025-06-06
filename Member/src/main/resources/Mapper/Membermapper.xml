@@ -68,4 +68,14 @@
 
 
 
+        <select id="findIdsByNameAndEmail" resultType="string">
+            SELECT u_id
+            FROM users
+            WHERE u_name = #{u_name}
+              AND u_email = #{u_email}
+        </select>
+
+
+
+
 </mapper>

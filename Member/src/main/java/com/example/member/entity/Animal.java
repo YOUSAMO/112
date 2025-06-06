@@ -9,6 +9,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class Animal {
+
+
     private Long id;         // 고유 ID
     private String name;       // 이름
     private String species;    // 종류
@@ -20,4 +22,6 @@ public class Animal {
     private LocalDate arrivalDate; // 센터에 온 날짜
     private String likes; // 좋아하는거
     private String dislikes; // 싫어하는거
+
+
 }

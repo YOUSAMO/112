@@ -96,7 +96,7 @@
             <td th:text="${member.u_email}"></td>
             <td th:text="${member.u_gender}"></td>
             <td>
-                <button th:onclick="|location.href='/member/edit/' + [[${member.u_no}]]|">수정</button>
+                <button class="action-btn" th:onclick="|location.href='/member/edit/' + [[${member.u_no}]]|">수정</button>
 
                 <button class="action-btn"
                         th:onclick="'deleteMember(' + ${member.u_no} + ')'">

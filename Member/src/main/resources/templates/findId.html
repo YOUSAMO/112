@@ -1,95 +1,108 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
   <title>아이디 찾기</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* findIdForm.css */
     body {
-      background-color: #fffaf0; /* 아이보리색 배경 */
+      background-color: #fffaf0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
+      margin: 0;
       height: 100vh;
+      display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0;
     }
-
-    form {
-      background-color: #fff8e7; /* 연한 아이보리 배경 */
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 320px;
+    .form-container {
+      background: #fff8e7;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      padding: 40px 32px 32px 32px;
+      text-align: center;
+      width: 340px;
     }
-
+    .form-title {
+      font-size: 1.7rem;
+      color: #4EA685;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .input-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
     label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #7a6f54; /* 짙은 아이보리색 톤 */
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #388E6C;
     }
-
-    input[type="text"] {
+    input[type="text"], input[type="email"] {
       width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid #dcd2b7;
-      border-radius: 6px;
-      font-size: 16px;
-      color: #5a5338;
-      outline: none;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-    }
-
-    input[type="text"]:focus {
-      border-color: #b9b07a;
-      background-color: #fefbe9;
-    }
-
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 12px 0;
-      background-color: #b9b07a; /* 부드러운 아이보리색 계열 */
-      color: #fff;
-      font-weight: 700;
-      border: none;
+      padding: 10px;
+      border: 1px solid #b9b07a;
       border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      box-sizing: border-box;
     }
-
-    button:hover {
-      background-color: #9c945f;
+    .btn {
+      display: inline-block;
+      background: #b9b07a;
+      color: #fff;
+      border: none;
+      border-radius: 22px;
+      padding: 10px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0 7px;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: #9c945f;
+    }
+    @media (max-width: 480px) {
+      .form-container {
+        width: 95vw;
+        padding: 24px 8vw 18px 8vw;
+      }
+      .form-title {
+        font-size: 1.3rem;
+      }
+      .btn {
+        display: block;
+        margin: 7px 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
     }
   </style>
 </head>
 <body>
-<!-- Thymeleaf 템플릿: findIdForm.html -->
-<!--
-  컨트롤러에서 ModelAttribute로 넘겨준 Member 객체를 "member"라는 이름으로 바인딩한다고 가정합니다.
-  예: @GetMapping("/member/findId") public String showFindIdForm(Model model) { model.addAttribute("member", new Member()); return "findIdForm"; }
--->
 <div th:replace="~{fragments/header :: commonHeader}"></div>
-<form th:action="@{/member/findId}"
-      th:object="${member}"
-      method="post"
-      onsubmit="return btn()">
-  <label for="u_name">이름:</label>
-  <!-- th:field를 쓰면 자동으로 name="u_name" 속성을 매핑해 줍니다. -->
-  <input type="text"
-         th:field="*{u_name}"
-         id="u_name"
-         placeholder="이름을 입력하세요"
-         required />
-  <button type="submit">아이디 찾기</button>
-</form>
-
+<div class="form-container">
+  <div class="form-title">아이디 찾기</div>
+  <form th:action="@{/findId}" method="post" onsubmit="return btn()">
+    <div class="input-group">
+      <label for="name">이름</label>
+      <input type="text" id="name" name="u_name" required placeholder="이름을 입력하세요">
+    </div>
+    <div class="input-group">
+      <label for="email">이메일</label>
+      <input type="email" id="email" name="u_email" required placeholder="이메일을 입력하세요">
+    </div>
+    <button type="submit" class="btn">아이디 찾기</button>
+  </form>
+  <div style="margin-top:16px;">
+    <a th:href="@{/login}" class="btn">로그인</a>
+    <a th:href="@{/}" class="btn">홈으로</a>
+  </div>
+</div>
+</body>
+</html>
 <script>
   function btn() {
     let name = document.getElementById("u_name").value;
@@ -100,5 +113,4 @@
     return true;
   }
 </script>
-</body>
-</html>
+

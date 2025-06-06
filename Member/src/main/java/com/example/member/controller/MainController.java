@@ -11,94 +11,83 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class MainController {
 
     private final MemberService memberService;
+    private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
+    private static final String LOGIN_PAGE_URL = "/login"; // 실제 로그인 페이지 경로
+
 
 
     //메인 페이지로 넘어감
     @GetMapping("/")
     public String mainPage(HttpSession session, Model model) {
         System.out.println("메인 페이지 호출됨");
-        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember"); // DTO로 캐스팅
-        if (loginMember != null) {
-            model.addAttribute("loginMember", loginMember);
-            System.out.println("세션에 저장된 회원: " + loginMember);
-        }
-        return "main";
-
-    }
 
 
-
-    //아아디 찾기 페이지로 이동
-    @GetMapping("/findId") public String showFindIdForm(Model model) {
-        model.addAttribute("member", new Member());
-        return "findId"; }
-
-
-    //로그인 페이지로 넘어감
-    @GetMapping("/login")
-    public String loginPage() {
-
-        return "login"; // templates/login.html
-    }
-
-    @PostMapping("/login")
-    public String login(@RequestParam String u_id,
-                        @RequestParam String u_pass,
-                        HttpSession session,   // 여기!
-                        Model model) {
-        Member loginMember = memberService.findByLoginIdAndPass(u_id, u_pass);
-        System.out.println("loginMember = " + loginMember);
-
-        if (loginMember != null) {
-            // Entity → DTO로 변환
-            SessionMemberDTO sessionMember = new SessionMemberDTO();
-            sessionMember.setU_id(loginMember.getU_id());
-            sessionMember.setU_pass(loginMember.getU_pass());
-            sessionMember.setU_name(loginMember.getU_name());
-            sessionMember.setU_email(loginMember.getU_email());
-            sessionMember.setU_pnumber(loginMember.getU_pnumber());
-            sessionMember.setU_gender(loginMember.getU_gender());// 실제 서비스에서는 비밀번호 저장 X
-
-            session.setAttribute("loginMember", sessionMember);
-
-            System.out.println("로그인 성공: " + sessionMember.getU_id());
-            System.out.println("세션 ID: " + session.getId());
-
-            return "redirect:/";
+        // "loginMember" 키로 SessionMemberDTO 가져오기 (다른 부분에서 사용 중일 수 있으므로 유지)
+        SessionMemberDTO loginMemberFromSession = (SessionMemberDTO) session.getAttribute("loginMember");
+        if (loginMemberFromSession != null) {
+            model.addAttribute("loginMember", loginMemberFromSession);
+            System.out.println("세션에 저장된 회원 DTO: " + loginMemberFromSession);
         }
 
-        model.addAttribute("memberError", "아이디 또는 비밀번호가 틀렸습니다.");
-        return "login";
+        // "loggedInUserId" 키로 String u_id 가져오기 (BoardController 등과 호환 및 일관성)
+        String currentUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (currentUserId != null) {
+            model.addAttribute("currentUserId", currentUserId); // 뷰에서 현재 사용자 ID 활용 가능
+            System.out.println("세션에 저장된 currentUserId (메인 페이지): " + currentUserId);
+        }
+        return "main"; // templates/main.html
     }
 
 
-
-
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
-    }
-
-
-
-    // 3) 비밀번호 찾기 페이지로 이동
-    @GetMapping("/findPw")
-    public String showFindPwForm() {
-        return "findPassword";
-        // templates/findPwForm.html
-
-    }
 
     @GetMapping("/mypage")
-    public String showMyPage() {
+    public String showMyPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+
+        System.out.println("MainController의 /mypage 요청 받음");
+
+        String loggedInUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+
+        if (loggedInUserId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요한 서비스입니다.");
+            System.out.println("MyPage 접근 시도: 로그인되지 않음. 로그인 페이지로 리다이렉트.");
+            return "redirect:" + LOGIN_PAGE_URL; // 로그인 페이지로 리다이렉트
+        }
+
+        // (선택 사항) 로그인된 사용자의 상세 정보를 DB에서 가져와 모델에 추가
+        // Member memberInfo = memberService.getMemberByUId(loggedInUserId); // MemberService에 해당 u_id로 조회하는 메소드 필요
+        // if (memberInfo != null) {
+        //     model.addAttribute("member", memberInfo); // Member 객체를 모델에 추가
+        // } else {
+        //     // u_id는 있는데 DB에 해당 유저가 없는 예외적인 상황 처리
+        //     redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
+        //     return "redirect:/";
+        // }
+        model.addAttribute("currentUserId", loggedInUserId); // 뷰에서 현재 사용자 ID 활용 가능
+
+        System.out.println("MyPage 접근: 로그인된 사용자 ID - " + loggedInUserId);
+
+
+
+
         return "MyPage";
+    }
+
+
+    @GetMapping("/mupdate")
+    public String showUpdateForm(HttpSession session, Model model) {
+        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
+        model.addAttribute("member", loginMember);
+        return "memberupdate";
+
     }
 
 
@@ -111,6 +100,56 @@ public class MainController {
 
         return "terms";  // terms.html 약관동의서 페이지
     }
+
+    @GetMapping("/findId")
+    public String showFindIdForm(Model model) {
+
+        model.addAttribute("member", new Member());
+
+        return "findId";
+    }
+
+
+    @PostMapping("/findId")
+    public String findId(
+            @RequestParam("u_name") String u_name,
+            @RequestParam("u_email") String u_email,
+            Model model
+    ) {
+        // 실제 서비스에서 DB 조회
+        List<Member> foundIds = memberService.findIdsByNameAndEmail(u_name, u_email);
+        model.addAttribute("foundIds", foundIds);
+        return "findIdresult"; // 기존 결과 화면 파일명
+    }
+
+
+
+    @GetMapping("/findPw")
+    public String showFindPwForm(Model model) {
+
+        model.addAttribute("member", new Member());
+
+        return "findPassword";
+    }
+
+    @PostMapping("/findPw")
+    public String findPw(
+            @RequestParam("u_id") String u_id,
+            @RequestParam("u_name") String u_name,
+            @RequestParam("u_email") String u_email,
+            Model model
+    )
+    {
+        List<Member> foundPws = memberService.findPws(u_id,u_name, u_email);
+        model.addAttribute("foundPws", foundPws);
+        return "findPwResult"; // 기존 결과 화면 파일명
+
+    }
+
+
+
+
+
 
 
 

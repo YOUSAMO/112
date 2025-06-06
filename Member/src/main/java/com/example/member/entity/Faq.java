@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class Faq {
+
+
     private Long faqNo;
     private String question;
     private String answer;

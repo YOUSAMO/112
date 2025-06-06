@@ -174,7 +174,7 @@
             <li><a href="#" data-tab="application">입양 신청 내역</a></li>
             <li><a href="#" data-tab="favorites">관심 동물 목록</a></li>
             <li><a href="#" data-tab="activity">나의 활동 기록</a></li>
-            <li><a href="#" data-tab="points">포인트 적립 현황</a></li>
+
             <li><a href="#" data-tab="profile">개인정보 관리</a></li>
         </ul>
     </nav>
@@ -241,7 +241,7 @@
         </article>
 
 
-        <!-- 기타 섹션 생략 -->
+
 
         <article id="profile-content" class="content active">
             <h3>개인정보 및 알림 설정</h3>
@@ -252,13 +252,13 @@
                 <li><strong>전화번호:</strong> <span th:text="${session.loginMember.u_pnumber}"></span></li>
                 <li><strong>성별:</strong> <span th:text="${session.loginMember.u_gender}"></span></li>
                 <li><strong>이메일:</strong> <span th:text="${session.loginMember.u_email}"></span></li>
-                <li><a href="#">비밀번호 변경하기</a></li>
+
 
 
 
             </ul>
         </article>
-        <a href="#">회원정보 수정</a>
+        <a th:href="@{/mupdate}">회원정보 수정</a>
         <p class="logout">로그아웃 하시겠습니까? <a th:href="@{/logout}">로그아웃</a></p>
     </section>
 </main>

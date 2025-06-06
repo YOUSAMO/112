@@ -26,9 +26,8 @@ public class AdminController {
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("adminDTO", new AdminDTO());
-        return "Adminregister";
+        return "admin/Adminregister";
     }
-
 
 
     /*
@@ -54,17 +53,13 @@ public class AdminController {
 
     */
 
+
+
     @GetMapping("/login")
     public String showLoginForm(Model model) {
         model.addAttribute("adminform", new LoginAdminFormDTO());
         return "adminPage"; // 관리자 로그인 HTML 파일명 (예: templates/AdminLogin.html)
     }
-
-
-
-
-
-
 
 
 
