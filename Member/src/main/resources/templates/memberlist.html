@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>회원 목록</title>
+    <style>
+        body {
+            background-color: #fefcf9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #f57c00;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #ffcc80;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            background-color: #f57c00;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .action-btn:hover {
+            background-color: #e65100;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 공통 헤더 삽입 -->
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="container">
+    <h2>회원 목록</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>회원번호</th>
+            <th>아이디</th>
+            <th>이름</th>
+            <th>전화번호</th>
+            <th>이메일</th>
+            <th>성별</th>
+            <th>수정/삭제</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="member : ${memberList}">
+            <td th:text="${member.u_no}"></td>
+            <td th:text="${member.u_id}"></td>
+            <td th:text="${member.u_name}"></td>
+            <td th:text="${member.u_pnumber}"></td>
+            <td th:text="${member.u_email}"></td>
+            <td th:text="${member.u_gender}"></td>
+            <td>
+                <button class="action-btn" th:onclick="|location.href='/member/edit/' + [[${member.u_no}]]|">수정</button>
+
+                <button class="action-btn"
+                        th:onclick="'deleteMember(' + ${member.u_no} + ')'">
+                    삭제
+                </button>
+            </td>
+
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

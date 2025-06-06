@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>유기동물 보호소 관리자 페이지</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      background: #F8F6F1;
+      font-family: 'Pretendard', 'Noto Sans KR', Arial, sans-serif;
+      color: #444;
+    }
+    .sidebar {
+      width: 230px;
+      background: #F5EEDD;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding: 40px 0 0 0;
+      box-shadow: 2px 0 8px #eee;
+    }
+    .sidebar h2 {
+      color: #BFAE99;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 1.5em;
+      letter-spacing: 1px;
+    }
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .nav-menu li {
+      padding: 18px 40px;
+      margin-bottom: 10px;
+      border-radius: 8px 0 0 8px;
+      background: #E7DECF;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .nav-menu li.active,
+    .nav-menu li:hover {
+      background: #D6C6B8;
+      color: #fff;
+      font-weight: bold;
+    }
+    .main {
+      margin-left: 230px;
+      padding: 40px 50px;
+      min-height: 100vh;
+    }
+    .header {
+      background: #BFAE99;
+      color: #fff;
+      padding: 25px 40px;
+      border-radius: 12px;
+      font-size: 1.5em;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px #eee;
+    }
+    .admin-info {
+      font-size: 1em;
+      color: #F5EEDD;
+    }
+    .section {
+      margin-top: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #eee;
+      padding: 40px;
+      display: none;
+    }
+    .section.active { display: block; }
+    .section h3 {
+      color: #8C7B6B;
+      font-size: 1.3em;
+      margin-bottom: 18px;
+    }
+    .animal-table, .adopt-table, .member-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .animal-table th, .animal-table td,
+    .adopt-table th, .adopt-table td,
+    .member-table th, .member-table td {
+      border-bottom: 1px solid #eee;
+      padding: 12px 10px;
+      text-align: left;
+    }
+    .animal-table th, .adopt-table th, .member-table th {
+      background: #F5EEDD;
+      color: #8C7B6B;
+    }
+    .animal-table tr:hover, .adopt-table tr:hover, .member-table tr:hover {
+      background: #F8F6F1;
+    }
+    .status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.95em;
+      font-weight: bold;
+      background: #D6C6B8;
+      color: #fff;
+      display: inline-block;
+    }
+    .status.wait { background: #BFAE99; }
+    .status.adopted { background: #8C7B6B; }
+    .btn {
+      padding: 7px 18px;
+      border: none;
+      border-radius: 6px;
+      background: #BFAE99;
+      color: #fff;
+      font-size: 1em;
+      cursor: pointer;
+      margin-right: 5px;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #8C7B6B;
+    }
+    .modal-bg {
+      display: none;
+      position: fixed;
+      top:0; left:0; width:100vw; height:100vh;
+      background: rgba(0,0,0,0.25);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-bg.active { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px #ccc;
+      padding: 32px 40px;
+      min-width: 320px;
+      max-width: 95vw;
+      color: #444;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      right: 22px; top: 18px;
+      font-size: 1.5em;
+      color: #BFAE99;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .modal h4 { color: #8C7B6B; margin-top: 0; }
+    .modal img { border-radius: 20px; width: 120px; height: 120px; object-fit: cover; margin-bottom: 12px;}
+    @media (max-width: 900px) {
+      .sidebar { width: 160px; }
+      .main { margin-left: 160px; padding: 20px 10px; }
+      .header { padding: 15px 10px; font-size: 1.1em; }
+      .section { padding: 18px; }
+      .modal { padding: 18px 10px; }
+    }
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <h2>유기동물<br>보호소 관리자</h2>
+  <ul class="nav-menu">
+    <li class="active" data-section="animal">동물목록</li>
+    <li data-section="adopt">입양글 관리</li>
+    <li data-section="member">회원 관리</li>
+    <li data-section="review">댓글/후기 관리</li>
+    <li data-section="stat">통계</li>
+  </ul>
+</aside>
+<div class="main">
+  <div class="header">
+    유기동물 보호소 관리자 페이지
+    <span class="admin-info">
+        관리자: <span th:text="${adminName}">관리자명</span> |
+        <a href="#" style="color:#F5EEDD;">로그아웃</a>
+      </span>
+  </div>
+  <!-- 동물목록 -->
+  <section class="section active" id="section-animal">
+    <h3>동물목록 관리</h3>
+    <table class="animal-table">
+      <thead>
+      <tr>
+        <th>사진</th>
+        <th>이름</th>
+        <th>종류</th>
+        <th>성별</th>
+        <th>나이</th>
+        <th>상태</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="animal : ${animalList}">
+        <td><img th:src="@{${animal.photoUrl}}" alt="사진" style="width:60px; height:60px; object-fit:cover; border-radius:10px;"></td>
+        <td th:text="${animal.name}">이름</td>
+        <td th:text="${animal.species}">종류</td>
+        <td th:text="${animal.gender}">성별</td>
+        <td th:text="${animal.age}">나이</td>
+        <td>
+          <span class="status" th:text="${animal.status}">상태</span>
+        </td>
+        <td>
+          <button class="btn btn-detail" type="button"
+                  th:attr="data-animal=${#objects.toJson(animal)}">상세</button>
+          <button class="btn" type="button">수정</button>
+          <button class="btn" type="button">삭제</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+  <!-- 입양글 관리 -->
+  <section class="section" id="section-adopt">
+    <h3>입양글 관리</h3>
+    <table class="adopt-table">
+      <thead>
+      <tr>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>등록일</th>
+        <th>상태</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="adopt : ${adoptList}">
+        <td th:text="${adopt.title}">제목</td>
+        <td th:text="${adopt.author}">작성자</td>
+        <td th:text="${adopt.regDate}">등록일</td>
+        <td th:text="${adopt.status}">상태</td>
+        <td>
+          <button class="btn" type="button">상세</button>
+          <button class="btn" type="button">수정</button>
+          <button class="btn" type="button">삭제</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <button class="btn" style="margin-top:16px;">신규 입양글 등록</button>
+  </section>
+  <!-- 회원 관리 -->
+  <section class="section" id="section-member">
+    <h3>회원 관리</h3>
+    <table class="member-table">
+      <thead>
+      <tr>
+        <th>이름</th>
+        <th>아이디</th>
+        <th>권한</th>
+        <th>가입일</th>
+        <th>상태</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="member : ${memberList}">
+        <td th:text="${member.name}">이름</td>
+        <td th:text="${member.id}">아이디</td>
+        <td th:text="${member.role}">권한</td>
+        <td th:text="${member.joinDate}">가입일</td>
+        <td th:text="${member.status}">상태</td>
+        <td>
+          <button class="btn" type="button">상세</button>
+          <button class="btn" type="button">수정</button>
+          <button class="btn" type="button">삭제</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <button class="btn" style="margin-top:16px;">신규 회원 등록</button>
+  </section>
+  <!-- 댓글/후기 관리 -->
+  <section class="section" id="section-review">
+    <h3>댓글/후기 관리</h3>
+    <table class="member-table">
+      <thead>
+      <tr>
+        <th>작성자</th>
+        <th>내용</th>
+        <th>등록일</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="review : ${reviewList}">
+        <td th:text="${review.author}">작성자</td>
+        <td th:text="${review.content}">내용</td>
+        <td th:text="${review.regDate}">등록일</td>
+        <td>
+          <button class="btn" type="button">삭제</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+  <!-- 통계 -->
+  <section class="section" id="section-stat">
+    <h3>입양/보호소 통계</h3>
+    <p>입양률, 보호 동물 수, 인기 품종 등 시각화(그래프) 영역 (예시)</p>
+    <img th:src="@{/images/statistics.png}" alt="통계 그래프 예시" style="width:220px; background:#F5EEDD; border-radius:15px; padding:18px;">
+  </section>
+</div>
+<!-- 동물 상세 모달 -->
+<div class="modal-bg" id="animalModalBg">
+  <div class="modal" id="animalModal">
+    <span class="modal-close" id="modalCloseBtn">&times;</span>
+    <h4 id="modalAnimalName" th:text="${modalAnimal.name} + ' 상세 정보'">동물 상세 정보</h4>
+    <img id="modalAnimalImg" th:src="@{${modalAnimal.img}}" alt="동물 상세">
+    <p><strong>종류:</strong> <span id="modalAnimalSpecies" th:text="${modalAnimal.species}"></span></p>
+    <p><strong>성별:</strong> <span id="modalAnimalGender" th:text="${modalAnimal.gender}"></span></p>
+    <p><strong>나이:</strong> <span id="modalAnimalAge" th:text="${modalAnimal.age}"></span></p>
+    <p><strong>상태:</strong> <span id="modalAnimalStatus" th:text="${modalAnimal.status}"></span></p>
+    <p><strong>소개:</strong> <span id="modalAnimalDesc" th:text="${modalAnimal.desc}"></span></p>
+  </div>
+</div>
+<script>
+  // 메뉴 탭 전환
+  document.querySelectorAll('.nav-menu li').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.nav-menu li').forEach(function(li) {
+        li.classList.remove('active');
+      });
+      this.classList.add('active');
+      var section = this.getAttribute('data-section');
+      document.querySelectorAll('.section').forEach(function(sec) {
+        sec.classList.remove('active');
+      });
+      document.getElementById('section-' + section).classList.add('active');
+    });
+  });
+
+  // 동물 상세 모달 (데이터 없음, 예시용)
+  document.querySelectorAll('.btn-detail').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var data = JSON.parse(this.getAttribute('data-animal'));
+      document.getElementById('modalAnimalName').textContent = data.name + " 상세 정보";
+      document.getElementById('modalAnimalImg').src = data.img;
+      document.getElementById('modalAnimalSpecies').textContent = data.species;
+      document.getElementById('modalAnimalGender').textContent = data.gender;
+      document.getElementById('modalAnimalAge').textContent = data.age;
+      document.getElementById('modalAnimalStatus').textContent = data.status;
+      document.getElementById('modalAnimalDesc').textContent = data.desc;
+      document.getElementById('animalModalBg').classList.add('active');
+    });
+  });
+  document.getElementById('modalCloseBtn').onclick = function() {
+    document.getElementById('animalModalBg').classList.remove('active');
+  };
+  document.getElementById('animalModalBg').onclick = function(e) {
+    if (e.target === this) this.classList.remove('active');
+  };
+</script>
+</body>
+</html>

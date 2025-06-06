@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.member.repository.BoardRepository">
+
+    <insert id="insertBoard" parameterType="com.example.member.entity.Board" useGeneratedKeys="true" keyProperty="bNo">
+        INSERT INTO board (b_title, b_content, author_uid, b_date) VALUES (#{bTitle}, #{bContent}, #{authorUid}, NOW()) </insert>
+
+    <select id="findAll" resultType="com.example.member.entity.Board">
+        SELECT
+            b.b_no, b.b_title, b.b_content, b.author_uid, u.u_name AS authorName, b.b_date, b.view_count, b.like_count
+        FROM
+            board b
+                JOIN
+            users u ON b.author_uid = u.u_id ORDER BY b.b_date DESC
+    </select>
+
+    <select id="findBoardsByPage" resultType="com.example.member.entity.Board" parameterType="map">
+        SELECT
+            b.b_no, b.b_title, b.b_content, b.author_uid, u.u_name AS authorName,
+            b.b_date, b.view_count, b.like_count
+        FROM
+            board b
+                JOIN
+            users u ON b.author_uid = u.u_id
+        ORDER BY b.b_date DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countBoards" resultType="int">
+        SELECT COUNT(*) FROM board
+    </select>
+
+    <select id="findById" parameterType="long" resultType="com.example.member.entity.Board">
+        SELECT
+            b.b_no, b.b_title, b.b_content, b.author_uid, u.u_name AS authorName,
+            b.b_date, b.view_count, b.like_count
+        FROM
+            board b
+                LEFT JOIN -- 게시글은 존재하나 혹시 users 테이블에 u_id가 없는 경우도 고려 (일반적으론 FK 제약으로 발생 안함)
+                users u ON b.author_uid = u.u_id
+        WHERE b.b_no = #{bNo}
+    </select>
+
+    <update id="updateBoard" parameterType="com.example.member.entity.Board">
+        UPDATE board
+        SET b_title = #{bTitle},
+            b_content = #{bContent}
+        WHERE b_no = #{bNo}
+    </update>
+
+    <delete id="deleteBoard" parameterType="long">
+        DELETE FROM board WHERE b_no = #{bNo}
+    </delete>
+
+    <update id="incrementViewCount" parameterType="long">
+        UPDATE board
+        SET view_count = view_count + 1
+        WHERE b_no = #{bNo}
+    </update>
+
+    <update id="increaseLikeCount" parameterType="long">
+        UPDATE board
+        SET like_count = like_count + 1
+        WHERE b_no = #{bNo}
+    </update>
+
+    <update id="incrementBoardLikeCount" parameterType="long">
+        UPDATE board
+        SET like_count = like_count + 1
+        WHERE b_no = #{bNo}
+    </update>
+
+    <update id="decrementBoardLikeCount" parameterType="long">
+        UPDATE board
+        SET like_count = CASE WHEN like_count > 0 THEN like_count - 1 ELSE 0 END
+        WHERE b_no = #{bNo}
+    </update>
+
+    <select id="getLikeCount" parameterType="long" resultType="int">
+        SELECT like_count FROM board WHERE b_no = #{bNo}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #FFF8E7;
+        color: #333;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+    main {
+        max-width: 1200px;
+        margin: 120px auto 0;
+        padding: 32px 16px;
+    }
+
+    section {
+        background-color: white;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        color: #795548;
+        margin-bottom: 16px;
+    }
+
+    .slider {
+        position: relative;
+        overflow: hidden;
+        height: 400px;
+    }
+
+    .slider-images {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+
+    .slider-images img {
+        min-width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+
+    .slider-buttons {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        transform: translateY(-50%);
+    }
+
+    .slider-button {
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .slider-button:hover {
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .animal-grid {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .animal-card {
+        flex: 1 1 calc(33.33% - 16px);
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    .animal-card div.image {
+        background-color: #eee;
+        height: 160px;
+        margin-bottom: 12px;
+    }
+
+    .button {
+        background-color: #DDB892;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .button:hover {
+        background-color: #cda374;
+    }
+
+
+    footer {
+        background-color: #F3D9B1;
+        text-align: center;
+        padding: 20px;
+        margin-top: 40px;
+        color: #5D4037;
+    }
+
+    @media (max-width: 768px) {
+        .animal-grid {
+            flex-direction: column;
+        }
+
+        .animal-card {
+            flex: 1 1 100%;
+        }
+    }
+
+    .site-footer {
+        background-color: #f8f8f8;
+        padding: 20px;
+        font-size: 14px;
+        color: #333;
+        border-top: 1px solid #ddd;
+    }
+
+    .footer-links {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .footer-links a {
+        color: #444;
+        text-decoration: none;
+        margin: 0 5px;
+    }
+
+    .footer-info {
+        text-align: center;
+        line-height: 1.6;
+    }
+    .auth-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logout-link {
+        background-color: #DDB892;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .logout-link:hover {
+        background-color: #cda374;
+    }
+
+</style>
+<body>
+
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<!-- Main Content -->
+<main>
+    <!-- Hero Section -->
+    <section id="home">
+        <div class="slider">
+            <div class="slider-images" id="sliderImages">
+                <img src="https://via.placeholder.com/1200x400?text=Image+1" alt="Slider 1">
+                <img src="https://via.placeholder.com/1200x400?text=Image+2" alt="Slider 2">
+                <img src="https://via.placeholder.com/1200x400?text=Image+3" alt="Slider 3">
+            </div>
+            <div class="slider-buttons">
+                <button class="slider-button" onclick="changeSlide(-1)">&#10094;</button>
+                <button class="slider-button" onclick="changeSlide(1)">&#10095;</button>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 16px;">
+            <p>사랑과 보살핌이 필요한 동물들을 만나보세요.</p>
+            <button class="button">입양 시작하기</button>
+        </div>
+    </section>
+
+    <!-- Adoption Section -->
+    <section id="adopt">
+        <h2>입양 가능한 동물들</h2>
+        <div class="animal-grid">
+            <div class="animal-card">
+                <div class="image"></div>
+                <h3>초롱이</h3>
+                <p>종: 강아지 | 나이: 2세</p>
+                <button class="button">자세히 보기</button>
+            </div>
+            <div class="animal-card">
+                <div class="image"></div>
+                <h3>나비</h3>
+                <p>종: 고양이 | 나이: 1세</p>
+                <button class="button">자세히 보기</button>
+            </div>
+            <div class="animal-card">
+                <div class="image"></div>
+                <h3>바둑이</h3>
+                <p>종: 강아지 | 나이: 3세</p>
+                <button class="button">자세히 보기</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Board Section -->
+
+
+    <!-- About Section -->
+    <section id="about">
+        <h2>소개</h2>
+        <p>저희는 유기동물들에게 새로운 가정을 찾아주는 따뜻한 다리가 되고자 합니다.</p>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-links">
+        <a href="#" id="termsBtn">이용약관</a>
+        <a href="#">개인정보처리방침</a> |
+        <a href="#">사이트맵</a>
+    </div>
+    <div class="footer-info">
+        <p>상호명: adoptbridge</p>
+        <p>© 2025 adoptbridge. All rights reserved.</p>
+    </div>
+</footer>
+
+
+
+</body>
+</html>
+<!-- JavaScript: Slider -->
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slider-images img');
+    const sliderImages = document.getElementById('sliderImages');
+
+    function showSlide(index) {
+        if (index >= slides.length) currentSlide = 0;
+        else if (index < 0) currentSlide = slides.length - 1;
+        else currentSlide = index;
+
+        sliderImages.style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+
+    function changeSlide(step) {
+        showSlide(currentSlide + step);
+    }
+
+    setInterval(() => changeSlide(1), 3000);
+    showSlide(currentSlide);
+</script>
