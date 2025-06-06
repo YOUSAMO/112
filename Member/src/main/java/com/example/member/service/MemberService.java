@@ -5,6 +5,7 @@ import com.example.member.entity.Member;
 import com.example.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -52,13 +53,6 @@ public class MemberService {
     }
 
     /**
-     * 회원 삭제 (고유번호 기준)
-     */
-
-    public void deleteMemberByNo(Integer u_no) {
-
-        memberRepository.deleteByno(u_no);
-    }
 
     /**
      * 아이디로 회원 조회 (단일)
@@ -119,6 +113,13 @@ public class MemberService {
 
     public List<Member> findPws(String u_id,String u_name,String u_email){
         return memberRepository.findPws(u_id,u_name,u_email);
+    }
+
+
+
+    @Transactional
+    public void deleteById(String uId) {
+        memberRepository.deleteById(uId);
     }
 
 }

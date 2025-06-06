@@ -1,6 +1,7 @@
 package com.example.member.controller;
 
 import com.example.member.DTO.MemberDTO;
+import com.example.member.DTO.SessionMemberDTO;
 import com.example.member.entity.Member;
 import com.example.member.service.MemberService;  // ✅ Service import
 
@@ -106,6 +107,21 @@ public class MemberController {
     public String checkId(@RequestParam("u_id") String u_id) {
         boolean exists = memberService.isDuplicateId(u_id);
         return exists ? "duplicated" : "available";
+    }
+
+    // 회원 탈퇴 처리
+    @PostMapping("/member/delete")
+    public String deleteMember(HttpSession session) {
+        // 세션에서 로그인 회원 정보 가져오기
+        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
+        if (loginMember != null) {
+            // 회원 삭제 서비스 호출 (PK 또는 ID 기준)
+            memberService.deleteById(loginMember.getU_id());
+            // 세션 무효화(로그아웃)
+            session.invalidate();
+        }
+        // 탈퇴 후 메인 페이지 등으로 리다이렉트
+        return "redirect:/";
     }
 
 

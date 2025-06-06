@@ -62,15 +62,6 @@ public class MainController {
             return "redirect:" + LOGIN_PAGE_URL; // 로그인 페이지로 리다이렉트
         }
 
-        // (선택 사항) 로그인된 사용자의 상세 정보를 DB에서 가져와 모델에 추가
-        // Member memberInfo = memberService.getMemberByUId(loggedInUserId); // MemberService에 해당 u_id로 조회하는 메소드 필요
-        // if (memberInfo != null) {
-        //     model.addAttribute("member", memberInfo); // Member 객체를 모델에 추가
-        // } else {
-        //     // u_id는 있는데 DB에 해당 유저가 없는 예외적인 상황 처리
-        //     redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
-        //     return "redirect:/";
-        // }
         model.addAttribute("currentUserId", loggedInUserId); // 뷰에서 현재 사용자 ID 활용 가능
 
         System.out.println("MyPage 접근: 로그인된 사용자 ID - " + loggedInUserId);
@@ -81,14 +72,6 @@ public class MainController {
         return "MyPage";
     }
 
-
-    @GetMapping("/mupdate")
-    public String showUpdateForm(HttpSession session, Model model) {
-        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
-        model.addAttribute("member", loginMember);
-        return "memberupdate";
-
-    }
 
 
 
@@ -148,26 +131,29 @@ public class MainController {
 
 
 
-
-
-
-
-
-    /*
-    @GetMapping("/mypage")
-    public String mypage(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("loginMember") == null) {
-            return "redirect:/login";
-        }
-
-        Member loginMember = (Member) session.getAttribute("loginMember");
+    @GetMapping("/mupdate")
+    public String showUpdateForm(HttpSession session, Model model) {
+        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
         model.addAttribute("member", loginMember);
+        return "memberupdate";
 
-        return "mypage"; // 로그인된 사용자만 볼 수 있는 페이지
     }
 
-    */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

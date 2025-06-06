@@ -9,7 +9,7 @@ import java.util.List;
 public interface MemberRepository {
     void insertMember(Member member);
     void updateMember(Member member);
-    void deleteByno(Integer u_no);
+    String deleteById(@Param("u_id") String u_id);
     Member findById(String u_id);
     List<Member> findAll(); // 전체 회원 조회
     List<Member> findMemberByno(Integer u_no);
