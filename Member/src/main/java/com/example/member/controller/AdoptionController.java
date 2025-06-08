@@ -7,8 +7,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -22,6 +20,8 @@ public class AdoptionController {
         SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
         Adoption_application adoptionForm = new Adoption_application();
 
+
+        model.addAttribute("loginMember", loginMember); // 사용자 정보 전달
         model.addAttribute("adoptionForm", adoptionForm);
         return "adoption/adoptionForm";
     }

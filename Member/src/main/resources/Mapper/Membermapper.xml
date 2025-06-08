@@ -75,6 +75,12 @@
         </select>
 
 
+    <update id="updatepassword" parameterType="String">
+        UPDATE users
+        SET u_pass = #{u_pass}
+        WHERE u_id = #{u_id}
+    </update>
+
 
 
 </mapper>

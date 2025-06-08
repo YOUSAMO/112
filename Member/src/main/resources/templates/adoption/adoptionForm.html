@@ -75,12 +75,14 @@
     <h2>유기동물 입양신청서</h2>
     <form th:action="@{/adoption/apply}" th:object="${adoptionForm}" method="post" id="adoptionForm">
         <div class="section-title">신청자 기본 정보</div>
-        <label>이름 <span class="required">*</span></label>
-        <input type="text" th:field="*{name}" required>
-        <label>연락처 <span class="required">*</span></label>
-        <input type="tel" th:field="*{phone}" required placeholder="010-0000-0000">
+        <label>이름</label>
+        <input type="text" th:value="${loginMember.u_name}" readonly>
+
+        <label>연락처</label>
+        <input type="text" th:value="${loginMember.u_pnumber}" readonly>
+
         <label>이메일</label>
-        <input type="email" th:field="*{email}">
+        <input type="text" th:value="${loginMember.u_email}" readonly>
 
         <div class="section-title">거주 환경 및 가족 구성</div>
         <label>거주 형태 <span class="required">*</span></label>
@@ -160,6 +162,12 @@
             <input type="checkbox" th:field="*{agreement}" required>
             동물 학대·유기 금지, 상업적 이용 금지, 동물등록 및 중성화 수술 이행, 사후관리 협조 등 법적·윤리적 책임에 동의합니다. <span class="required">*</span>
         </label>
+
+        <!-- 안내 멘트 추가 -->
+        <div style="margin: 24px 0 12px 0; color: #c62828; font-weight: bold; text-align: center;">
+            입양은 신중하게 결정해 주세요.<br>
+            신청서도 성실하게 작성해 주시기 바랍니다.
+        </div>
 
         <button type="submit">신청서 제출</button>
     </form>

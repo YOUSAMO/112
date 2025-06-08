@@ -108,18 +108,29 @@ public class MemberService {
 
 
     public List<Member> findIdsByNameAndEmail(String u_name, String u_email) {
+
         return memberRepository.findIdsByNameAndEmail(u_name, u_email);
     }
 
+
     public List<Member> findPws(String u_id,String u_name,String u_email){
+
         return memberRepository.findPws(u_id,u_name,u_email);
     }
 
 
 
     @Transactional
-    public void deleteById(String uId) {
-        memberRepository.deleteById(uId);
+    public void deleteById(String u_id) {
+        memberRepository.deleteById(u_id);
+    }
+
+
+
+    public void updatepassword(String u_id, String u_pass) {
+
+
+         memberRepository.updatepassword(u_id,u_pass);
     }
 
 }

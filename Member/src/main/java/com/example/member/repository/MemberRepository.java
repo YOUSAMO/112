@@ -9,7 +9,7 @@ import java.util.List;
 public interface MemberRepository {
     void insertMember(Member member);
     void updateMember(Member member);
-    String deleteById(@Param("u_id") String u_id);
+    void deleteById(@Param("u_id") String u_id);
     Member findById(String u_id);
     List<Member> findAll(); // 전체 회원 조회
     List<Member> findMemberByno(Integer u_no);
@@ -21,6 +21,8 @@ public interface MemberRepository {
 
     List<Member> findPws(@Param("u_id") String u_id, @Param("u_name") String u_name,
                          @Param("u_email") String u_email);
+
+    void updatepassword(@Param("u_id") String u_id, @Param("u_pass") String u_pass);
 
 
 }
