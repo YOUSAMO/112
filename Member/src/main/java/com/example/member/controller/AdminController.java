@@ -38,6 +38,12 @@ public class AdminController {
         return "redirect:/login";
     }
 
+    @GetMapping("/register/denied")
+    public String registerDenied() {
+        return "admin/registerDenied"; // 안내용 뷰 페이지
+    }
+
+
     // 관리자 로그인 폼
     @GetMapping("/login")
     public String adminLoginPage() {

@@ -71,6 +71,14 @@ public class AdminService {
 
 
 
+   //인터셉터에서 관리자 2명 제한하는 로직 부분
+    public int getAdminCount() {
+        return adminRepository.countAdmins();
+    }
+
+
+
+
 
 
 
