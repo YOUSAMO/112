@@ -141,9 +141,9 @@
     <div id="admin-content" class="content">
         <form th:action="@{/admin/login}" method="post">
             <h2>관리자 로그인</h2>
-            <input type="text" id="admin-id" name="admin_id" placeholder="아이디" required />
-            <input type="password" id="admin-password" name="admin_pass" placeholder="비밀번호" required />
-     <a th:href="@{/admin/adminPage}"><button type="submit" class="btnLogin" onclick="btnlogin2()">로그인</button></a>
+            <input type="text" id="admin-id" name="a_id" placeholder="아이디" required />
+            <input type="password" id="admin-password" name="a_pass" placeholder="비밀번호" required />
+            <button type="submit" class="btnLogin" onclick="btnlogin2()">로그인</button>
             <p th:if="${adminError}" th:text="${adminError}" class="error-msg"></p>
         </form>
         <a th:href="@{/admin/register}">관리자 등록하기</a>
@@ -183,10 +183,12 @@
         let password2 = document.getElementById("admin-password").value;
 
         if(id2 === "" || password2 === ""){
-            alert("다시 입력해주세요.")
-            return
+            alert("다시 입력해주세요.");
+            e.preventDefault();
+            return false;
         }
     }
+
 
 
 

@@ -2,7 +2,6 @@ package com.example.member.repository;
 
 
 import com.example.member.entity.Admin;
-import com.example.member.entity.Member;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,6 +18,7 @@ public interface AdminRepository {
     List<Admin> findAll();
     void insert(Admin admin);
     int countAdmins();
+    Admin findByLoginIdAndPass(@Param("a_id") String a_id, @Param("a_pass") String a_pass);
 
 
 

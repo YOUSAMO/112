@@ -185,8 +185,8 @@
   <div class="header">
     유기동물 보호소 관리자 페이지
     <span class="admin-info">
-        관리자: <span th:text="${adminName}">관리자명</span> |
-        <a href="#" style="color:#F5EEDD;">로그아웃</a>
+        관리자: <span th:text="${loginAdmin.a_name}">님 환영합니다</span> |
+        <a th:href="@{/admin/logout}" style="color:#F5EEDD;">로그아웃</a>
       </span>
   </div>
   <!-- 동물목록 -->
@@ -205,18 +205,15 @@
       </tr>
       </thead>
       <tbody>
-      <tr th:each="animal : ${animalList}">
-        <td><img th:src="@{${animal.photoUrl}}" alt="사진" style="width:60px; height:60px; object-fit:cover; border-radius:10px;"></td>
-        <td th:text="${animal.name}">이름</td>
-        <td th:text="${animal.species}">종류</td>
-        <td th:text="${animal.gender}">성별</td>
-        <td th:text="${animal.age}">나이</td>
+      <tr>
+        <td><img src="/images/sample_animal.jpg" alt="사진" style="width:60px; height:60px; object-fit:cover; border-radius:10px;"></td>
+        <td>이름</td>
+        <td>종류</td>
+        <td>성별</td>
+        <td>나이</td>
+        <td><span class="status">상태</span></td>
         <td>
-          <span class="status" th:text="${animal.status}">상태</span>
-        </td>
-        <td>
-          <button class="btn btn-detail" type="button"
-                  th:attr="data-animal=${#objects.toJson(animal)}">상세</button>
+          <button class="btn btn-detail" type="button">상세</button>
           <button class="btn" type="button">수정</button>
           <button class="btn" type="button">삭제</button>
         </td>
@@ -238,11 +235,11 @@
       </tr>
       </thead>
       <tbody>
-      <tr th:each="adopt : ${adoptList}">
-        <td th:text="${adopt.title}">제목</td>
-        <td th:text="${adopt.author}">작성자</td>
-        <td th:text="${adopt.regDate}">등록일</td>
-        <td th:text="${adopt.status}">상태</td>
+      <tr>
+        <td>제목</td>
+        <td>작성자</td>
+        <td>등록일</td>
+        <td>상태</td>
         <td>
           <button class="btn" type="button">상세</button>
           <button class="btn" type="button">수정</button>
@@ -268,12 +265,12 @@
       </tr>
       </thead>
       <tbody>
-      <tr th:each="member : ${memberList}">
-        <td th:text="${member.name}">이름</td>
-        <td th:text="${member.id}">아이디</td>
-        <td th:text="${member.role}">권한</td>
-        <td th:text="${member.joinDate}">가입일</td>
-        <td th:text="${member.status}">상태</td>
+      <tr>
+        <td>이름</td>
+        <td>아이디</td>
+        <td>권한</td>
+        <td>가입일</td>
+        <td>상태</td>
         <td>
           <button class="btn" type="button">상세</button>
           <button class="btn" type="button">수정</button>
@@ -297,10 +294,10 @@
       </tr>
       </thead>
       <tbody>
-      <tr th:each="review : ${reviewList}">
-        <td th:text="${review.author}">작성자</td>
-        <td th:text="${review.content}">내용</td>
-        <td th:text="${review.regDate}">등록일</td>
+      <tr>
+        <td>작성자</td>
+        <td>내용</td>
+        <td>등록일</td>
         <td>
           <button class="btn" type="button">삭제</button>
         </td>
@@ -312,20 +309,20 @@
   <section class="section" id="section-stat">
     <h3>입양/보호소 통계</h3>
     <p>입양률, 보호 동물 수, 인기 품종 등 시각화(그래프) 영역 (예시)</p>
-    <img th:src="@{/images/statistics.png}" alt="통계 그래프 예시" style="width:220px; background:#F5EEDD; border-radius:15px; padding:18px;">
+    <img src="/images/statistics.png" alt="통계 그래프 예시" style="width:220px; background:#F5EEDD; border-radius:15px; padding:18px;">
   </section>
 </div>
 <!-- 동물 상세 모달 -->
 <div class="modal-bg" id="animalModalBg">
   <div class="modal" id="animalModal">
     <span class="modal-close" id="modalCloseBtn">&times;</span>
-    <h4 id="modalAnimalName" th:text="${modalAnimal.name} + ' 상세 정보'">동물 상세 정보</h4>
-    <img id="modalAnimalImg" th:src="@{${modalAnimal.img}}" alt="동물 상세">
-    <p><strong>종류:</strong> <span id="modalAnimalSpecies" th:text="${modalAnimal.species}"></span></p>
-    <p><strong>성별:</strong> <span id="modalAnimalGender" th:text="${modalAnimal.gender}"></span></p>
-    <p><strong>나이:</strong> <span id="modalAnimalAge" th:text="${modalAnimal.age}"></span></p>
-    <p><strong>상태:</strong> <span id="modalAnimalStatus" th:text="${modalAnimal.status}"></span></p>
-    <p><strong>소개:</strong> <span id="modalAnimalDesc" th:text="${modalAnimal.desc}"></span></p>
+    <h4 id="modalAnimalName">동물 상세 정보</h4>
+    <img id="modalAnimalImg" src="/images/sample_animal.jpg" alt="동물 상세">
+    <p><strong>종류:</strong> <span id="modalAnimalSpecies"></span></p>
+    <p><strong>성별:</strong> <span id="modalAnimalGender"></span></p>
+    <p><strong>나이:</strong> <span id="modalAnimalAge"></span></p>
+    <p><strong>상태:</strong> <span id="modalAnimalStatus"></span></p>
+    <p><strong>소개:</strong> <span id="modalAnimalDesc"></span></p>
   </div>
 </div>
 <script>
@@ -347,14 +344,13 @@
   // 동물 상세 모달 (데이터 없음, 예시용)
   document.querySelectorAll('.btn-detail').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var data = JSON.parse(this.getAttribute('data-animal'));
-      document.getElementById('modalAnimalName').textContent = data.name + " 상세 정보";
-      document.getElementById('modalAnimalImg').src = data.img;
-      document.getElementById('modalAnimalSpecies').textContent = data.species;
-      document.getElementById('modalAnimalGender').textContent = data.gender;
-      document.getElementById('modalAnimalAge').textContent = data.age;
-      document.getElementById('modalAnimalStatus').textContent = data.status;
-      document.getElementById('modalAnimalDesc').textContent = data.desc;
+      document.getElementById('modalAnimalName').textContent = "동물 상세 정보";
+      document.getElementById('modalAnimalImg').src = "/images/sample_animal.jpg";
+      document.getElementById('modalAnimalSpecies').textContent = "";
+      document.getElementById('modalAnimalGender').textContent = "";
+      document.getElementById('modalAnimalAge').textContent = "";
+      document.getElementById('modalAnimalStatus').textContent = "";
+      document.getElementById('modalAnimalDesc').textContent = "";
       document.getElementById('animalModalBg').classList.add('active');
     });
   });

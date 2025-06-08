@@ -76,13 +76,13 @@
     <form th:action="@{/adoption/apply}" th:object="${adoptionForm}" method="post" id="adoptionForm">
         <div class="section-title">신청자 기본 정보</div>
         <label>이름</label>
-        <input type="text" th:value="${loginMember.u_name}" readonly>
+        <input type="text" th:value="${session.loginMember.u_name}" readonly>
 
         <label>연락처</label>
-        <input type="text" th:value="${loginMember.u_pnumber}" readonly>
+        <input type="text" th:value="${session.loginMember.u_pnumber}" readonly>
 
         <label>이메일</label>
-        <input type="text" th:value="${loginMember.u_email}" readonly>
+        <input type="text" th:value="${session.loginMember.u_email}" readonly>
 
         <div class="section-title">거주 환경 및 가족 구성</div>
         <label>거주 형태 <span class="required">*</span></label>
@@ -170,7 +170,10 @@
         </div>
 
         <button type="submit">신청서 제출</button>
+        <button type="reset" style="margin-top: 20px">초기화</button>
     </form>
+
+    <a th:href="@{/}"><button type="submit" style="margin-top: 20px">홈으로</button></a>
 </div>
 <script th:inline="javascript">
     /*<![CDATA[*/

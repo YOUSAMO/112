@@ -2,6 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.member.repository.AdminRepository">
+    <resultMap id="adminMap" type="com.example.member.entity.Admin">
+        <result property="a_id" column="a_id"/>
+        <result property="a_pass" column="a_pass"/>
+        <result property="a_name" column="a_name"/>
+    </resultMap>
 
     <select id="findAll" resultType="com.example.member.entity.Admin">
         SELECT a_id,a_pass,a_name FROM admin
@@ -16,7 +21,11 @@
         SELECT COUNT(*) FROM admin
     </select>
 
-
+    <select id="findByLoginIdAndPass" resultMap="adminMap">
+        SELECT a_id, a_pass, a_name
+        FROM admin
+        WHERE a_id = #{a_id} AND a_pass = #{a_pass}
+    </select>
 
 
 </mapper>

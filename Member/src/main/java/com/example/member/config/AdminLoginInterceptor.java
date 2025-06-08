@@ -1,12 +1,9 @@
 package com.example.member.config;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 public class AdminLoginInterceptor implements HandlerInterceptor {
+
     /*
     private static final AntPathMatcher matcher = new AntPathMatcher();
     @Override
