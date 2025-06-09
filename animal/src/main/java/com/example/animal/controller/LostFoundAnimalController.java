@@ -27,7 +27,7 @@ public class LostFoundAnimalController {
 
     private final LostFoundAnimalService animalService;
 
-    @Value("${file.upload.dir}")
+    @Value("${file.upload-dir}")
     private String uploadDir;
 
     private static final String CONTROLLER_BOARD_TYPE = "lostfound";

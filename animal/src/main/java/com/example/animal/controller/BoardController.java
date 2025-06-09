@@ -230,37 +230,37 @@ public class BoardController {
      */
 
 
-    // 첨부파일 삭제 (이전과 동일, 필요시 권한 확인 로직 추가)
-    @PostMapping("/attachments/{attachmentId}/delete")
-    public String deleteAttachment(@PathVariable Long attachmentId,
-                                   @RequestParam Long boardNo, // boardNo는 리다이렉트에 사용
-                                   RedirectAttributes redirectAttributes,
-                                   HttpSession session) {
-        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
-        if (loggedInUserUid == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
-            return "redirect:" + LOGIN_PAGE_URL;
-        }
-
-        // TODO: 첨부파일 삭제에 대한 권한 확인 로직 추가 고려
-        // (예: 해당 첨부파일이 속한 게시물의 작성자인지 확인)
-        // Board board = boardService.getBoardByAttachmentId(attachmentId); // 이런 메소드가 필요할 수 있음
-        // if (board == null || !loggedInUserUid.equals(board.getAuthorUid())) {
-        //     redirectAttributes.addFlashAttribute("errorMessage", "첨부파일을 삭제할 권한이 없습니다.");
-        //     return "redirect:/boards/" + boardNo + "/edit";
-        // }
-
-        try {
-            boardService.deleteAttachment(attachmentId);
-            redirectAttributes.addFlashAttribute("successMessage", "첨부파일이 성공적으로 삭제되었습니다.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "첨부파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
-        }
-        return "redirect:/boards/" + boardNo + "/edit";
-    }
+//    // 첨부파일 삭제 (이전과 동일, 필요시 권한 확인 로직 추가)
+//    @PostMapping("/attachments/{attachmentId}/delete")
+//    public String deleteAttachment(@PathVariable Long attachmentId,
+//                                   @RequestParam Long boardNo, // boardNo는 리다이렉트에 사용
+//                                   RedirectAttributes redirectAttributes,
+//                                   HttpSession session) {
+//        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+//        if (loggedInUserUid == null) {
+//            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+//            return "redirect:" + LOGIN_PAGE_URL;
+//        }
+//
+//        // TODO: 첨부파일 삭제에 대한 권한 확인 로직 추가 고려
+//        // (예: 해당 첨부파일이 속한 게시물의 작성자인지 확인)
+//        // Board board = boardService.getBoardByAttachmentId(attachmentId); // 이런 메소드가 필요할 수 있음
+//        // if (board == null || !loggedInUserUid.equals(board.getAuthorUid())) {
+//        //     redirectAttributes.addFlashAttribute("errorMessage", "첨부파일을 삭제할 권한이 없습니다.");
+//        //     return "redirect:/boards/" + boardNo + "/edit";
+//        // }
+//
+//        try {
+//            boardService.deleteAttachment(attachmentId);
+//            redirectAttributes.addFlashAttribute("successMessage", "첨부파일이 성공적으로 삭제되었습니다.");
+//        } catch (RuntimeException e) {
+//            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            redirectAttributes.addFlashAttribute("errorMessage", "첨부파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
+//        }
+//        return "redirect:/boards/" + boardNo + "/edit";
+//    }
 
     // PageInfo 내부 클래스 (이전과 동일)
     public static class PageInfo {

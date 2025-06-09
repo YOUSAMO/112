@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <style>
+    header {
+      background-color: coral;
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      z-index: 1000;
+      box-sizing: border-box;
+      height: 80px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    nav a {
+      margin-left: 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<header th:fragment="header">
+  <h1>Recipe Hub</h1>
+  <nav>
+    <a th:href="@{/login}">로그인</a>
+    <a th:href="@{/}">HOME</a>
+    <a th:href="@{/board/write}">글쓰기</a>
+    <a th:href="@{/reviews}">커뮤니티</a>
+    <a th:href="@{/mypage}">마이페이지</a>
+    <a th:href="@{/faqs}">고객센터</a>
+    <a th:href="@{/tops/animals}">동물목록</a>
+  </nav>
+</header>
+</body>
+</html>

@@ -12,5 +12,6 @@ public class AttachmentFile {
     private String fileName;
     private String filePath;
     private String fileType;
+    private Long fileSize;
 }
 

@@ -1,40 +1,129 @@
-package com.example.animal.service; // 예시 패키지
+package com.example.animal.service;
 
+import com.example.animal.controller.AdoptionReviewController;
 import com.example.animal.entity.AdoptionReview;
+import com.example.animal.entity.AttachmentFile;
 import com.example.animal.repository.AdoptionReviewRepository;
-// import com.example.animal.repository.UserRepository; // 필요시 사용자 정보 추가 조회
+import com.example.animal.repository.AttachmentFileRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-// import org.springframework.security.access.AccessDeniedException; // 또는 일반 RuntimeException
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
 public class AdoptionReviewService {
 
     private final AdoptionReviewRepository adoptionReviewRepository;
-    // private final UserRepository userRepository; // 필요시 주입
+    private final AttachmentFileRepository attachmentFileRepository;
 
-    public AdoptionReviewService(AdoptionReviewRepository adoptionReviewRepository) {
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    @Autowired
+    public AdoptionReviewService(AdoptionReviewRepository adoptionReviewRepository, AttachmentFileRepository attachmentFileRepository) {
         this.adoptionReviewRepository = adoptionReviewRepository;
+        this.attachmentFileRepository = attachmentFileRepository;
     }
 
-    public void createReview(AdoptionReview review, String loggedInUserUid) {
-        if (loggedInUserUid == null || loggedInUserUid.trim().isEmpty()) {
-            throw new IllegalArgumentException("리뷰 작성은 로그인이 필요합니다.");
-        }
+    public void createReview(AdoptionReview review, String loggedInUserUid, List<MultipartFile> files) throws IOException {
         review.setAuthorUid(loggedInUserUid);
-        // review.setAuthorName(...); // authorName은 DB 저장 시 불필요, 조회 시 JOIN으로 가져옴
-        adoptionReviewRepository.insertReview(review);
-        // 첨부파일 로직이 있다면 여기서 처리
+        adoptionReviewRepository.insertReview(review); // 먼저 저장하여 review.arNo 값을 얻음
+        saveFiles(files, review.getArNo());
     }
 
+    public void updateReview(Long arNo, AdoptionReview reviewDetails, String loggedInUserUid, List<MultipartFile> newFiles) throws IOException {
+        AdoptionReview existingReview = adoptionReviewRepository.findReviewById(arNo);
+        if (existingReview == null || !loggedInUserUid.equals(existingReview.getAuthorUid())) {
+            throw new RuntimeException("수정 권한이 없거나 존재하지 않는 게시글입니다.");
+        }
+        existingReview.setArTitle(reviewDetails.getArTitle());
+        existingReview.setReviewContent(reviewDetails.getReviewContent());
+        adoptionReviewRepository.updateReview(existingReview);
+        saveFiles(newFiles, arNo);
+    }
+
+    // ★★★ 파일 저장 경로가 바뀌었으므로, 삭제 로직도 함께 변경 ★★★
+    public void deleteReview(Long arNo, String loggedInUserUid) throws IOException {
+        AdoptionReview reviewToDelete = adoptionReviewRepository.findReviewById(arNo);
+        if (reviewToDelete == null || !loggedInUserUid.equals(reviewToDelete.getAuthorUid())) {
+            throw new RuntimeException("삭제 권한이 없거나 존재하지 않는 게시글입니다.");
+        }
+
+        // 1. DB에서 이 게시글에 속한 파일 정보들을 모두 삭제
+        attachmentFileRepository.deleteByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo);
+
+        // 2. 서버에서 해당 게시글의 폴더 전체를 삭제
+        Path directoryPath = Paths.get(uploadDir, "adoption_review_files", "arNo_" + arNo);
+        if (Files.exists(directoryPath)) {
+            Files.walk(directoryPath)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+
+        // 3. 게시글 정보 삭제
+        adoptionReviewRepository.deleteReview(arNo);
+    }
+
+    // ★★★ 파일 저장 경로 생성 로직을 수정한 메소드 ★★★
+    private void saveFiles(List<MultipartFile> files, Long boardId) throws IOException {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+
+        // 1. 새로운 폴더 경로를 정의합니다.
+
+        Path directoryPath = Paths.get(uploadDir, "adoption_review_files", "arNo_" + boardId);
+
+        // 2. 폴더가 존재하지 않으면 생성합니다.
+        Files.createDirectories(directoryPath);
+
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) continue;
+
+            String originalFileName = file.getOriginalFilename();
+            // 파일 이름은 고유하게 유지
+            String storedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+
+            // 3. 최종 파일 물리적 경로를 생성합니다.
+            Path physicalFilePath = directoryPath.resolve(storedFileName);
+
+            // 4. 파일을 해당 경로에 저장합니다.
+            file.transferTo(physicalFilePath);
+
+            // 5. DB에 저장할 상대 경로(웹 URL)를 만듭니다.
+            String dbFilePath = "/uploads/adoption_review_files/arNo_" + boardId + "/" + storedFileName;
+
+            AttachmentFile attachment = new AttachmentFile();
+            attachment.setBoardType(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE);
+            attachment.setBoardId(boardId);
+            attachment.setFileName(originalFileName);
+            attachment.setFilePath(dbFilePath);
+            attachment.setFileSize(file.getSize());
+            attachmentFileRepository.insertAttachment(attachment);
+        }
+    }
+
+    // (getReviewsByPage, getTotalReviewCount 등 나머지 조회 메소드는 기존과 동일)
     @Transactional(readOnly = true)
     public List<AdoptionReview> getReviewsByPage(int page, int size) {
         int offset = (page - 1) * size;
-        // MyBatis 매퍼가 JOIN을 통해 authorName을 채워줌
         List<AdoptionReview> reviews = adoptionReviewRepository.findReviewsByPage(size, offset);
-        // 첨부파일 로드 로직이 있다면 여기서 추가
+        reviews.forEach(review -> {
+            List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, review.getArNo());
+            review.setAttachments(attachments);
+        });
         return reviews;
     }
 
@@ -45,37 +134,12 @@ public class AdoptionReviewService {
 
     @Transactional(readOnly = true)
     public AdoptionReview getReviewById(Long arNo) {
-        // MyBatis 매퍼가 JOIN을 통해 authorName을 채워줌
         AdoptionReview review = adoptionReviewRepository.findReviewById(arNo);
-        // 첨부파일 로드 로직이 있다면 여기서 추가
+        if (review != null) {
+            List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, review.getArNo());
+            review.setAttachments(attachments);
+        }
         return review;
-    }
-
-    public void updateReview(Long arNo, AdoptionReview reviewDetails, String loggedInUserUid) {
-        AdoptionReview existingReview = adoptionReviewRepository.findReviewById(arNo);
-        if (existingReview == null) {
-            throw new RuntimeException("수정할 리뷰를 찾을 수 없습니다: " + arNo);
-        }
-        if (loggedInUserUid == null || !loggedInUserUid.equals(existingReview.getAuthorUid())) {
-            throw new RuntimeException("이 리뷰를 수정할 권한이 없습니다."); // AccessDeniedException 대신
-        }
-        existingReview.setReviewContent(reviewDetails.getReviewContent());
-        // 필요한 다른 필드 업데이트
-        adoptionReviewRepository.updateReview(existingReview);
-        // 첨부파일 업데이트 로직이 있다면 여기서 처리
-    }
-
-    public void deleteReview(Long arNo, String loggedInUserUid) {
-        AdoptionReview reviewToDelete = adoptionReviewRepository.findReviewById(arNo);
-        if (reviewToDelete == null) {
-            // 이미 삭제되었거나 없는 리뷰
-            return;
-        }
-        if (loggedInUserUid == null || !loggedInUserUid.equals(reviewToDelete.getAuthorUid())) {
-            throw new RuntimeException("이 리뷰를 삭제할 권한이 없습니다."); // AccessDeniedException 대신
-        }
-        // 첨부파일 삭제 로직이 있다면 먼저 처리
-        adoptionReviewRepository.deleteReview(arNo);
     }
 
     public void increaseViewCount(Long arNo) {

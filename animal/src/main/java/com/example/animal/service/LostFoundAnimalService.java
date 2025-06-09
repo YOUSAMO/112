@@ -21,7 +21,7 @@ public class LostFoundAnimalService {
     // ★★★ 폴더 이름 접두사 수정 ★★★
     private static final String FOLDER_PREFIX = "LostFound_"; // "post_"에서 "LostFound_"로 변경
 
-    @Value("${file.upload.dir}")
+    @Value("${file.upload-dir}")
     private String uploadDir;
 
     public LostFoundAnimalService(LostFoundAnimalRepository repository) {

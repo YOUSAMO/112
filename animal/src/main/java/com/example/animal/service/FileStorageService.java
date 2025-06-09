@@ -15,10 +15,10 @@ import java.nio.file.StandardCopyOption;
 public class FileStorageService {
     private final Path fileStorageLocation;
 
-    @Value("${file.upload.dir}")
+    @Value("${file.upload-dir}")
     private String uploadDir;
 
-    public FileStorageService(@Value("${file.upload.dir}") String uploadDir) {
+    public FileStorageService(@Value("${file.upload-dir}") String uploadDir) {
         this.uploadDir = uploadDir;
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
@@ -67,7 +67,6 @@ public class FileStorageService {
             throw new RuntimeException(" Could not delete file: " + filePath, e);
         }
     }
-
 
 
 }
