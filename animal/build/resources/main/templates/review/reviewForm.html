@@ -55,15 +55,18 @@
     </div>
     <div id="previewContainer_edit" class="flex flex-wrap gap-4 mt-2"></div>
 
-    <div th:if="${review.attachments != null and !review.attachments.isEmpty()}">
+    <div th:if="${review.attachments != null and not #lists.isEmpty(review.attachments)}">
       <label class="block text-sm font-medium text-gray-700 mb-2">현재 첨부된 사진들</label>
       <div class="flex flex-wrap gap-4">
-        <div th:each="att : ${review.attachments}" class="relative w-[150px] h-[150px]">
+        <div th:each="att : ${review.attachments}" class="relative w-[150px]">
           <img th:src="@{${att.filePath}}" alt="첨부파일 이미지"
-               class="w-full h-full object-cover border border-gray-300 rounded-md" />
+               class="w-full h-[150px] object-cover border border-gray-300 rounded-md" />
+
+          <div class="mt-1 text-xs text-red-600 break-all" th:text="${att.filePath}"></div>
+
           <button type="button"
-                  class="absolute top-1 right-1 text-xs bg-red-600 text-white px-2 py-1 rounded-md hover:bg-red-700"
-                  th:data-id="${att.id}" th:data-review-id="${review.arNo}"
+                  class="absolute top-1 right-1 text-xs bg-red-600 text-white px-2 py-1 rounded-md"
+                  th:attr="data-id=${att.id}, data-review-id=${review.arNo}"
                   onclick="deleteReviewAttachment(this)">삭제</button>
         </div>
       </div>
