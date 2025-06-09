@@ -107,30 +107,40 @@ public class MemberService {
     }
 
 
-    public List<Member> findIdsByNameAndEmail(String u_name, String u_email) {
 
-        return memberRepository.findIdsByNameAndEmail(u_name, u_email);
-    }
-
-
+   /*
     public List<Member> findPws(String u_id,String u_name,String u_email){
 
         return memberRepository.findPws(u_id,u_name,u_email);
     }
+    */
 
 
 
     @Transactional
     public void deleteById(String u_id) {
+
         memberRepository.deleteById(u_id);
+
     }
 
 
-
+    @Transactional
     public void updatepassword(String u_id, String u_pass) {
 
-
          memberRepository.updatepassword(u_id,u_pass);
+
     }
 
+
+
+
+    public List<Member> findIdsByNameAndEmail(String u_name, String u_email) {
+        return memberRepository.findIdsByNameAndEmail(u_name, u_email);
+    }
+
+
+    public boolean checkUserExists(String u_id, String u_name, String u_email) {
+        return memberRepository.countByUserInfo(u_id, u_name, u_email) > 0;
+    }
 }

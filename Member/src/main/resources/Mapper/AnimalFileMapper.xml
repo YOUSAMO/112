@@ -21,6 +21,14 @@
         VALUES (#{animalId}, #{fileName}, #{filePath}, #{fileType})
     </insert>
 
+    <select id="findByAnimalIds" resultMap="animalFileMap">
+        SELECT * FROM animal_file
+        WHERE animal_id IN
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <delete id="deleteFilesByPaths" parameterType="list">
         DELETE FROM animal_file
         WHERE file_path IN
@@ -28,4 +36,17 @@
             #{filePath}
         </foreach>
     </delete>
+
+    <delete id="deleteByAnimalId" parameterType="long">
+        DELETE FROM animal_file WHERE animal_id = #{animalId}
+    </delete>
+
+    <select id="findById" parameterType="long" resultMap="animalFileMap">
+        SELECT * FROM animal_file WHERE id = #{id}
+    </select>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM animal_file WHERE id = #{id}
+    </delete>
+
 </mapper>

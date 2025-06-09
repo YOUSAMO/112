@@ -81,6 +81,14 @@
         WHERE u_id = #{u_id}
     </update>
 
+    <select id="countByUserInfo" resultType="int">
+        SELECT COUNT(*)
+        FROM members
+        WHERE u_id = #{username}
+          AND u_name = #{name}
+          AND u_email = #{email}
+    </select>
+
 
 
 </mapper>

@@ -11,7 +11,7 @@
                 <div class="dropdown-content">
                     <a th:href="${session.loginMember == null} ? @{/login} : @{/reviews}">리뷰 게시판</a>
                     <a th:href="@{/boards}">자유 게시판</a>
-                    <a th:href="${session.loginMember == null} ? @{/login} : @{/events}">유기동물 실종/보호 게시판</a>
+                    <a th:href="${session.loginMember == null} ? @{/login} : @{/lostfound}">유기동물 실종/보호 게시판</a>
                 </div>
             </div>
             <a th:href="${session.loginMember == null} ? @{/login} : @{/mypage}">마이페이지</a>

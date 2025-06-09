@@ -107,27 +107,6 @@ public class MainController {
 
 
 
-    @GetMapping("/findPw")
-    public String showFindPwForm(Model model) {
-
-        model.addAttribute("member", new Member());
-
-        return "findPassword";
-    }
-
-    @PostMapping("/findPw")
-    public String findPw(
-            @RequestParam("u_id") String u_id,
-            @RequestParam("u_name") String u_name,
-            @RequestParam("u_email") String u_email,
-            Model model
-    )
-    {
-        List<Member> foundPws = memberService.findPws(u_id,u_name, u_email);
-        model.addAttribute("foundPws", foundPws);
-        return "findPwResult"; // 기존 결과 화면 파일명
-
-    }
 
 
 

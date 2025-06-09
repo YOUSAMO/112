@@ -1,10 +1,12 @@
 package com.example.member.entity;
 
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List; // List import
+import java.util.List;
 
 @Data
 @NoArgsConstructor

@@ -27,7 +27,7 @@ public class BoardService {
     @Autowired
     private AttachmentFileRepository attachmentFileRepository;
 
-    @Value("${file.upload.dir}")
+    @Value("${file.upload-dir}")
     private String uploadDir;
 
     private final String BOARD_TYPE = "board";

@@ -19,10 +19,11 @@ public interface MemberRepository {
 
 
 
-    List<Member> findPws(@Param("u_id") String u_id, @Param("u_name") String u_name,
-                         @Param("u_email") String u_email);
+
 
     void updatepassword(@Param("u_id") String u_id, @Param("u_pass") String u_pass);
-
+    int countByUserInfo(@Param("u_id") String u_id,
+                                       @Param("name") String u_name,
+                                       @Param("email") String u_email);
 
 }

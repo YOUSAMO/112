@@ -1,68 +1,90 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.example.member.repository.AdoptionReviewRepository">
+
+    <insert id="insertReview" parameterType="com.example.member.entity.AdoptionReview" useGeneratedKeys="true" keyProperty="arNo">
+        INSERT INTO adoption_review (ar_title, author_uid, review_content, created_at, view_count, like_count) VALUES (#{arTitle}, #{authorUid}, #{reviewContent}, NOW(), 0, 0) </insert>
 
     <resultMap id="adoptionReviewResultMap" type="com.example.member.entity.AdoptionReview">
         <id property="arNo" column="ar_no"/>
-        <result property="uNo" column="u_no"/>
+        <result property="arTitle" column="ar_title"/> <result property="authorUid" column="author_uid"/>
         <result property="reviewContent" column="review_content"/>
         <result property="createdAt" column="created_at"/>
         <result property="viewCount" column="view_count"/>
         <result property="likeCount" column="like_count"/>
+        <result property="authorName" column="u_name"/>
     </resultMap>
 
-    <insert id="insert" parameterType="com.example.member.entity.AdoptionReview" useGeneratedKeys="true" keyProperty="arNo">
-        INSERT INTO adoption_review (u_no, review_content, created_at, view_count, like_count)
-        VALUES (#{uNo}, #{reviewContent}, NOW(), 0, 0)
-    </insert>
+    <select id="findAllReviews" resultMap="adoptionReviewResultMap">
+        SELECT
+            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name
+        FROM
+            adoption_review ar
+                JOIN
+            users u ON ar.author_uid = u.u_id
+        ORDER BY ar.created_at DESC
+    </select>
 
-    <update id="update" parameterType="com.example.member.entity.AdoptionReview">
+    <select id="findReviewsByPage" resultMap="adoptionReviewResultMap" parameterType="map">
+        SELECT
+            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name
+        FROM
+            adoption_review ar
+                JOIN
+            users u ON ar.author_uid = u.u_id
+        ORDER BY ar.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countReviews" resultType="int">
+        SELECT COUNT(*) FROM adoption_review
+    </select>
+
+    <select id="findReviewById" parameterType="long" resultMap="adoptionReviewResultMap">
+        SELECT
+            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name
+        FROM
+            adoption_review ar
+                LEFT JOIN
+            users u ON ar.author_uid = u.u_id
+        WHERE ar.ar_no = #{arNo}
+    </select>
+
+    <update id="updateReview" parameterType="com.example.member.entity.AdoptionReview">
         UPDATE adoption_review
-        SET review_content = #{reviewContent}
+        SET
+            ar_title = #{arTitle},          review_content = #{reviewContent}
         WHERE ar_no = #{arNo}
     </update>
 
-    <select id="selectById" parameterType="long" resultMap="adoptionReviewResultMap">
-        SELECT ar_no, u_no, review_content, created_at, view_count, like_count
-        FROM adoption_review
-        WHERE ar_no = #{arNo}
-    </select>
-
-    <delete id="delete" parameterType="long">
+    <delete id="deleteReview" parameterType="long">
         DELETE FROM adoption_review WHERE ar_no = #{arNo}
     </delete>
 
-    <sql id="searchConditionsSql">
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND review_content LIKE CONCAT('%', #{keyword}, '%')
-            </if>
-            <if test="species != null and species != ''">
-            </if>
-        </where>
-    </sql>
-
-    <select id="selectReviewsWithSearch" parameterType="map" resultMap="adoptionReviewResultMap">
-        SELECT ar_no, u_no, review_content, created_at, view_count, like_count
-        FROM adoption_review ar <include refid="searchConditionsSql"/>
-        ORDER BY created_at DESC
-        LIMIT #{limit} OFFSET #{offset}
-    </select>
-
-    <select id="selectTotalCountWithSearch" parameterType="map" resultType="int">
-        SELECT COUNT(*)
-        FROM adoption_review ar
-        <include refid="searchConditionsSql"/>
-    </select>
-
-    <update id="incrementViewCount" parameterType="long">
-        UPDATE adoption_review SET view_count = view_count + 1 WHERE ar_no = #{arNo}
+    <update id="incrementReviewViewCount" parameterType="long">
+        UPDATE adoption_review
+        SET view_count = view_count + 1
+        WHERE ar_no = #{arNo}
     </update>
 
-    <update id="incrementLikeCount" parameterType="long">
-        UPDATE adoption_review SET like_count = like_count + 1 WHERE ar_no = #{arNo}
+    <update id="incrementReviewLikeCount" parameterType="long">
+        UPDATE adoption_review
+        SET like_count = like_count + 1
+        WHERE ar_no = #{arNo}
     </update>
+
+    <update id="decrementReviewLikeCount" parameterType="long">
+        UPDATE adoption_review
+        SET like_count = CASE WHEN like_count > 0 THEN like_count - 1 ELSE 0 END
+        WHERE ar_no = #{arNo}
+    </update>
+
+    <select id="getReviewLikeCount" parameterType="long" resultType="java.lang.Integer">
+        SELECT like_count
+        FROM adoption_review
+        WHERE ar_no = #{arNo}
+    </select>
 
 </mapper>
