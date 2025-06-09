@@ -1,13 +1,10 @@
 package com.example.member.service;
 
 
-import com.example.member.DTO.AdminDTO;
+import com.example.member.DTO.SessionAdminDTO;
 import com.example.member.entity.Admin;
-import com.example.member.entity.Member;
 import com.example.member.repository.AdminRepository;
-import com.example.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +29,7 @@ public class AdminService {
 
     @Transactional
     // 관리자 2명 등록 제한 및 등록하는 로직
-    public boolean registerAdmin(AdminDTO adminDTO) {
+    public boolean registerAdmin(SessionAdminDTO adminDTO) {
         int count = adminRepository.countAdmins();
         System.out.println("현재 관리자 수: " + count);  // ← 디버깅
         if (count >= 2) {
@@ -51,20 +48,35 @@ public class AdminService {
 
     @Transactional
    //관리자 조회 2명 있는지 정보
-    public List<AdminDTO> getAllAdmins() {
+    public List<SessionAdminDTO> getAllAdmins() {
         List<Admin> admins = adminRepository.findAll();
-        List<AdminDTO> adminDTOList = new ArrayList<>();
+        List<SessionAdminDTO> adminDTOList = new ArrayList<>();
 
         for (Admin admin : admins) {
-            AdminDTO dto = new AdminDTO();
-            dto.setA_no(admin.getA_no());
+            SessionAdminDTO dto = new SessionAdminDTO();
             dto.setA_id(admin.getA_id());
             dto.setA_name(admin.getA_name());
+            dto.setA_pass(admin.getA_pass());
+
             adminDTOList.add(dto);
         }
 
         return adminDTOList;
     }
+
+    @Transactional
+    public Admin findByLoginIdAndPass(String a_id, String a_pass) {
+        return adminRepository.findByLoginIdAndPass(a_id, a_pass);
+    }
+
+
+
+   //인터셉터에서 관리자 2명 제한하는 로직 부분
+    public int getAdminCount() {
+        return adminRepository.countAdmins();
+    }
+
+
 
 
 

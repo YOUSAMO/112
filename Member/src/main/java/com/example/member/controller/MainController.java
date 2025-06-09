@@ -139,6 +139,36 @@ public class MainController {
 
     }
 
+    @PostMapping("/mupdate")
+    public String updatePassword(
+            @RequestParam("u_pass") String u_pass,
+            @RequestParam("u_pass_check") String u_pass_check,
+            HttpSession session,
+            Model model) {
+
+        // 1. 로그인 체크
+        String userId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (userId == null) {
+            return "redirect:" + LOGIN_PAGE_URL;
+        }
+
+        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
+        model.addAttribute("member", loginMember);
+
+        // 2. 비밀번호 일치 확인
+        if (!u_pass.equals(u_pass_check)) {
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            // 기존 회원정보를 다시 모델에 담아주면 더 좋음
+            return "memberupdate";
+        }
+
+        // 3. 비밀번호 변경 서비스 호출(MyBatis)
+        memberService.updatepassword(userId, u_pass);
+
+        model.addAttribute("message", "비밀번호가 성공적으로 변경되었습니다.");
+        return "redirect:/mypage";
+    }
+
 
 
 

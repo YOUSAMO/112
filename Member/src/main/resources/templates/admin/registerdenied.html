@@ -1,0 +1,58 @@
+﻿<!-- src/main/resources/templates/admin/registerDenied.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 등록 제한</title>
+    <style>
+        body {
+            background: #f9f6ef; /* 아이보리톤 배경 */
+            color: #333;
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fffdfa;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid #e0ddd5;
+        }
+        h1 {
+            color: #d9534f; /* 경고문구 빨강 */
+            margin-bottom: 16px;
+        }
+        p {
+            margin-bottom: 24px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        a {
+            color: #fff;
+            background: #6c8b47; /* 따뜻한 그린 */
+            padding: 10px 22px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        a:hover {
+            background: #5b7639;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>관리자 등록 제한</h1>
+    <p>이미 최대 <strong>2명의 관리자 계정</strong>이 등록되어 있습니다.<br>
+        추가 등록이 불가합니다.</p>
+    <a th:href="@{/}"}>메인 페이지로 이동</a>
+</div>
+</body>
+</html>

@@ -3,17 +3,12 @@ package com.example.member.controller;
 import com.example.member.DTO.MemberDTO;
 import com.example.member.DTO.SessionMemberDTO;
 import com.example.member.entity.Member;
-import com.example.member.service.MemberService;  // ✅ Service import
-
-
-import jakarta.servlet.http.HttpServletRequest;
+import com.example.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor // 자동 생성자 주입 lombok 라이브러리 명령어
@@ -110,7 +105,7 @@ public class MemberController {
     }
 
     // 회원 탈퇴 처리
-    @PostMapping("/member/delete")
+    @PostMapping("/delete")
     public String deleteMember(HttpSession session) {
         // 세션에서 로그인 회원 정보 가져오기
         SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
