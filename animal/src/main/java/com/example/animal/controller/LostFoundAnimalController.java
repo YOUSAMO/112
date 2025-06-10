@@ -2,6 +2,7 @@ package com.example.animal.controller;
 
 import com.example.animal.entity.LostFoundAnimal;
 import com.example.animal.service.LostFoundAnimalService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -14,12 +15,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException; // remove 메소드에서만 사용될 수 있음 (현재는 아님)
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/lostfound")
@@ -45,52 +48,73 @@ public class LostFoundAnimalController {
     }
 
     @GetMapping("/list")
-    public String list(Model model) {
+    public String list(Model model, HttpSession session) {
         List<LostFoundAnimal> list = animalService.getList();
+        String currentUserId = (String) session.getAttribute("loggedInUserId");
+
         model.addAttribute("list", list);
-        return "lostfound/lostfoundlist";
+        model.addAttribute("currentUserId", currentUserId);
+
+        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
+        return "lostfound/lostfoundList";
     }
 
     @GetMapping("/register")
     public String registerForm(Model model) {
-        if (!model.containsAttribute("animal")) {
-            model.addAttribute("animal", new LostFoundAnimal());
-        }
-        return "lostfound/lostfoundregister";
+        model.addAttribute("animal", new LostFoundAnimal());
+        model.addAttribute("isNew", true);
+        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
+        return "lostfound/lostfoundForm";
     }
 
     @PostMapping("/register")
     public String register(@ModelAttribute LostFoundAnimal animal,
-                           @RequestParam("files") List<MultipartFile> files) throws IOException {
-        animalService.register(animal, files);
+                           @RequestParam("files") List<MultipartFile> files,
+                           RedirectAttributes redirectAttributes,
+                           HttpSession session) throws IOException {
+
+        String userId = (String) session.getAttribute("loggedInUserId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        animalService.register(animal, files, userId);
+        redirectAttributes.addFlashAttribute("message", "게시글이 성공적으로 등록되었습니다.");
         return "redirect:/lostfound/list";
     }
 
     @GetMapping("/detail/{id}")
-    public String detail(@PathVariable Long id, Model model) {
-        LostFoundAnimal animal = animalService.get(id);
+    public String detail(@PathVariable Long id, Model model, HttpSession session) {
+        String userId = (String) session.getAttribute("loggedInUserId");
+        LostFoundAnimal animal = animalService.get(id, userId);
+
         if (animal == null) {
             return "redirect:/lostfound/list";
         }
         animalService.increaseViewCount(id);
         model.addAttribute("animal", animal);
-        return "lostfound/lostfounddetail";
+        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
+        return "lostfound/lostfoundView";
     }
 
     @GetMapping("/modify/{id}")
     public String modifyForm(@PathVariable Long id, Model model) {
-        LostFoundAnimal animal = animalService.get(id);
+        LostFoundAnimal animal = animalService.get(id, null);
         if (animal == null) {
             return "redirect:/lostfound/list";
         }
         model.addAttribute("animal", animal);
-        return "lostfound/lostfoundmodify";
+        model.addAttribute("isNew", false);
+        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
+        return "lostfound/lostfoundForm";
     }
 
     @PostMapping("/modify")
     public String modify(@ModelAttribute LostFoundAnimal animal,
-                         @RequestParam("files") List<MultipartFile> files) throws IOException {
+                         @RequestParam("files") List<MultipartFile> files,
+                         RedirectAttributes redirectAttributes) throws IOException {
         animalService.modify(animal, files);
+        redirectAttributes.addFlashAttribute("message", "게시글이 성공적으로 수정되었습니다.");
         return "redirect:/lostfound/detail/" + animal.getId();
     }
 
@@ -102,24 +126,30 @@ public class LostFoundAnimalController {
 
     @PostMapping("/like/{id}")
     @ResponseBody
-    public String like(@PathVariable Long id) {
-        animalService.increaseLikeCount(id);
-        return "success";
+    public ResponseEntity<?> like(@PathVariable("id") Long boardId, HttpSession session) {
+        String userId = (String) session.getAttribute("loggedInUserId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        try {
+            Map<String, Object> result = animalService.toggleLike(userId, boardId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류가 발생했습니다.");
+        }
     }
 
     @DeleteMapping("/attachment/{attachmentId}")
     @ResponseBody
-    public ResponseEntity<?> deleteAttachment(@PathVariable Long attachmentId) {
+    public ResponseEntity<String> deleteAttachment(@PathVariable Long attachmentId) {
         try {
             boolean deleted = animalService.deleteSingleAttachment(attachmentId);
             if (deleted) {
-                return ResponseEntity.ok().body("첨부파일이 성공적으로 삭제되었습니다.");
+                return ResponseEntity.ok("첨부파일이 성공적으로 삭제되었습니다.");
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("첨부파일을 삭제하지 못했습니다. (파일을 찾을 수 없거나 삭제 중 오류)");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("첨부파일을 찾을 수 없거나 삭제에 실패했습니다.");
             }
         } catch (Exception e) {
-            System.err.println("첨부파일 삭제 중 서버 오류 발생: attachmentId=" + attachmentId + ", error=" + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("첨부파일 삭제 중 서버 오류가 발생했습니다.");
         }
     }
@@ -129,17 +159,12 @@ public class LostFoundAnimalController {
     public ResponseEntity<Resource> serveFile(@PathVariable String boardType,
                                               @PathVariable String boardId,
                                               @PathVariable String fileName) {
-        Path fileSystemPath = null;
         try {
-            if (CONTROLLER_BOARD_TYPE.equals(boardType)) {
-                String actualFolderNameInPath = CONTROLLER_FOLDER_PREFIX + boardId;
-                fileSystemPath = Paths.get(uploadDir, boardType, actualFolderNameInPath, fileName);
-            } else {
-                System.err.println("LostFoundAnimalController: Unsupported boardType for file serving: " + boardType);
-                return ResponseEntity.notFound().build(); // ResponseEntity<Void> 반환 (호환 가능)
+            if (!CONTROLLER_BOARD_TYPE.equals(boardType)) {
+                return ResponseEntity.badRequest().build();
             }
-
-            System.out.println("LostFoundAnimalController: Attempting to serve file from: " + fileSystemPath.toString());
+            String actualFolderNameInPath = CONTROLLER_FOLDER_PREFIX + boardId;
+            Path fileSystemPath = Paths.get(uploadDir, boardType, actualFolderNameInPath, fileName);
             Resource resource = new UrlResource(fileSystemPath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
@@ -149,19 +174,12 @@ public class LostFoundAnimalController {
                 }
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource); // ResponseEntity<Resource> 반환
+                        .body(resource);
             } else {
-                System.err.println("LostFoundAnimalController: File not found or not readable: " + fileSystemPath.toString());
-                return ResponseEntity.notFound().build(); // ResponseEntity<Void> 반환 (호환 가능)
+                return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            String pathForError = (fileSystemPath != null) ? fileSystemPath.toString() : "unknown path due to early error or unsupported boardType";
-            System.err.println("LostFoundAnimalController: Error serving file: " + pathForError + " - " + e.getMessage());
-            e.printStackTrace();
-            // ★★★ 수정된 부분 ★★★
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // ResponseEntity<Void> 반환 (호환 가능)
-            // 또는 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<Resource>body(null); 와 같이 명시적 null body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

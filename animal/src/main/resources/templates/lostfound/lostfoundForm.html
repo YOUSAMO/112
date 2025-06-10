@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${isNew ? '새 글 등록' : '글 수정'}"></title>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: 80px auto 40px auto; background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+        h1 { font-size: 2.2em; font-weight: 700; margin-top: 0; margin-bottom: 30px; color: #343a40; text-align: center; }
+        hr { border: none; border-top: 1px solid #e9ecef; margin: 40px 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 500; color: #495057; margin-bottom: 8px; }
+        .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="date"], .form-group select, .form-group textarea, .form-control-plaintext { width: 100%; padding: 12px; font-size: 1em; font-family: inherit; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .form-control-plaintext { background-color: #f8f9fa; border-color: #e9ecef; cursor: not-allowed; }
+        .form-group select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 15px top 50%; background-size: 10px auto; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
+        textarea { resize: vertical; min-height: 150px; }
+        .error { color: #dc3545; font-size: 0.85em; margin-top: 5px; display: block; }
+        .custom-file-upload { border: 1px solid #007bff; color: #007bff; display: inline-block; padding: 10px 20px; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s ease-in-out; }
+        .custom-file-upload:hover { background-color: #007bff; color: white; }
+        input[type="file"] { display: none; }
+        .preview-container, .attachments-list { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .preview-image, .attachment-item { display: inline-block; text-align: center; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px; background-color: #f8f9fa; position: relative; }
+        .preview-image img, .attachment-item img { width: 150px; height: 150px; object-fit: cover; border: 1px solid #ddd; border-radius: 6px; display: block; margin-bottom: 10px; }
+        .attachment-item span { font-size: 0.8em; color: #6c757d; word-break: break-all; }
+        .action-buttons { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 30px; }
+        .btn { display: inline-block; padding: 12px 25px; font-size: 1em; font-weight: 500; text-decoration: none; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; text-align: center; }
+        .btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-danger-sm { background-color: #dc3545; color: white; padding: 5px 10px; font-size: 0.8em; margin-top: 5px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+    <h1 th:text="${isNew ? '새 글 등록' : '글 수정'}"></h1>
+    <form th:action="${isNew ? '/lostfound/register' : '/lostfound/modify'}" method="post" enctype="multipart/form-data" th:object="${animal}">
+        <input th:if="${!isNew}" type="hidden" th:field="*{id}" />
+
+        <div class="form-group" th:if="${!isNew}">
+            <label>작성자:</label>
+            <input type="text" th:value="${animal.authorName}" readonly class="form-control-plaintext"/>
+        </div>
+
+        <div class="form-group">
+            <label for="boardType">게시판 유형:</label>
+            <select th:field="*{boardType}" id="boardType" required>
+                <option value="실종">실종</option>
+                <option value="보호">보호</option>
+                <option value="lostfound">분실/발견(기본)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="title">제목:</label>
+            <input type="text" th:field="*{title}" id="title" required />
+        </div>
+        <div class="form-group">
+            <label for="animalType">동물 종류:</label>
+            <select th:field="*{animalType}" id="animalType"><option value="강아지">강아지</option><option value="고양이">고양이</option><option value="기타">기타</option></select>
+        </div>
+        <div class="form-group">
+            <label for="gender">성별:</label>
+            <select th:field="*{gender}" id="gender"><option value="남">남</option><option value="여">여</option><option value="모름">모름</option></select>
+        </div>
+        <div class="form-group">
+            <label for="age">나이:</label>
+            <input type="text" th:field="*{age}" id="age" />
+        </div>
+        <div class="form-group">
+            <label for="location">위치:</label>
+            <input type="text" th:field="*{location}" id="location" />
+        </div>
+        <div class="form-group">
+            <label for="eventDate">발견/분실 날짜:</label>
+            <input type="date" name="eventDate" id="eventDate" th:value="${animal.eventDate != null ? #dates.format(animal.eventDate, 'yyyy-MM-dd') : ''}" />
+        </div>
+        <div class="form-group">
+            <label for="content">내용:</label>
+            <textarea th:field="*{content}" id="content" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="contactName">연락처 이름:</label>
+            <input type="text" th:field="*{contactName}" id="contactName" />
+        </div>
+        <div class="form-group">
+            <label for="contactPhone">연락처 전화번호:</label>
+            <input type="text" th:field="*{contactPhone}" id="contactPhone" />
+        </div>
+        <div class="form-group">
+            <label for="contactEmail">연락처 이메일:</label>
+            <input type="email" th:field="*{contactEmail}" id="contactEmail" />
+        </div>
+
+        <div th:if="${!isNew}">
+            <hr/>
+            <div id="existing-attachments-container">
+                <h4>기존 첨부파일</h4>
+                <div class="attachments-list" th:if="${animal.attachments != null and not #lists.isEmpty(animal.attachments)}">
+                    <div th:each="att : ${animal.attachments}" class="attachment-item" th:id="'attachment-item-' + ${att.id}">
+                        <img th:src="@{/lostfound/uploads/{boardType}/{boardId}/{fileName}(boardType=${att.boardType}, boardId=${att.boardId}, fileName=${att.fileName})}" th:alt="${att.fileName}" />
+                        <span th:text="${att.fileName}"></span><br/>
+                        <button type="button" class="btn btn-danger-sm delete-attachment-btn" th:data-attachment-id="${att.id}">이 파일 삭제</button>
+                    </div>
+                </div>
+                <p id="no-attachments-msg" th:if="${animal.attachments == null or #lists.isEmpty(animal.attachments)}">기존 첨부파일이 없습니다.</p>
+            </div>
+            <hr/>
+        </div>
+
+        <div class="form-group">
+            <label for="files" th:text="${isNew ? '사진 첨부' : '사진 추가 첨부'}"></label>
+            <label for="files" class="custom-file-upload">파일 선택</label>
+            <input type="file" name="files" id="files" multiple onchange="previewImages(event)" />
+            <div id="previewContainer" class="preview-container"></div>
+        </div>
+
+        <div class="action-buttons">
+            <a th:if="${isNew}" th:href="@{/lostfound/list}" class="btn btn-secondary">목록으로 돌아가기</a>
+            <a th:unless="${isNew}" th:href="@{/lostfound/detail/{id}(id=${animal.id})}" class="btn btn-secondary">수정 취소</a>
+            <button type="submit" class="btn btn-primary" th:text="${isNew ? '등록' : '수정 완료'}"></button>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // 이미지 미리보기 기능
+    function previewImages(event) {
+        const previewContainer = document.getElementById('previewContainer');
+        previewContainer.innerHTML = ''; // 기존 미리보기 초기화
+        const files = event.target.files;
+
+        if (files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewWrapper = document.createElement('div');
+                    previewWrapper.className = 'preview-image';
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+
+                    previewWrapper.appendChild(img);
+                    previewContainer.appendChild(previewWrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    // 수정 시 기존 첨부파일 삭제 기능
+    document.addEventListener('DOMContentLoaded', function () {
+        const attachmentContainer = document.getElementById('existing-attachments-container');
+        if (attachmentContainer) {
+            attachmentContainer.addEventListener('click', function (event) {
+                if (event.target.classList.contains('delete-attachment-btn')) {
+                    const button = event.target;
+                    const attachmentId = button.dataset.attachmentId;
+                    if (!attachmentId) return;
+
+                    if (confirm('이 첨부파일을 정말 삭제하시겠습니까? 파일은 즉시 삭제되며 복구할 수 없습니다.')) {
+                        const csrfToken = document.querySelector("meta[name='_csrf']")?.content;
+                        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content;
+                        const headers = {};
+                        if(csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+                        fetch(`/lostfound/attachment/${attachmentId}`, { method: 'DELETE', headers: headers })
+                            .then(response => {
+                                if (response.ok) {
+                                    const itemToRemove = document.getElementById('attachment-item-' + attachmentId);
+                                    if(itemToRemove) itemToRemove.remove();
+
+                                    // 마지막 첨부파일이 삭제되었는지 확인
+                                    const remainingItems = attachmentContainer.querySelectorAll('.attachment-item');
+                                    if (remainingItems.length === 0) {
+                                        document.getElementById('no-attachments-msg').style.display = 'block';
+                                    }
+                                } else {
+                                    alert('삭제 실패');
+                                }
+                            });
+                    }
+                }
+            });
+        }
+    });
+    /*]]>*/
+</script>
+
+</body>
+</html>

@@ -77,41 +77,56 @@
 
     likeButton.addEventListener("click", () => {
       const reviewId = likeButton.dataset.arNo;
-      const boardType = likeButton.dataset.boardType;
+      // boardType은 이제 백엔드 URL에 직접 사용되지 않고, 백엔드 서비스에서 BOARD_TYPE 상수로 사용됩니다.
 
-      fetch(`/api/likes/${boardType}/${reviewId}`, {
+      // **** URL 수정 및 응답 처리 로직 개선 ****
+      fetch(`/reviews/${reviewId}/like`, { // 백엔드 컨트롤러의 실제 URL에 맞춤
         method: "POST",
-        headers: { "X-Requested-With": "XMLHttpRequest" }
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "Content-Type": "application/json" // 서버가 JSON을 기대하도록 명시
+        }
       })
               .then(res => {
-                if (res.status === 401) {
-                  alert('로그인이 필요합니다.');
-                  window.location.href = /*[[@{/login}]]*/ '/login';
-                  throw new Error('로그인 필요');
-                }
-                if (!res.ok) {
-                  return res.json().then(err => { throw new Error(err.message || "좋아요 요청 실패"); });
-                }
-                return res.json();
+                // 모든 응답이 JSON으로 통일되었으므로, 일단 JSON으로 파싱을 시도
+                return res.json().then(data => {
+                  // HTTP 상태 코드와 JSON 응답의 'success' 키를 조합하여 처리
+                  if (res.status === 401) { // 401 Unauthorized (로그인 필요)
+                    alert(data.message || '로그인이 필요합니다.');
+                    window.location.href = /*[[@{/login}]]*/ '/login';
+                    // Promise 체인 중단
+                    return Promise.reject(new Error('로그인 필요'));
+                  } else if (!res.ok || !data.success) { // 2xx 성공이 아니거나 JSON 응답에서 success: false인 경우
+                    alert(data.message || '오류가 발생했습니다.');
+                    // Promise 체인 중단
+                    return Promise.reject(new Error(data.message || '좋아요 처리 실패'));
+                  }
+                  // 성공적인 JSON 응답이면 데이터를 다음 then 블록으로 전달
+                  return data;
+                });
               })
-              .then(data => {
-                if (data.success) {
-                  likeCountElement.textContent = data.likeCount;
-                  if (data.liked) {
+              .then(responseJson => { // 백엔드에서 통일된 JSON 응답 ({ success: true, data: {...} } 또는 { success: false, message: "..." })
+                // 'success' 키가 true일 때만 UI 업데이트 로직 실행
+                if (responseJson.success) {
+                  // 실제 좋아요 정보는 'data' 키 안에 있습니다.
+                  likeCountElement.textContent = responseJson.data.likeCount;
+                  if (responseJson.data.liked) {
                     likeButtonTextSpan.textContent = '좋아요 취소';
                     likeButton.classList.add('liked');
                   } else {
                     likeButtonTextSpan.textContent = '좋아요';
                     likeButton.classList.remove('liked');
                   }
-                } else {
-                  alert(data.message);
                 }
+                // 'success: false'인 경우는 위에서 이미 alert 띄우고 reject 되었으므로 여기서는 처리할 필요 없음
               })
               .catch(err => {
+                // 네트워크 오류나 위에서 throw된 에러를 여기서 잡습니다.
+                // '로그인 필요' 에러는 이미 처리했으므로 중복 알림 방지
                 if (err.message !== '로그인 필요') {
                   console.error("좋아요 에러:", err);
-                  alert(err.message || '좋아요 처리 중 오류가 발생했습니다.');
+                  // 사용자에게 친화적인 메시지 제공
+                  alert('좋아요 처리 중 예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
                 }
               });
     });

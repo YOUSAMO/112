@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${animal.title} + ' 상세보기'">상세보기</title>
+  <meta name="_csrf" th:content="${_csrf?.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding: 0; }
+    .container { max-width: 800px; margin: 80px auto 40px auto; background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+    h1 { font-size: 2.2em; font-weight: 700; margin-top: 0; margin-bottom: 10px; color: #343a40; }
+    h3 { font-size: 1.4em; margin-top: 30px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #e9ecef; color: #495057; }
+    hr { border: none; border-top: 1px solid #e9ecef; margin: 30px 0; }
+    p { font-size: 1em; line-height: 1.7; color: #495057; }
+    p b { color: #343a40; font-weight: 500; }
+    .meta-info { display: flex; flex-wrap: wrap; gap: 20px; font-size: 0.9em; color: #868e96; margin-bottom: 20px; }
+    .meta-info b { color: #495057; font-weight: 500; }
+    .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px 20px; }
+    .content-box, .contact-info { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; }
+    .content-box pre { font-family: inherit; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 1em; line-height: 1.7; }
+    .attachment-section { margin-top: 30px; }
+    .attachment-gallery { display: flex; flex-wrap: wrap; gap: 15px; }
+    .attachment-image { max-width: 250px; max-height: 250px; width: auto; height: auto; border: 1px solid #dee2e6; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; }
+    .action-buttons { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
+    .btn { display: inline-block; padding: 10px 20px; font-size: 1em; font-weight: 500; text-decoration: none; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; text-align: center; }
+    .btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .btn-primary { background-color: #007bff; color: white; }
+    .btn-danger { background-color: #dc3545; color: white; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-like { background-color: white; color: #333; border: 1px solid #ccc; margin-right: auto; }
+    .btn-like:hover { background-color: #f0f0f0; }
+    .btn-like.liked { background-color: #ef4444; color: white; border-color: #ef4444; }
+    .like-text { margin-left: 8px; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+  <h1 th:text="${animal.title}"></h1>
+  <div class="meta-info">
+    <span>게시판: <b th:text="${animal.boardType}"></b></span>
+    <span>작성자: <b th:text="${animal.authorName}"></b></span>
+    <span>조회수: <b th:text="${animal.viewCount}"></b></span>
+    <span>좋아요: <b id="likeCount" th:text="${animal.likeCount}"></b></span>
+  </div>
+  <hr>
+  <div class="details-grid">
+    <p><b>동물 종류:</b> <span th:text="${animal.animalType}"></span></p>
+    <p><b>성별:</b> <span th:text="${animal.gender}"></span></p>
+    <p><b>나이:</b> <span th:text="${animal.age}"></span></p>
+    <p><b>위치:</b> <span th:text="${animal.location}"></span></p>
+    <p><b>발견/분실 날짜:</b> <span th:text="${animal.eventDate != null ? #dates.format(animal.eventDate, 'yyyy-MM-dd') : '날짜 정보 없음'}"></span></p>
+  </div>
+  <h3>내용</h3>
+  <div class="content-box"><pre th:text="${animal.content}"></pre></div>
+  <h3>연락처 정보</h3>
+  <div class="contact-info">
+    <p><b>이름:</b> <span th:text="${animal.contactName}"></span></p>
+    <p><b>전화번호:</b> <span th:text="${animal.contactPhone}"></span></p>
+    <p><b>이메일:</b> <span th:text="${animal.contactEmail}"></span></p>
+  </div>
+  <div th:if="${animal.attachments != null and not #lists.isEmpty(animal.attachments)}" class="attachment-section">
+    <h3>첨부된 사진</h3>
+    <div class="attachment-gallery">
+      <th:block th:each="attachment : ${animal.attachments}"><img th:src="@{/lostfound/uploads/{boardType}/{boardId}/{fileName}(boardType=${attachment.boardType}, boardId=${attachment.boardId}, fileName=${attachment.fileName})}" th:alt="${attachment.fileName}" class="attachment-image" /></th:block>
+    </div>
+  </div>
+  <hr>
+  <div class="action-buttons">
+    <th:block th:if="${session.loggedInUserId != null}">
+      <button id="likeBtn" type="button" class="btn btn-like" th:classappend="${animal.isLikedByCurrentUser ? 'liked' : ''}">
+        <span>👍</span><span class="like-text" th:text="${animal.isLikedByCurrentUser ? '좋아요 취소' : '좋아요'}"></span>
+      </button>
+    </th:block>
+    <th:block th:if="${session.loggedInUserId == null}">
+      <button type="button" class="btn btn-like" disabled title="로그인 후 이용 가능합니다.">👍 좋아요</button>
+    </th:block>
+
+    <div th:if="${currentUserId != null and #strings.equals(currentUserId, animal.userId)}" style="margin-left: auto;">
+      <a th:href="@{/lostfound/modify/{id}(id=${animal.id})}" class="btn btn-primary">수정</a>
+      <form th:action="@{/lostfound/remove/{id}(id=${animal.id})}" method="post" style="display:inline;" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+        <button type="submit" class="btn btn-danger">삭제</button>
+      </form>
+    </div>
+    <a th:href="@{/lostfound/list}" class="btn btn-secondary">목록</a>
+  </div>
+</div>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+    const likeBtn = document.getElementById('likeBtn');
+    if (!likeBtn || likeBtn.disabled) return;
+    const animalId = /*[[${animal.id}]]*/ '0';
+    const csrfToken = document.querySelector("meta[name='_csrf']")?.content;
+    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content;
+    likeBtn.addEventListener('click', () => {
+      const headers = { 'Content-Type': 'application/json' };
+      if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+      fetch(`/lostfound/like/${animalId}`, { method: 'POST', headers: headers })
+              .then(response => {
+                if (response.status === 401) { alert('로그인이 필요합니다.'); throw new Error('Unauthorized'); }
+                if (!response.ok) throw new Error('서버 응답 오류');
+                return response.json();
+              })
+              .then(data => {
+                document.getElementById('likeCount').textContent = data.likeCount;
+                const likeButtonText = likeBtn.querySelector('.like-text');
+                if (data.liked) {
+                  likeBtn.classList.add('liked');
+                  if(likeButtonText) likeButtonText.textContent = '좋아요 취소';
+                } else {
+                  likeBtn.classList.remove('liked');
+                  if(likeButtonText) likeButtonText.textContent = '좋아요';
+                }
+              })
+              .catch(error => { if (error.message !== 'Unauthorized') console.error('좋아요 처리 실패:', error); });
+    });
+  });
+</script>
+</body>
+</html>

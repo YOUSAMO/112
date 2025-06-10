@@ -2,7 +2,6 @@ package com.example.animal.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 import java.sql.Date;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.List;
 @Setter
 public class LostFoundAnimal {
     private Long id;
+    private String userId;
     private String boardType;
     private String title;
     private String content;
@@ -26,6 +26,10 @@ public class LostFoundAnimal {
     private int likeCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
     private List<AttachmentFile> attachments;
+
+    // DB에 저장되지 않는 임시 필드
+    private boolean isLikedByCurrentUser = false;
+    private String thumbnailFileName;
+    private String authorName;
 }

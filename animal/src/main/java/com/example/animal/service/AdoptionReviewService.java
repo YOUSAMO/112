@@ -5,40 +5,36 @@ import com.example.animal.entity.AdoptionReview;
 import com.example.animal.entity.AttachmentFile;
 import com.example.animal.repository.AdoptionReviewRepository;
 import com.example.animal.repository.AttachmentFileRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.animal.repository.UserLikeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AdoptionReviewService {
 
     private final AdoptionReviewRepository adoptionReviewRepository;
     private final AttachmentFileRepository attachmentFileRepository;
+    private final UserLikeRepository userLikeRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    @Autowired
-    public AdoptionReviewService(AdoptionReviewRepository adoptionReviewRepository, AttachmentFileRepository attachmentFileRepository) {
-        this.adoptionReviewRepository = adoptionReviewRepository;
-        this.attachmentFileRepository = attachmentFileRepository;
-    }
-
     public void createReview(AdoptionReview review, String loggedInUserUid, List<MultipartFile> files) throws IOException {
         review.setAuthorUid(loggedInUserUid);
-        adoptionReviewRepository.insertReview(review); // 먼저 저장하여 review.arNo 값을 얻음
+        adoptionReviewRepository.insertReview(review);
+        // 파일 저장 시 게시글 번호(arNo)를 사용하여 경로 생성
         saveFiles(files, review.getArNo());
     }
 
@@ -50,80 +46,101 @@ public class AdoptionReviewService {
         existingReview.setArTitle(reviewDetails.getArTitle());
         existingReview.setReviewContent(reviewDetails.getReviewContent());
         adoptionReviewRepository.updateReview(existingReview);
+        // 파일 저장 시 게시글 번호(arNo)를 사용하여 경로 생성
         saveFiles(newFiles, arNo);
     }
 
-    // ★★★ 파일 저장 경로가 바뀌었으므로, 삭제 로직도 함께 변경 ★★★
-    public void deleteReview(Long arNo, String loggedInUserUid) throws IOException {
+    public void deleteReview(Long arNo, String loggedInUserUid) {
         AdoptionReview reviewToDelete = adoptionReviewRepository.findReviewById(arNo);
         if (reviewToDelete == null || !loggedInUserUid.equals(reviewToDelete.getAuthorUid())) {
             throw new RuntimeException("삭제 권한이 없거나 존재하지 않는 게시글입니다.");
         }
 
-        // 1. DB에서 이 게시글에 속한 파일 정보들을 모두 삭제
+        userLikeRepository.deleteLikesByContent(arNo, AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE);
         attachmentFileRepository.deleteByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo);
+        adoptionReviewRepository.deleteReview(arNo);
 
-        // 2. 서버에서 해당 게시글의 폴더 전체를 삭제
+        // 물리적 파일 및 폴더 삭제
         Path directoryPath = Paths.get(uploadDir, "adoption_review_files", "arNo_" + arNo);
         if (Files.exists(directoryPath)) {
-            Files.walk(directoryPath)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+            try {
+                Files.walk(directoryPath)
+                        .sorted(Comparator.reverseOrder()) // 역순으로 정렬하여 파일 먼저 삭제 후 디렉토리 삭제
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException e) {
+                                System.err.println("파일/폴더 삭제 실패: " + path + " - " + e.getMessage());
+                            }
+                        });
+            } catch (IOException e) {
+                System.err.println("폴더 순회 중 오류 발생: " + directoryPath + " - " + e.getMessage());
+            }
         }
-
-        // 3. 게시글 정보 삭제
-        adoptionReviewRepository.deleteReview(arNo);
     }
 
-    // ★★★ 파일 저장 경로 생성 로직을 수정한 메소드 ★★★
     private void saveFiles(List<MultipartFile> files, Long boardId) throws IOException {
         if (files == null || files.isEmpty()) {
             return;
         }
 
-        // 1. 새로운 폴더 경로를 정의합니다.
-
+        // 업로드될 파일의 물리적 디렉토리 경로 생성
         Path directoryPath = Paths.get(uploadDir, "adoption_review_files", "arNo_" + boardId);
-
-        // 2. 폴더가 존재하지 않으면 생성합니다.
-        Files.createDirectories(directoryPath);
+        Files.createDirectories(directoryPath); // 디렉토리가 없으면 생성
 
         for (MultipartFile file : files) {
-            if (file == null || file.isEmpty()) continue;
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
 
             String originalFileName = file.getOriginalFilename();
-            // 파일 이름은 고유하게 유지
-            String storedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+            // 고유한 파일명 생성을 위해 UUID 사용
+            String storedFileName = UUID.randomUUID() + "_" + originalFileName;
+            Path physicalFilePath = directoryPath.resolve(storedFileName); // 물리적 파일 경로
 
-            // 3. 최종 파일 물리적 경로를 생성합니다.
-            Path physicalFilePath = directoryPath.resolve(storedFileName);
-
-            // 4. 파일을 해당 경로에 저장합니다.
+            // 파일 시스템에 저장
             file.transferTo(physicalFilePath);
 
-            // 5. DB에 저장할 상대 경로(웹 URL)를 만듭니다.
-            String dbFilePath = "/uploads/adoption_review_files/arNo_" + boardId + "/" + storedFileName;
+            // **** 수정된 부분: DB 저장 경로에 "/uploads/" 접두사 추가 ****
+            // 이 경로는 웹에서 접근할 때 사용될 URL 경로입니다.
+            String dbFilePath = Paths.get("/uploads", "adoption_review_files", "arNo_" + boardId, storedFileName).toString().replace("\\", "/");
 
+            // AttachmentFile 엔티티 생성 및 데이터베이스에 저장
             AttachmentFile attachment = new AttachmentFile();
             attachment.setBoardType(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE);
             attachment.setBoardId(boardId);
             attachment.setFileName(originalFileName);
-            attachment.setFilePath(dbFilePath);
+            attachment.setFilePath(dbFilePath); // 웹 URL 형식의 경로 저장
             attachment.setFileSize(file.getSize());
             attachmentFileRepository.insertAttachment(attachment);
         }
     }
 
-    // (getReviewsByPage, getTotalReviewCount 등 나머지 조회 메소드는 기존과 동일)
     @Transactional(readOnly = true)
     public List<AdoptionReview> getReviewsByPage(int page, int size) {
         int offset = (page - 1) * size;
         List<AdoptionReview> reviews = adoptionReviewRepository.findReviewsByPage(size, offset);
-        reviews.forEach(review -> {
-            List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, review.getArNo());
-            review.setAttachments(attachments);
-        });
+
+        if (reviews.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // N+1 문제를 해결하기 위해 모든 리뷰 ID에 해당하는 첨부파일을 한 번에 조회
+        List<Long> reviewIds = reviews.stream()
+                .map(AdoptionReview::getArNo)
+                .collect(Collectors.toList());
+
+        List<AttachmentFile> attachments = adoptionReviewRepository.findAttachmentsByBoardIds(
+                AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, reviewIds);
+
+        // Map으로 변환하여 각 리뷰에 첨부파일 매핑
+        Map<Long, List<AttachmentFile>> attachmentsMap = attachments.stream()
+                .collect(Collectors.groupingBy(AttachmentFile::getBoardId));
+
+        reviews.forEach(review ->
+                review.setAttachments(attachmentsMap.getOrDefault(review.getArNo(), Collections.emptyList()))
+        );
+
         return reviews;
     }
 
@@ -134,15 +151,54 @@ public class AdoptionReviewService {
 
     @Transactional(readOnly = true)
     public AdoptionReview getReviewById(Long arNo) {
+        // userId 없이 단일 리뷰 조회 (예: 수정 폼 로딩 시)
+        return this.getReviewById(arNo, null);
+    }
+
+    @Transactional(readOnly = true)
+    public AdoptionReview getReviewById(Long arNo, String userId) {
         AdoptionReview review = adoptionReviewRepository.findReviewById(arNo);
         if (review != null) {
-            List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, review.getArNo());
-            review.setAttachments(attachments);
+            // 해당 리뷰의 첨부파일 조회
+            review.setAttachments(attachmentFileRepository.findByBoardTypeAndBoardId(
+                    AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo));
+
+            // 현재 사용자의 좋아요 여부 확인
+            if (userId != null && !userId.isEmpty()) {
+                boolean isLiked = userLikeRepository.findLike(userId, arNo,
+                        AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE) != null;
+                review.setLikedByCurrentUser(isLiked); // 좋아요 여부 필드 설정
+            }
         }
         return review;
     }
 
     public void increaseViewCount(Long arNo) {
         adoptionReviewRepository.incrementReviewViewCount(arNo);
+    }
+
+    public void deleteSingleAttachment(Long attachmentId, String loggedInUserUid) throws IOException {
+        AttachmentFile attachment = attachmentFileRepository.findById(attachmentId);
+        if (attachment == null) {
+            throw new RuntimeException("ID가 " + attachmentId + "인 첨부파일을 찾을 수 없습니다.");
+        }
+
+        AdoptionReview review = adoptionReviewRepository.findReviewById(attachment.getBoardId());
+        if (review == null || !loggedInUserUid.equals(review.getAuthorUid())) {
+            throw new RuntimeException("이 첨부파일을 삭제할 권한이 없습니다.");
+        }
+
+        // DB에 저장된 경로에서 "/uploads/" 접두사를 제거하여 물리적 파일 경로를 구성
+        String relativePath = attachment.getFilePath();
+        if (relativePath.startsWith("/uploads/")) {
+            relativePath = relativePath.substring("/uploads/".length());
+        }
+
+        // 물리적 파일 삭제
+        Path filePath = Paths.get(uploadDir, relativePath);
+        Files.deleteIfExists(filePath);
+
+        // DB에서 첨부파일 정보 삭제
+        attachmentFileRepository.deleteById(attachmentId);
     }
 }

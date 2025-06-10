@@ -50,7 +50,7 @@
       <thead class="bg-gray-50">
       <tr>
         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">번호</th>
-        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">썸네일</th>
+        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">사진</th>
         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">제목</th>
         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</th>
         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성일</th>
@@ -63,7 +63,7 @@
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center" th:text="${totalCount - ((pageInfo.currentPage - 1) * size) - stat.index}"></td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
           <div th:if="${board.attachments != null && !#lists.isEmpty(board.attachments)}">
-            <img th:src="@{'/uploads/' + ${board.attachments[0].filePath}}" alt="썸네일" class="thumbnail-image inline-block" />
+            <img th:src="@{'/uploads/' + ${board.attachments[0].filePath}}" alt="사진" class="thumbnail-image inline-block" />
           </div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">

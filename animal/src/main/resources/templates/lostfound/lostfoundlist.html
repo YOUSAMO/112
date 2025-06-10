@@ -3,35 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <title>분실/발견 동물 목록</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding: 0; }
+    .container { max-width: 1300px; margin: 80px auto 40px auto; background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+    h1 { font-size: 2.2em; font-weight: 700; margin-top: 0; margin-bottom: 10px; color: #343a40; }
+    .action-header { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+    .btn { display: inline-block; padding: 10px 20px; font-size: 1em; font-weight: 500; text-decoration: none; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+    .btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .btn-primary { background-color: #007bff; color: white; }
+    .btn-primary:hover { background-color: #0056b3; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 1em; color: #495057; }
+    thead { background-color: #f8f9fa; }
+    th { padding: 12px 15px; font-weight: 500; color: #212529; border-bottom: 2px solid #dee2e6; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px; }
+    tbody tr { border-bottom: 1px solid #e9ecef; transition: background-color 0.15s ease-in-out; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background-color: #f1f3f5; }
+    td { padding: 10px 15px; vertical-align: middle; }
+    td a { color: #0056b3; text-decoration: none; font-weight: 500; }
+    td a:hover { text-decoration: underline; }
+    .list-thumbnail { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e9ecef; }
+    .no-thumbnail { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; color: #adb5bd; background-color: #f8f9fa; border-radius: 8px; }
+    .col-id, .col-author, .col-views, .col-likes { text-align: center; }
+    .col-id { width: 70px; }
+    .col-thumb { width: 100px; text-align: center; }
+    .col-author { width: 120px; }
+    .col-manage { width: 120px; text-align: center; }
+    .btn-sm { padding: 4px 10px; font-size: 0.85em; margin: 0 2px; }
+    .btn-edit { background-color: #6c757d; color: white; }
+    .btn-edit:hover { background-color: #5a6268; }
+    .btn-delete { background-color: #dc3545; color: white; }
+    .btn-delete:hover { background-color: #c82333; }
+    .inline-form { display: inline-block; }
+  </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: commonHeader}"></div>
-<h1>분실/발견 동물 목록</h1>
-<a th:href="@{/lostfound/register}">새 글 작성</a>
-<table border="1" cellpadding="5" cellspacing="0">
-  <thead>
-  <tr>
-    <th>제목</th>
-    <th>동물 종류</th>
-    <th>성별</th>
-    <th>나이</th>
-    <th>위치</th>
-    <th>작성일</th>
-    <th>조회수</th>
-    <th>좋아요</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="animal : ${list}">
-    <td><a th:href="@{|/lostfound/detail/${animal.id}|}" th:text="${animal.title}"></a></td>
-    <td th:text="${animal.animalType}"></td>
-    <td th:text="${animal.gender}"></td>
-    <td th:text="${animal.age}"></td>
-    <td th:text="${animal.location}"></td>
-    <td th:text="${#temporals.format(animal.createdAt, 'yyyy-MM-dd HH:mm')}"></td> <td th:text="${animal.viewCount}"></td>
-    <td th:text="${animal.likeCount}"></td>
-  </tr>
-  </tbody>
-</table>
+<div class="container">
+  <h1>분실/발견 동물 목록</h1>
+  <div class="action-header">
+    <a th:href="@{/lostfound/register}" class="btn btn-primary">새 글 작성</a>
+  </div>
+  <table>
+    <thead>
+    <tr>
+      <th class="col-id">번호</th>
+      <th class="col-thumb">사진</th>
+      <th>제목</th>
+      <th class="col-author">작성자</th>
+      <th>동물 종류</th>
+      <th>위치</th>
+      <th>작성일</th>
+      <th class="col-views">조회수</th>
+      <th class="col-likes">좋아요</th>
+      <th class="col-manage">관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="animal, iterStat : ${list}">
+      <td class="col-id" th:text="${#lists.size(list) - iterStat.index}"></td>
+      <td class="col-thumb">
+        <img th:if="${animal.thumbnailFileName != null}"
+             th:src="@{/lostfound/uploads/lostfound/{boardId}/{fileName}(boardId=${animal.id}, fileName=${animal.thumbnailFileName})}"
+             alt="썸네일" class="list-thumbnail"/>
+        <div th:unless="${animal.thumbnailFileName != null}" class="no-thumbnail">
+          <span>No Img</span>
+        </div>
+      </td>
+      <td><a th:href="@{|/lostfound/detail/${animal.id}|}" th:text="${animal.title}"></a></td>
+      <td class="col-author" th:text="${animal.authorName}"></td>
+      <td th:text="${animal.animalType}"></td>
+      <td th:text="${animal.location}"></td>
+      <td th:text="${#temporals.format(animal.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+      <td class="col-views" th:text="${animal.viewCount}"></td>
+      <td class="col-likes" th:text="${animal.likeCount}"></td>
+      <td class="col-manage">
+        <div th:if="${currentUserId != null and #strings.equals(currentUserId, animal.userId)}">
+          <a th:href="@{/lostfound/modify/{id}(id=${animal.id})}" class="btn btn-sm btn-edit">수정</a>
+          <form th:action="@{/lostfound/remove/{id}(id=${animal.id})}" method="post" class="inline-form"
+                onsubmit="return confirm('정말로 이 게시글을 삭제하시겠습니까?');">
+            <button type="submit" class="btn btn-sm btn-delete">삭제</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
 </body>
 </html>
