@@ -252,32 +252,33 @@
   </section>
   <!-- 회원 관리 -->
   <section class="section" id="section-member">
-    <h3>회원 관리</h3>
+   <h3>회원 관리</h3>
     <table class="member-table">
       <thead>
       <tr>
+        <th>번호</th>
         <th>이름</th>
         <th>아이디</th>
-        <th>권한</th>
-        <th>가입일</th>
-        <th>상태</th>
+        <th>이메일</th>
+        <th>전화번호</th>
         <th>관리</th>
+
       </tr>
       </thead>
       <tbody>
-      <tr>
-        <td>이름</td>
-        <td>아이디</td>
-        <td>권한</td>
-        <td>가입일</td>
-        <td>상태</td>
+      <tr th:each="member,iterStat : ${members}">
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${member.u_name}"></td>
+        <td th:text="${member.u_id}"></td>
+        <td th:text="${member.u_email}"></td>
+        <td th:text="${member.u_pnumber}"></td>
         <td>
-          <button class="btn" type="button">상세</button>
-          <button class="btn" type="button">수정</button>
-          <button class="btn" type="button">삭제</button>
+          <button class="btn btn-warning">수정</button>
+          <button class="btn btn-danger">삭제</button>
         </td>
       </tr>
       </tbody>
+
     </table>
     <button class="btn" style="margin-top:16px;">신규 회원 등록</button>
   </section>

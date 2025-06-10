@@ -7,12 +7,12 @@
 
     <insert id="insert" parameterType="com.example.member.entity.Adoption_application">
         INSERT INTO adoption_application
-        ( housing, housing_type, pet_allowed, family, motivation, pledge,
-         current_pets, experience, job, work_type, pet_care, financial, animal_type, animal_detail,
+        ( u_id,housing, housing_type, pet_allowed, family_info, motivation, pledge,
+         current_pets, experience, job, work_type, pet_care_plan, financial_status, animal_type, animal_detail,
          care_time, exercise_plan, travel_plan, agreement)
         VALUES
-            ( #{housing}, #{housing_type}, #{pet_allowed}, #{family}, #{motivation}, #{pledge},
-             #{current_pets}, #{experience}, #{job}, #{work_type}, #{pet_care}, #{financial}, #{animal_type}, #{animal_detail},
+            ( #{u_id},#{housing}, #{housing_type}, #{pet_allowed}, #{family_info}, #{motivation}, #{pledge},
+             #{current_pets}, #{experience}, #{job}, #{work_type}, #{pet_care_plan}, #{financial_status}, #{animal_type}, #{animal_detail},
              #{care_time}, #{exercise_plan}, #{travel_plan}, #{agreement})
     </insert>
 
@@ -22,7 +22,7 @@
             housing = #{housing},
             housing_type = #{housing_type},
             pet_allowed = #{pet_allowed},
-            family = #{family},
+            family_info = #{family_info},
             motivation = #{motivation},
             pledge = #{pledge},
             current_pets = #{current_pets},

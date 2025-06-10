@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor // 자동 생성자 주입 lombok 라이브러리 명령어
 @RequestMapping("/member")
@@ -56,7 +58,7 @@ public class MemberController {
     }
 
 
-   /*
+
     // 회원 목록 보기
     @GetMapping("/memberlist")
     public String memberList(Model model) {
@@ -65,7 +67,7 @@ public class MemberController {
         return "memberlist";
     }
 
-
+    /*
     // 회원 수정 페이지
     @GetMapping("/edit/{u_no}")
     public String editForm(@PathVariable Integer u_no, Model model) {
@@ -92,8 +94,9 @@ public class MemberController {
         memberService.deleteMemberByNo(u_no);  // ✅ 서비스 메서드 호출
         return "redirect:/member/memberlist";
     }
-
     */
+
+
 
 
     // 아이디 중복 확인

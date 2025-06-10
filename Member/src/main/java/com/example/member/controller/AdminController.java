@@ -3,7 +3,9 @@ package com.example.member.controller;
 
 import com.example.member.DTO.SessionAdminDTO;
 import com.example.member.entity.Admin;
+import com.example.member.entity.Member;
 import com.example.member.service.AdminService;
+import com.example.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -11,12 +13,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor // 자동 생성자 주입
 @RequestMapping("/admin")//공통으로 들어가는 동적 관리자 페이지
 public class AdminController {
 
     private final AdminService adminService;
+    private final MemberService memberService;
 
 
     @GetMapping("/register")
@@ -85,6 +90,8 @@ public class AdminController {
         if (loginAdmin == null) {
             return "redirect:/login";
         }
+        List<Member> memberList = memberService.getAllMembers();
+        model.addAttribute("members", memberList);
         model.addAttribute("loginAdmin", loginAdmin);
         return "admin/adminPage"; // templates/admin/adminPage.html
     }
@@ -93,10 +100,17 @@ public class AdminController {
     public String logout(HttpSession session) {
 
         session.removeAttribute("loginMember"); // 특정 속성 제거
-         session.invalidate();
+        session.invalidate();
         System.out.println("로그아웃 되었습니다.");
         return "redirect:/"; // 로그아웃 후 메인 페이지로
     }
+
+
+
+
+
+
+
 
 
 }

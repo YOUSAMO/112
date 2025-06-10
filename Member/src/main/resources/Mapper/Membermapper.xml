@@ -16,7 +16,8 @@
 
 
         <select id="findAll" resultType="com.example.member.entity.Member">
-            SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender FROM users
+            SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender
+            FROM users
         </select>
         <select id="findMemberByno" parameterType="Integer" resultType="com.example.member.entity.Member">
             SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender
