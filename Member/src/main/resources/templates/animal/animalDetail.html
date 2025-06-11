@@ -163,6 +163,10 @@
         <div class="text-center">
             <a th:href="@{/animals}" class="link-button">목록으로 돌아가기</a>
         </div>
+        <!-- 입양하기 버튼 추가 -->
+        <div class="text-center" style="margin-top: 1rem;">
+            <a th:href="@{/adopt/apply/{id}(id=${animal.id})}" class="link-button" style="background-color: #4CAF50;">입양하기</a>
+        </div>
     </div>
 
     <div th:unless="${animal}" class="no-animal">

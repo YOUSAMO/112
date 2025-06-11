@@ -5,6 +5,7 @@ import com.example.member.entity.AnimalFile;
 import com.example.member.service.AnimalFileService;
 import com.example.member.service.AnimalService;
 import com.example.member.service.FileStorageService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +27,7 @@ public class AnimalController {
     private final AnimalService animalService;
     private final FileStorageService fileStorageService;
     private final AnimalFileService animalFileService;
+    private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
 
     @Autowired
     public AnimalController(AnimalService animalService, FileStorageService fileStorageService, AnimalFileService animalFileService) {
@@ -40,7 +42,7 @@ public class AnimalController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String species,
-            Model model) {
+            Model model, HttpSession session) {
 
         System.out.println("GET /animals 호출됨, page=" + page + ", size=" + size + ", keyword=" + keyword + ", species=" + species);
 

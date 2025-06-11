@@ -13,9 +13,19 @@
         <result property="u_gender" column="u_gender"/>
     </resultMap>
 
+    <resultMap id="memberResultMap" type="com.example.member.entity.Member">
+        <result property="u_no" column="u_no"/>
+        <result property="u_name" column="u_name"/>
+        <result property="u_email" column="u_email"/>
+        <result property="u_pass" column="u_pass"/>
+        <result property="u_pnumber" column="u_pnumber"/>
+        <result property="u_id" column="u_id"/>
+        <result property="u_gender" column="u_gender"/>
+    </resultMap>
 
 
-        <select id="findAll" resultType="com.example.member.entity.Member">
+
+        <select id="findAll" resultMap="memberResultMap">
             SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender
             FROM users
         </select>

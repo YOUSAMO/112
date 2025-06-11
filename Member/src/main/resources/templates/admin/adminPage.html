@@ -168,6 +168,78 @@
       .sidebar { display: none; }
       .main { margin-left: 0; }
     }
+    .dropdown {
+      position: relative;
+    }
+
+    .dropbtn {
+      display: block;
+      padding: 18px 40px;
+      background: #E7DECF;
+      border-radius: 8px 0 0 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      font-weight: bold;
+      text-align: left;
+      transition: background 0.2s;
+    }
+
+    .dropdown:hover .dropbtn,
+    .dropdown .dropbtn:focus {
+      background: #D6C6B8;
+      color: #fff;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 100%;
+      width: 210px; /* nav-menu와 동일하게 맞춤 */
+      background: #f7f3ee;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 2px 8px #eee;
+      z-index: 100;
+      padding: 0;
+      margin: 0;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-content li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-bottom: 1px solid #e0d6c6;
+    }
+
+    .dropdown-content li:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-content a {
+      display: flex;
+      align-items: center;      /* 세로 중앙정렬 */
+      justify-content: center;  /* 가로 중앙정렬 */
+      width: 100%;
+      height: 60px;             /* 원하는 높이로 조정 */
+      box-sizing: border-box;
+      font-size: 1.08em;
+      font-weight: bold;
+      color: #4d3e2b;
+      background: #f7f3ee;
+      text-decoration: none;
+      transition: background 0.18s, color 0.18s;
+      text-align: center;
+      border-radius: 0;
+    }
+
+    .dropdown-content a:hover {
+      background: #ede5d8;
+      color: #222;
+    }
   </style>
 </head>
 <body>
@@ -175,9 +247,17 @@
   <h2>유기동물<br>보호소 관리자</h2>
   <ul class="nav-menu">
     <li class="active" data-section="animal">동물목록</li>
-    <li data-section="adopt">입양글 관리</li>
+    <li data-section="adopt">입양 신청서 관리</li>
     <li data-section="member">회원 관리</li>
-    <li data-section="review">댓글/후기 관리</li>
+    <li class="dropdown">
+      <span class="dropbtn">게시판 관리</span>
+      <ul class="dropdown-content">
+        <li><a href="#">자유 게시판</a></li>
+        <li><a href="#">입양후기 게시판</a></li>
+        <li><a href="#">유기동물/실종 보호 게시판</a></li>
+      </ul>
+    </li>
+    <li data-section="comment">댓글/후기 관리</li>
     <li data-section="stat">통계</li>
   </ul>
 </aside>
@@ -195,26 +275,28 @@
     <table class="animal-table">
       <thead>
       <tr>
-        <th>사진</th>
+        <th>번호</th>
         <th>이름</th>
         <th>종류</th>
         <th>성별</th>
         <th>나이</th>
-        <th>상태</th>
-        <th>관리</th>
+        <th>접종</th>
+        <td>입소일</td>
+        <th colspan="3">관리</th>
       </tr>
       </thead>
       <tbody>
-      <tr>
-        <td><img src="/images/sample_animal.jpg" alt="사진" style="width:60px; height:60px; object-fit:cover; border-radius:10px;"></td>
-        <td>이름</td>
-        <td>종류</td>
-        <td>성별</td>
-        <td>나이</td>
-        <td><span class="status">상태</span></td>
+      <tr th:each="animal,iterStat : ${animals}">
+
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${animal.name}"></td>
+        <td th:text="${animal.species}"></td>
+        <td th:text="${animal.gender}"></td>
+        <td th:text="${animal.age}"></td>
+        <td th:text="${animal.vaccinated}"></td>
+        <td th:text="${animal.arrivalDate}"></td>
         <td>
           <button class="btn btn-detail" type="button">상세</button>
-          <button class="btn" type="button">수정</button>
           <button class="btn" type="button">삭제</button>
         </td>
       </tr>
@@ -242,7 +324,6 @@
         <td>상태</td>
         <td>
           <button class="btn" type="button">상세</button>
-          <button class="btn" type="button">수정</button>
           <button class="btn" type="button">삭제</button>
         </td>
       </tr>
@@ -273,7 +354,6 @@
         <td th:text="${member.u_email}"></td>
         <td th:text="${member.u_pnumber}"></td>
         <td>
-          <button class="btn btn-warning">수정</button>
           <button class="btn btn-danger">삭제</button>
         </td>
       </tr>
@@ -282,12 +362,47 @@
     </table>
     <button class="btn" style="margin-top:16px;">신규 회원 등록</button>
   </section>
+  <!-- 게시판 관리 -->
+  <section class="section" id="section-board">
+    <h3>게시판 관리</h3>
+    <table class="member-table">
+      <thead>
+      <tr>
+        <th>번호</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>등록일</th>
+        <th>조회수</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>1</td>
+        <td>보호소 환경 개선 문의</td>
+        <td>홍길동</td>
+        <td>2025-06-11</td>
+        <td>23</td>
+        <td>
+          <button class="btn" type="button">상세</button>
+          <button class="btn" type="button">수정</button>
+          <button class="btn" type="button">삭제</button>
+        </td>
+      </tr>
+      <!-- 추가 게시글 행 -->
+      </tbody>
+    </table>
+    <button class="btn" style="margin-top:16px;">신규 게시글 등록</button>
+  </section>
+
   <!-- 댓글/후기 관리 -->
-  <section class="section" id="section-review">
+  <section class="section" id="section-comment">
     <h3>댓글/후기 관리</h3>
     <table class="member-table">
       <thead>
       <tr>
+        <th>번호</th>
+        <th>게시글 제목</th>
         <th>작성자</th>
         <th>내용</th>
         <th>등록일</th>
@@ -296,13 +411,16 @@
       </thead>
       <tbody>
       <tr>
-        <td>작성자</td>
-        <td>내용</td>
-        <td>등록일</td>
+        <td>1</td>
+        <td>보호소 환경 개선 문의</td>
+        <td>김철수</td>
+        <td>정말 좋은 정보 감사합니다!</td>
+        <td>2025-06-11</td>
         <td>
           <button class="btn" type="button">삭제</button>
         </td>
       </tr>
+      <!-- 추가 댓글/후기 행 -->
       </tbody>
     </table>
   </section>

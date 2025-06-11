@@ -3,8 +3,10 @@ package com.example.member.controller;
 
 import com.example.member.DTO.SessionAdminDTO;
 import com.example.member.entity.Admin;
+import com.example.member.entity.Animal;
 import com.example.member.entity.Member;
 import com.example.member.service.AdminService;
+import com.example.member.service.AnimalService;
 import com.example.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final MemberService memberService;
+    private final AnimalService animalService;
 
 
     @GetMapping("/register")
@@ -91,6 +94,10 @@ public class AdminController {
             return "redirect:/login";
         }
         List<Member> memberList = memberService.getAllMembers();
+        List<Animal> animalList = animalService.getAllAnimals();
+        System.out.println("memberList = " + memberList);
+        System.out.println("animalList = " + animalList);
+        model.addAttribute("animals",animalList);
         model.addAttribute("members", memberList);
         model.addAttribute("loginAdmin", loginAdmin);
         return "admin/adminPage"; // templates/admin/adminPage.html
