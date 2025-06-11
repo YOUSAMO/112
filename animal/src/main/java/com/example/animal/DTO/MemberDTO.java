@@ -17,6 +17,7 @@ public class MemberDTO {
     private String u_gender;
 
 
+
     // 전화번호 3개 필드
     private String u_pnumber1;
     private String u_pnumber2;

@@ -10,6 +10,34 @@
         .edit-btn { background-color: #06b6d4; }
         .delete-btn { background-color: #ef4444; }
         .thumbnail-image { width: 48px; height: 48px; object-fit: cover; border-radius: 0.25rem; }
+
+        /* 페이징 버튼 스타일 추가 */
+        .pagination-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.5rem; /* 버튼 최소 너비 */
+            height: 2.5rem;   /* 버튼 높이 */
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .pagination-link:hover {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+        .pagination-link.active {
+            background-color: #3b82f6; /* 파란색 */
+            color: white;
+            border-color: #3b82f6;
+            font-weight: 600;
+        }
+        .pagination-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -63,6 +91,34 @@
             </tr>
             </tbody>
         </table>
+
+        <div class="flex justify-center py-4 space-x-1">
+            <a th:href="@{/reviews(page=${pageInfo.currentPage - 1}, size=${pageInfo.size})}"
+               th:classappend="${pageInfo.currentPage <= 1} ? 'disabled pointer-events-none' : ''"
+               class="pagination-link rounded-l-lg">
+                <span class="sr-only">Previous</span>
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+            </a>
+
+            <div th:each="i : ${#numbers.sequence(1, pageInfo.totalPages)}">
+                <a th:href="@{/reviews(page=${i}, size=${pageInfo.size})}"
+                   th:text="${i}"
+                   th:classappend="${i == pageInfo.currentPage} ? 'active' : ''"
+                   class="pagination-link">
+                </a>
+            </div>
+
+            <a th:href="@{/reviews(page=${pageInfo.currentPage + 1}, size=${pageInfo.size})}"
+               th:classappend="${pageInfo.currentPage >= pageInfo.totalPages} ? 'disabled pointer-events-none' : ''"
+               class="pagination-link rounded-r-lg">
+                <span class="sr-only">Next</span>
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                </svg>
+            </a>
+        </div>
     </div>
 </div>
 <script th:inline="javascript">

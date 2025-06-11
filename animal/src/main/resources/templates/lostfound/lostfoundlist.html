@@ -35,6 +35,45 @@
     .btn-delete { background-color: #dc3545; color: white; }
     .btn-delete:hover { background-color: #c82333; }
     .inline-form { display: inline-block; }
+
+    /* --- 페이징 버튼 스타일 추가 --- */
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 25px;
+      gap: 5px; /* 버튼 사이 간격 */
+    }
+    .pagination-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px; /* 버튼 최소 너비 */
+      height: 40px;   /* 버튼 높이 */
+      padding: 0 12px; /* 좌우 패딩 */
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      color: #495057;
+      text-decoration: none;
+      transition: all 0.2s ease-in-out;
+      font-weight: 500;
+    }
+    .pagination-link:hover {
+      background-color: #e9ecef;
+      border-color: #adb5bd;
+    }
+    .pagination-link.active {
+      background-color: #007bff; /* 활성 페이지 배경색 */
+      color: white;
+      border-color: #007bff;
+      font-weight: 700;
+    }
+    .pagination-link.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #f8f9fa;
+      color: #adb5bd;
+      border-color: #e9ecef;
+    }
   </style>
 </head>
 <body>
@@ -42,7 +81,8 @@
 <div class="container">
   <h1>분실/발견 동물 목록</h1>
   <div class="action-header">
-    <a th:href="@{/lostfound/register}" class="btn btn-primary">새 글 작성</a>
+    <a th:if="${currentUserId != null}" th:href="@{/lostfound/register}" class="btn btn-primary">새 글 작성</a>
+    <a th:unless="${currentUserId != null}" th:href="@{/login}" class="btn btn-primary">로그인 후 작성</a>
   </div>
   <table>
     <thead>
@@ -61,12 +101,15 @@
     </thead>
     <tbody>
     <tr th:each="animal, iterStat : ${list}">
-      <td class="col-id" th:text="${#lists.size(list) - iterStat.index}"></td>
+      <td class="col-id" th:text="${totalCount - ((pageInfo.currentPage - 1) * pageInfo.size) - iterStat.index}"></td>
       <td class="col-thumb">
-        <img th:if="${animal.thumbnailFileName != null}"
-             th:src="@{/lostfound/uploads/lostfound/{boardId}/{fileName}(boardId=${animal.id}, fileName=${animal.thumbnailFileName})}"
+        <img th:if="${animal.attachments != null and not #lists.isEmpty(animal.attachments)}"
+             th:src="@{/lostfound/uploads/{boardType}/{boardId}/{fileName}(
+                        boardType=${animal.attachments[0].boardType},
+                        boardId='LostFound_' + ${animal.attachments[0].boardId},
+                        fileName=${animal.attachments[0].fileName})}"
              alt="썸네일" class="list-thumbnail"/>
-        <div th:unless="${animal.thumbnailFileName != null}" class="no-thumbnail">
+        <div th:unless="${animal.attachments != null and not #lists.isEmpty(animal.attachments)}" class="no-thumbnail">
           <span>No Img</span>
         </div>
       </td>
@@ -87,8 +130,33 @@
         </div>
       </td>
     </tr>
+    <tr th:if="${list.isEmpty()}">
+      <td colspan="10" style="text-align: center; padding: 20px;">등록된 게시글이 없습니다.</td>
+    </tr>
     </tbody>
   </table>
+
+  <div class="pagination-container">
+    <a th:href="@{/lostfound/list(page=${pageInfo.currentPage - 1}, size=${pageInfo.size})}"
+       th:classappend="${pageInfo.currentPage <= 1} ? 'disabled' : ''"
+       class="pagination-link">
+      &laquo; 이전
+    </a>
+
+    <div th:each="i : ${#numbers.sequence(1, pageInfo.totalPages)}">
+      <a th:href="@{/lostfound/list(page=${i}, size=${pageInfo.size})}"
+         th:text="${i}"
+         th:classappend="${i == pageInfo.currentPage} ? 'active' : ''"
+         class="pagination-link">
+      </a>
+    </div>
+
+    <a th:href="@{/lostfound/list(page=${pageInfo.currentPage + 1}, size=${pageInfo.size})}"
+       th:classappend="${pageInfo.currentPage >= pageInfo.totalPages} ? 'disabled' : ''"
+       class="pagination-link">
+      다음 &raquo;
+    </a>
+  </div>
 </div>
 </body>
 </html>

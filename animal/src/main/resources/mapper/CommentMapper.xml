@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.animal.repository.CommentRepository">
+
+    <resultMap id="commentResultMap" type="com.example.animal.entity.Comment">
+        <id property="cmNo" column="cm_no"/>
+        <result property="postId" column="post_id"/> <result property="authorUid" column="author_uid"/>
+        <result property="cmWriter" column="cm_writer"/>
+        <result property="cmContent" column="cm_content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="authorNameDisplay" column="author_name_display"/>
+    </resultMap>
+
+    <insert id="insertComment" parameterType="com.example.animal.entity.Comment" useGeneratedKeys="true" keyProperty="cmNo">
+        INSERT INTO comment (post_id, author_uid, cm_writer, cm_content)
+        VALUES (#{postId}, #{authorUid}, #{cmWriter}, #{cmContent})
+    </insert>
+
+    <update id="updateComment" parameterType="com.example.animal.entity.Comment">
+        UPDATE comment
+        SET
+            cm_content = #{cmContent},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE cm_no = #{cmNo} AND author_uid = #{authorUid}
+    </update>
+
+    <delete id="deleteComment" parameterType="long">
+        DELETE FROM comment
+        WHERE cm_no = #{cmNo}
+    </delete>
+
+    <select id="selectCommentById" parameterType="long" resultMap="commentResultMap">
+        SELECT
+            c.*,
+            u.u_name AS author_name_display
+        FROM
+            comment c
+                LEFT JOIN
+            users u ON c.author_uid = u.u_id
+        WHERE
+            c.cm_no = #{cmNo}
+    </select>
+
+    <select id="selectCommentsByPostId" parameterType="long" resultMap="commentResultMap">
+        SELECT
+            c.*,
+            u.u_name AS author_name_display
+        FROM
+            comment c
+                LEFT JOIN
+            users u ON c.author_uid = u.u_id
+        WHERE
+            c.post_id = #{postId} ORDER BY
+            c.created_at DESC
+    </select>
+
+    <select id="countCommentsByPostId" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM comment WHERE post_id = #{postId}
+    </select>
+
+</mapper>

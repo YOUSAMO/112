@@ -42,20 +42,55 @@ public class LostFoundAnimalController {
         this.animalService = animalService;
     }
 
+    // --- PageInfo 내부 클래스 추가 ---
+    public static class PageInfo {
+        private final int totalPages;
+        private final int currentPage;
+        private final int size; // 페이지당 항목 수
+
+        public PageInfo(int totalPages, int currentPage, int size) {
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
+            this.size = size;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
+
+        public int getCurrentPage() {
+            return currentPage;
+        }
+
+        public int getSize() {
+            return size;
+        }
+    }
+    // -------------------------------------------------------------
+
     @GetMapping
     public String root() {
         return "redirect:/lostfound/list";
     }
 
     @GetMapping("/list")
-    public String list(Model model, HttpSession session) {
-        List<LostFoundAnimal> list = animalService.getList();
+    public String list(@RequestParam(defaultValue = "1") int page, // 페이지 파라미터 추가
+                       @RequestParam(defaultValue = "10") int size, // 사이즈 파라미터 추가 (10개 기준)
+                       Model model, HttpSession session) {
+        // 페이징된 게시글 목록 가져오기
+        List<LostFoundAnimal> list = animalService.getLostFoundAnimalsByPage(page, size);
+        // 전체 게시글 수 가져오기
+        int totalCount = animalService.getTotalLostFoundAnimalCount();
+        // 총 페이지 수 계산
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+
         String currentUserId = (String) session.getAttribute("loggedInUserId");
 
         model.addAttribute("list", list);
         model.addAttribute("currentUserId", currentUserId);
+        model.addAttribute("totalCount", totalCount); // 전체 게시글 수
+        model.addAttribute("pageInfo", new PageInfo(totalPages, page, size)); // 페이징 정보
 
-        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
         return "lostfound/lostfoundList";
     }
 
@@ -63,7 +98,6 @@ public class LostFoundAnimalController {
     public String registerForm(Model model) {
         model.addAttribute("animal", new LostFoundAnimal());
         model.addAttribute("isNew", true);
-        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
         return "lostfound/lostfoundForm";
     }
 
@@ -93,7 +127,6 @@ public class LostFoundAnimalController {
         }
         animalService.increaseViewCount(id);
         model.addAttribute("animal", animal);
-        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
         return "lostfound/lostfoundView";
     }
 
@@ -105,7 +138,6 @@ public class LostFoundAnimalController {
         }
         model.addAttribute("animal", animal);
         model.addAttribute("isNew", false);
-        // ### 최종 경로 수정: 사용자 파일 이름과 위치에 정확히 맞춤 ###
         return "lostfound/lostfoundForm";
     }
 
@@ -163,8 +195,10 @@ public class LostFoundAnimalController {
             if (!CONTROLLER_BOARD_TYPE.equals(boardType)) {
                 return ResponseEntity.badRequest().build();
             }
-            String actualFolderNameInPath = CONTROLLER_FOLDER_PREFIX + boardId;
-            Path fileSystemPath = Paths.get(uploadDir, boardType, actualFolderNameInPath, fileName);
+            // boardId가 "LostFound_숫자" 형태이므로, "LostFound_" 접두사를 제거하여 실제 숫자 ID만 사용
+            String actualBoardId = boardId.replace(CONTROLLER_FOLDER_PREFIX, "");
+
+            Path fileSystemPath = Paths.get(uploadDir, boardType, CONTROLLER_FOLDER_PREFIX + actualBoardId, fileName);
             Resource resource = new UrlResource(fileSystemPath.toUri());
 
             if (resource.exists() && resource.isReadable()) {

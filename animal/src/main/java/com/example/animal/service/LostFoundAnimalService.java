@@ -15,10 +15,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +35,48 @@ public class LostFoundAnimalService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    // 기존 getList()는 페이징 없는 전체 목록 조회용으로 남겨두거나, 제거하고 페이징 메서드로 대체할 수 있습니다.
+    // 여기서는 페이징 메서드를 추가하면서 기존 메서드는 그대로 둡니다.
     public List<LostFoundAnimal> getList() {
         return animalRepository.findAll();
     }
+
+    // --- 페이징 기능 추가 ---
+    @Transactional(readOnly = true)
+    public List<LostFoundAnimal> getLostFoundAnimalsByPage(int page, int size) {
+        int offset = (page - 1) * size;
+        List<LostFoundAnimal> animals = animalRepository.findByPage(size, offset);
+
+        if (animals.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // N+1 문제를 해결하기 위해 모든 게시글 ID에 해당하는 첨부파일을 한 번에 조회
+        List<Long> animalIds = animals.stream()
+                .map(LostFoundAnimal::getId)
+                .collect(Collectors.toList());
+
+        // LostFoundAnimalRepository에 이 메서드를 추가해야 합니다.
+        List<AttachmentFile> attachments = animalRepository.findAttachmentsByBoardTypeAndBoardIds(
+                BOARD_TYPE, animalIds);
+
+        // Map으로 변환하여 각 LostFoundAnimal에 첨부파일 매핑
+        Map<Long, List<AttachmentFile>> attachmentsMap = attachments.stream()
+                .collect(Collectors.groupingBy(AttachmentFile::getBoardId));
+
+        animals.forEach(animal ->
+                animal.setAttachments(attachmentsMap.getOrDefault(animal.getId(), Collections.emptyList()))
+        );
+
+        return animals;
+    }
+
+    @Transactional(readOnly = true)
+    public int getTotalLostFoundAnimalCount() {
+        return animalRepository.countAll();
+    }
+    // --- 페이징 기능 추가 끝 ---
+
 
     @Transactional(readOnly = true)
     public LostFoundAnimal get(Long id, String userId) {
@@ -100,6 +141,8 @@ public class LostFoundAnimalService {
         if (attachments != null && !attachments.isEmpty()) {
             for (AttachmentFile attachment : attachments) {
                 try {
+                    // Paths.get(attachment.getFilePath())로 삭제
+                    // DB에 저장된 filePath가 물리적 파일 경로와 일치해야 합니다.
                     Files.deleteIfExists(Paths.get(attachment.getFilePath()));
                 } catch (IOException e) {
                     System.err.println("파일 삭제 실패: " + attachment.getFilePath() + " - " + e.getMessage());
@@ -109,11 +152,21 @@ public class LostFoundAnimalService {
         Path specificAnimalDir = Paths.get(uploadDir, BOARD_TYPE, FOLDER_PREFIX + id);
         try {
             if (Files.exists(specificAnimalDir)) {
-                Files.delete(specificAnimalDir);
+                // 폴더 내 모든 파일 삭제 후 폴더 삭제
+                Files.walk(specificAnimalDir)
+                        .sorted(java.util.Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException e) {
+                                System.err.println("폴더 내부 파일/폴더 삭제 실패: " + path + " - " + e.getMessage());
+                            }
+                        });
             }
         } catch (IOException e) {
-            System.err.println("폴더 삭제 실패: " + specificAnimalDir + " - " + e.getMessage());
+            System.err.println("폴더 순회 중 오류 발생: " + specificAnimalDir + " - " + e.getMessage());
         }
+
 
         // ### 2. 이 게시글에 달린 '좋아요' DB 기록들을 먼저 삭제합니다. ###
         userLikeRepository.deleteLikesByContent(id, BOARD_TYPE);
@@ -131,20 +184,30 @@ public class LostFoundAnimalService {
 
     private void saveAttachments(Long animalId, List<MultipartFile> files) throws IOException {
         if (files == null || files.isEmpty()) return;
+
+        // 실제 파일이 저장될 물리적 디렉토리 경로
         Path animalSpecificDir = Paths.get(uploadDir, BOARD_TYPE, FOLDER_PREFIX + animalId);
         if (!Files.exists(animalSpecificDir)) {
             Files.createDirectories(animalSpecificDir);
         }
+
         for (MultipartFile file : files) {
             if (file != null && !file.isEmpty()) {
-                String storedFilename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                String originalFileName = file.getOriginalFilename();
+                String storedFilename = UUID.randomUUID().toString() + "_" + originalFileName;
                 Path destPath = animalSpecificDir.resolve(storedFilename);
                 file.transferTo(destPath);
+
+                // DB에 저장할 파일 경로 (웹 접근용 URL 경로)
+                // /uploads/lostfound/LostFound_게시글ID/고유파일명.확장자
+                String dbFilePath = Paths.get("/uploads", BOARD_TYPE, FOLDER_PREFIX + animalId, storedFilename).toString().replace("\\", "/");
+
                 AttachmentFile attachment = new AttachmentFile();
                 attachment.setBoardType(BOARD_TYPE);
                 attachment.setBoardId(animalId);
-                attachment.setFileName(storedFilename);
-                attachment.setFilePath(destPath.toString());
+                attachment.setFileName(originalFileName); // 원본 파일명 저장
+                attachment.setFilePath(dbFilePath); // 웹 URL 형식의 경로 저장
+                attachment.setFileSize(file.getSize());
                 attachment.setFileType(file.getContentType());
                 animalRepository.insertAttachment(attachment);
             }
@@ -155,7 +218,15 @@ public class LostFoundAnimalService {
     public boolean deleteSingleAttachment(Long attachmentId) throws IOException {
         AttachmentFile attachment = animalRepository.findAttachmentById(attachmentId);
         if (attachment == null) return false;
-        Files.deleteIfExists(Paths.get(attachment.getFilePath()));
+
+        // DB에 저장된 filePath가 웹 URL 형식이라면, 물리적 파일 경로로 변환해야 합니다.
+        String relativePath = attachment.getFilePath();
+        if (relativePath.startsWith("/uploads/")) {
+            relativePath = relativePath.substring("/uploads/".length());
+        }
+        Path filePath = Paths.get(uploadDir, relativePath);
+
+        Files.deleteIfExists(filePath);
         int deletedRows = animalRepository.deleteSingleAttachmentById(attachmentId);
         return deletedRows > 0;
     }

@@ -32,6 +32,47 @@
     .btn-like:hover { background-color: #f0f0f0; }
     .btn-like.liked { background-color: #ef4444; color: white; border-color: #ef4444; }
     .like-text { margin-left: 8px; }
+
+    /* 댓글 섹션 스타일 */
+    .comments-section { margin-top: 40px; }
+    .comment-input-form { display: flex; gap: 10px; margin-bottom: 20px; }
+    .comment-input-form textarea { flex-grow: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 60px; font-family: 'Noto Sans KR', sans-serif; }
+    .comment-input-form button { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .comment-input-form button:hover { background-color: #218838; }
+
+    .comment-list { margin-top: 20px; }
+    .comment-item { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e9ecef; }
+    .comment-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9em; color: #6c757d; }
+    .comment-author { font-weight: 700; color: #343a40; }
+    .comment-content { line-height: 1.6; color: #495057; word-wrap: break-word; }
+    .comment-actions { display: flex; gap: 5px; margin-top: 10px; }
+    .comment-actions button { background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.9em; padding: 0 5px; }
+    .comment-actions button:hover { text-decoration: underline; }
+    .comment-edit-form { display: flex; gap: 5px; margin-top: 10px; }
+    .comment-edit-form textarea { flex-grow: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 50px; font-family: 'Noto Sans KR', sans-serif; }
+    .comment-edit-form button { padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+    .comment-edit-form button:hover { background-color: #0056b3; }
+    .reply-toggle-btn { background: none; border: none; color: #6c757d; cursor: pointer; font-size: 0.85em; padding: 5px 0; margin-left: auto; display: block; }
+    .reply-toggle-btn:hover { text-decoration: underline; }
+
+    /* 대댓글 스타일 */
+    .replies-section { margin-left: 30px; border-left: 2px solid #e9ecef; padding-left: 15px; margin-top: 10px; }
+    .reply-input-form { display: flex; gap: 5px; margin-top: 15px; }
+    .reply-input-form textarea { flex-grow: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 40px; font-family: 'Noto Sans KR', sans-serif; }
+    .reply-input-form button { padding: 8px 15px; background-color: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .reply-input-form button:hover { background-color: #138496; }
+    .reply-item { background-color: #f2f4f6; padding: 12px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #dee2e6; }
+    .reply-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.8em; color: #868e96; }
+    .reply-author { font-weight: 700; color: #343a40; }
+    .reply-content { line-height: 1.5; color: #495057; word-wrap: break-word; }
+    .reply-actions { display: flex; gap: 5px; margin-top: 8px; }
+    .reply-actions button { background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8em; padding: 0 5px; }
+    .reply-actions button:hover { text-decoration: underline; }
+    .reply-edit-form { display: flex; gap: 5px; margin-top: 8px; }
+    .reply-edit-form textarea { flex-grow: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 40px; font-family: 'Noto Sans KR', sans-serif; }
+    .reply-edit-form button { padding: 6px 10px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
+    .reply-edit-form button:hover { background-color: #0056b3; }
+
   </style>
 </head>
 <body>
@@ -85,18 +126,38 @@
     </div>
     <a th:href="@{/lostfound/list}" class="btn btn-secondary">목록</a>
   </div>
+
+  <div class="comments-section">
+    <h3>댓글</h3>
+    <div class="comment-input-form">
+      <textarea id="commentContent" placeholder="댓글을 입력하세요." th:disabled="${session.loggedInUserId == null}"></textarea>
+      <button id="addCommentBtn" type="button" th:disabled="${session.loggedInUserId == null}">등록</button>
+    </div>
+    <p th:if="${session.loggedInUserId == null}" style="color: #6c757d; font-size: 0.9em;">댓글을 작성하려면 로그인해야 합니다.</p>
+    <div id="commentList" class="comment-list">
+    </div>
+  </div>
 </div>
+
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
     const likeBtn = document.getElementById('likeBtn');
     if (!likeBtn || likeBtn.disabled) return;
     const animalId = /*[[${animal.id}]]*/ '0';
+    // CSRF 토큰 및 헤더 이름은 메타 태그에서 한 번만 가져옵니다.
     const csrfToken = document.querySelector("meta[name='_csrf']")?.content;
     const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content;
-    likeBtn.addEventListener('click', () => {
+
+    // CSRF 헤더를 포함한 HTTP 요청 헤더를 반환하는 유틸리티 함수
+    function getCsrfHeaders() {
       const headers = { 'Content-Type': 'application/json' };
       if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
-      fetch(`/lostfound/like/${animalId}`, { method: 'POST', headers: headers })
+      return headers;
+    }
+
+    // 좋아요 버튼 이벤트 리스너
+    likeBtn.addEventListener('click', () => {
+      fetch(`/lostfound/like/${animalId}`, { method: 'POST', headers: getCsrfHeaders() })
               .then(response => {
                 if (response.status === 401) { alert('로그인이 필요합니다.'); throw new Error('Unauthorized'); }
                 if (!response.ok) throw new Error('서버 응답 오류');
@@ -113,8 +174,449 @@
                   if(likeButtonText) likeButtonText.textContent = '좋아요';
                 }
               })
-              .catch(error => { if (error.message !== 'Unauthorized') console.error('좋아요 처리 실패:', error); });
+              .catch(error => {
+                if (error.message !== 'Unauthorized') console.error('좋아요 처리 실패:', error);
+                // CSRF 토큰 문제일 경우 403 Forbidden 응답을 받을 수 있습니다.
+                if (error.message.includes('403')) {
+                  alert('권한이 없습니다. (세션 만료 또는 CSRF 토큰 오류)');
+                }
+              });
     });
+
+    // --- 댓글 기능 JavaScript ---
+    const postId = /*[[${animal.id}]]*/ null;
+    const currentUserId = /*[[${session.loggedInUserId}]]*/ null; // 현재 로그인된 사용자 ID
+
+    const commentListDiv = document.getElementById('commentList');
+    const commentContentInput = document.getElementById('commentContent');
+    const addCommentBtn = document.getElementById('addCommentBtn');
+
+    // 댓글 목록 불러오기 함수
+    function loadComments() {
+      if (!postId) return;
+
+      fetch(`/api/comments?postId=${postId}`)
+              .then(response => response.json())
+              .then(comments => {
+                commentListDiv.innerHTML = ''; // 기존 댓글 초기화
+                if (comments.length === 0) {
+                  commentListDiv.innerHTML = '<p style="text-align: center; color: #6c757d;">아직 댓글이 없습니다.</p>';
+                  return;
+                }
+
+                comments.forEach(comment => {
+                  const commentItem = document.createElement('div');
+                  commentItem.className = 'comment-item';
+                  commentItem.dataset.cmNo = comment.cmNo;
+
+                  // `authorNameDisplay`를 먼저 사용하고 없으면 `cmWriter` 사용 (엔티티의 `authorNameDisplay` 필드 사용)
+                  const authorDisplayName = comment.authorNameDisplay || comment.cmWriter;
+
+                  const isAuthor = currentUserId && currentUserId === comment.authorUid;
+                  const formattedDate = new Date(comment.createdAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                  const hasUpdatedAt = comment.updatedAt && new Date(comment.createdAt).getTime() !== new Date(comment.updatedAt).getTime();
+                  const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
+
+                  commentItem.innerHTML = `
+              <div class="comment-meta">
+                <span class="comment-author">${authorDisplayName}</span>
+                <span>${formattedDate}${updatedText}</span>
+              </div>
+              <div class="comment-content">${comment.cmContent}</div>
+              <div class="comment-actions">
+                ${isAuthor ? `
+                  <button type="button" class="edit-comment-btn">수정</button>
+                  <button type="button" class="delete-comment-btn">삭제</button>
+                ` : ''}
+                ${currentUserId ? `<button type="button" class="show-reply-input-btn">답글 달기</button>` : ''}
+                <button type="button" class="reply-toggle-btn">답글 보기 (0)</button> </div>
+              <div class="replies-section" style="display: none;">
+                <div class="reply-input-form" data-cm-no="${comment.cmNo}">
+                  <textarea placeholder="답글을 입력하세요." class="reply-content-input"></textarea>
+                  <button type="button" class="add-reply-btn">등록</button>
+                </div>
+                <div class="reply-list"></div>
+              </div>
+            `;
+                  commentListDiv.appendChild(commentItem);
+
+                  // 각 댓글의 답글 수를 업데이트 (비동기적으로)
+                  fetch(`/api/replies/count?cmNo=${comment.cmNo}`)
+                          .then(res => res.json())
+                          .then(data => {
+                            const replyCountBtn = commentItem.querySelector('.reply-toggle-btn');
+                            if (replyCountBtn) {
+                              replyCountBtn.textContent = `답글 보기 (${data.count || 0})`;
+                              commentItem.dataset.replyCount = data.count || 0; // 데이터셋에 저장
+                            }
+                          })
+                          .catch(error => console.error('답글 수 로드 실패:', error));
+                });
+              })
+              .catch(error => console.error('댓글을 불러오는 데 실패했습니다:', error));
+    }
+
+    // 댓글 등록 함수
+    if (addCommentBtn) {
+      addCommentBtn.addEventListener('click', () => {
+        if (!currentUserId) { // 이 조건은 로그인 여부 체크
+          alert('로그인이 필요합니다.');
+          return;
+        }
+        const content = commentContentInput.value.trim();
+        if (!content) {
+          alert('댓글 내용을 입력하세요.');
+          return;
+        }
+
+        fetch('/api/comments', {
+          method: 'POST',
+          headers: getCsrfHeaders(),
+          body: JSON.stringify({ postId: postId, cmContent: content })
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    // HTTP 상태 코드가 200번대가 아니면 에러로 처리
+                    return response.json().then(errorData => {
+                      throw new Error(errorData.message || '댓글 등록 중 서버 오류 발생');
+                    });
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  if (data.success) {
+                    commentContentInput.value = ''; // 입력창 비우기
+                    loadComments(); // 댓글 목록 다시 불러오기
+                    alert(data.message); // 성공 메시지 표시
+                  } else {
+                    alert('댓글 등록 실패: ' + data.message);
+                  }
+                })
+                .catch(error => {
+                  console.error('댓글 등록 중 오류 발생:', error);
+                  alert('댓글 등록 실패: ' + error.message); // 사용자에게 더 구체적인 메시지 전달
+                });
+      });
+    }
+
+    // 댓글 수정/삭제, 답글 기능 위임 이벤트 리스너
+    commentListDiv.addEventListener('click', function(event) {
+      const target = event.target;
+      const commentItem = target.closest('.comment-item');
+      if (!commentItem) return;
+      const cmNo = commentItem.dataset.cmNo;
+
+      // 댓글 수정 버튼
+      if (target.classList.contains('edit-comment-btn')) {
+        const currentContentDiv = commentItem.querySelector('.comment-content');
+        const currentContent = currentContentDiv.textContent;
+
+        if (commentItem.querySelector('.comment-edit-form')) return; // 이미 수정 폼이 있으면 중복 생성 방지
+
+        const editForm = document.createElement('div');
+        editForm.className = 'comment-edit-form';
+        editForm.innerHTML = `
+          <textarea>${currentContent}</textarea>
+          <button type="button" class="save-comment-btn">저장</button>
+          <button type="button" class="cancel-edit-btn">취소</button>
+        `;
+        currentContentDiv.style.display = 'none'; // 기존 내용 숨기기
+        commentItem.insertBefore(editForm, currentContentDiv.nextSibling);
+
+        editForm.querySelector('.save-comment-btn').addEventListener('click', () => {
+          const newContent = editForm.querySelector('textarea').value.trim();
+          if (!newContent) {
+            alert('수정할 내용을 입력하세요.');
+            return;
+          }
+          fetch(`/api/comments/${cmNo}`, {
+            method: 'PUT',
+            headers: getCsrfHeaders(),
+            body: JSON.stringify({ cmContent: newContent })
+          })
+                  .then(response => {
+                    if (!response.ok) {
+                      return response.json().then(errorData => {
+                        throw new Error(errorData.message || '댓글 수정 중 서버 오류 발생');
+                      });
+                    }
+                    return response.json();
+                  })
+                  .then(data => {
+                    if (data.success) {
+                      loadComments();
+                      alert(data.message);
+                    } else {
+                      alert('댓글 수정 실패: ' + data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('댓글 수정 중 오류 발생:', error);
+                    alert('댓글 수정 실패: ' + error.message);
+                  });
+        });
+
+        editForm.querySelector('.cancel-edit-btn').addEventListener('click', () => {
+          editForm.remove();
+          currentContentDiv.style.display = 'block'; // 기존 내용 다시 보이기
+        });
+      }
+
+      // 댓글 삭제 버튼
+      if (target.classList.contains('delete-comment-btn')) {
+        if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+        fetch(`/api/comments/${cmNo}`, {
+          method: 'DELETE',
+          headers: getCsrfHeaders()
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    return response.json().then(errorData => {
+                      throw new Error(errorData.message || '댓글 삭제 중 서버 오류 발생');
+                    });
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  if (data.success) {
+                    loadComments();
+                    alert(data.message);
+                  } else {
+                    alert('댓글 삭제 실패: ' + data.message);
+                  }
+                })
+                .catch(error => {
+                  console.error('댓글 삭제 중 오류 발생:', error);
+                  alert('댓글 삭제 실패: ' + error.message);
+                });
+      }
+
+      // 답글 보기/숨기기 버튼
+      if (target.classList.contains('reply-toggle-btn')) {
+        const repliesSection = commentItem.querySelector('.replies-section');
+        const replyListDiv = repliesSection.querySelector('.reply-list');
+        const replyToggleBtn = target;
+
+        if (repliesSection.style.display === 'none') {
+          repliesSection.style.display = 'block';
+          loadReplies(cmNo, replyListDiv); // 답글 로드
+          replyToggleBtn.textContent = '답글 숨기기';
+        } else {
+          repliesSection.style.display = 'none';
+          const currentReplyCount = commentItem.dataset.replyCount || 0;
+          replyToggleBtn.textContent = `답글 보기 (${currentReplyCount})`;
+        }
+      }
+
+      // 답글 달기 버튼 (답글 입력 폼 보이기)
+      if (target.classList.contains('show-reply-input-btn')) {
+        const repliesSection = commentItem.querySelector('.replies-section');
+        const replyInputForm = repliesSection.querySelector('.reply-input-form');
+        repliesSection.style.display = 'block'; // 답글 섹션 보이도록
+        replyInputForm.style.display = 'flex'; // 답글 입력 폼 보이도록
+        const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
+        if (replyToggleBtn) replyToggleBtn.textContent = '답글 숨기기'; // 답글 숨기기 버튼으로 변경
+      }
+
+      // 답글 등록 버튼
+      if (target.classList.contains('add-reply-btn')) {
+        const replyInputForm = target.closest('.reply-input-form');
+        const replyContentInput = replyInputForm.querySelector('.reply-content-input');
+        const content = replyContentInput.value.trim();
+        if (!content) {
+          alert('답글 내용을 입력하세요.');
+          return;
+        }
+
+        fetch('/api/replies', {
+          method: 'POST',
+          headers: getCsrfHeaders(),
+          body: JSON.stringify({ cmNo: cmNo, rpContent: content })
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    return response.json().then(errorData => {
+                      throw new Error(errorData.message || '답글 등록 중 서버 오류 발생');
+                    });
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  if (data.success) {
+                    replyContentInput.value = ''; // 입력창 비우기
+                    loadReplies(cmNo, commentItem.querySelector('.reply-list')); // 답글 목록 다시 불러오기
+
+                    // 답글 수 UI 업데이트
+                    const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
+                    let currentReplyCount = parseInt(commentItem.dataset.replyCount || '0');
+                    commentItem.dataset.replyCount = currentReplyCount + 1; // 데이터셋 업데이트
+                    replyToggleBtn.textContent = `답글 숨기기 (${commentItem.dataset.replyCount})`;
+                    alert(data.message);
+                  } else {
+                    alert('답글 등록 실패: ' + data.message);
+                  }
+                })
+                .catch(error => {
+                  console.error('답글 등록 중 오류 발생:', error);
+                  alert('답글 등록 실패: ' + error.message);
+                });
+      }
+    });
+
+    // 답글 목록 불러오기 함수
+    function loadReplies(cmNo, replyListDiv) {
+      fetch(`/api/replies?cmNo=${cmNo}`)
+              .then(response => response.json())
+              .then(replies => {
+                replyListDiv.innerHTML = ''; // 기존 답글 초기화
+                if (replies.length === 0) {
+                  replyListDiv.innerHTML = '<p style="text-align: center; color: #6c757d; font-size: 0.8em;">아직 답글이 없습니다.</p>';
+                  return;
+                }
+
+                replies.forEach(reply => {
+                  const replyItem = document.createElement('div');
+                  replyItem.className = 'reply-item';
+                  replyItem.dataset.rpNo = reply.rpNo;
+
+                  const isAuthor = currentUserId && currentUserId === reply.userId;
+                  // `userNameDisplay`를 먼저 사용하고 없으면 `userId` 사용
+                  const authorDisplayName = reply.userNameDisplay || reply.userId;
+
+                  const formattedDate = new Date(reply.createdAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                  const hasUpdatedAt = reply.updatedAt && new Date(reply.createdAt).getTime() !== new Date(reply.updatedAt).getTime();
+                  const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
+
+                  replyItem.innerHTML = `
+              <div class="reply-meta">
+                <span class="reply-author">${authorDisplayName}</span>
+                <span>${formattedDate}${updatedText}</span>
+              </div>
+              <div class="reply-content">${reply.rpContent}</div>
+              <div class="reply-actions">
+                ${isAuthor ? `
+                  <button type="button" class="edit-reply-btn">수정</button>
+                  <button type="button" class="delete-reply-btn">삭제</button>
+                ` : ''}
+              </div>
+            `;
+                  replyListDiv.appendChild(replyItem);
+                });
+              })
+              .catch(error => console.error('답글을 불러오는 데 실패했습니다:', error));
+    }
+
+    // 답글 수정/삭제 위임 이벤트 리스너 (댓글 목록 div에서)
+    commentListDiv.addEventListener('click', function(event) {
+      const target = event.target;
+      const replyItem = target.closest('.reply-item');
+      if (!replyItem) return; // 답글 항목이 아니면 무시
+
+      const rpNo = replyItem.dataset.rpNo;
+      const commentItem = target.closest('.comment-item'); // 답글이 속한 댓글 항목 찾기
+      const cmNo = commentItem ? commentItem.dataset.cmNo : null;
+
+
+      // 답글 수정 버튼
+      if (target.classList.contains('edit-reply-btn')) {
+        const currentContentDiv = replyItem.querySelector('.reply-content');
+        const currentContent = currentContentDiv.textContent;
+
+        if (replyItem.querySelector('.reply-edit-form')) return; // 이미 수정 폼이 있으면 중복 생성 방지
+
+        const editForm = document.createElement('div');
+        editForm.className = 'reply-edit-form';
+        editForm.innerHTML = `
+              <textarea>${currentContent}</textarea>
+              <button type="button" class="save-reply-btn">저장</button>
+              <button type="button" class="cancel-reply-edit-btn">취소</button>
+            `;
+        currentContentDiv.style.display = 'none'; // 기존 내용 숨기기
+        replyItem.insertBefore(editForm, currentContentDiv.nextSibling);
+
+        editForm.querySelector('.save-reply-btn').addEventListener('click', () => {
+          const newContent = editForm.querySelector('textarea').value.trim();
+          if (!newContent) {
+            alert('수정할 내용을 입력하세요.');
+            return;
+          }
+          fetch(`/api/replies/${rpNo}`, {
+            method: 'PUT',
+            headers: getCsrfHeaders(),
+            body: JSON.stringify({ rpContent: newContent, cmNo: cmNo }) // cmNo는 DTO에 맞게 전달
+          })
+                  .then(response => {
+                    if (!response.ok) {
+                      return response.json().then(errorData => {
+                        throw new Error(errorData.message || '답글 수정 중 서버 오류 발생');
+                      });
+                    }
+                    return response.json();
+                  })
+                  .then(data => {
+                    if (data.success) {
+                      loadReplies(cmNo, commentItem.querySelector('.reply-list')); // 답글 목록 다시 불러오기
+                      alert(data.message);
+                    } else {
+                      alert('답글 수정 실패: ' + data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('답글 수정 중 오류 발생:', error);
+                    alert('답글 수정 실패: ' + error.message);
+                  });
+        });
+
+        editForm.querySelector('.cancel-reply-edit-btn').addEventListener('click', () => {
+          editForm.remove();
+          currentContentDiv.style.display = 'block'; // 기존 내용 다시 보이기
+        });
+      }
+
+      // 답글 삭제 버튼
+      if (target.classList.contains('delete-reply-btn')) {
+        if (!confirm('정말로 이 답글을 삭제하시겠습니까?')) return;
+        fetch(`/api/replies/${rpNo}`, {
+          method: 'DELETE',
+          headers: getCsrfHeaders()
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    return response.json().then(errorData => {
+                      throw new Error(errorData.message || '답글 삭제 중 서버 오류 발생');
+                    });
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  if (data.success) {
+                    // UI에서 답글 삭제
+                    replyItem.remove();
+                    alert(data.message);
+                    // 답글 개수 업데이트 (UI 상)
+                    const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
+                    let currentReplyCount = parseInt(commentItem.dataset.replyCount || '0');
+                    commentItem.dataset.replyCount = Math.max(0, currentReplyCount - 1);
+                    replyToggleBtn.textContent = `답글 보기 (${commentItem.dataset.replyCount})`;
+                    // 만약 모든 답글이 삭제되면 "아직 답글이 없습니다." 메시지 표시
+                    const remainingReplies = commentItem.querySelector('.reply-list').children.length;
+                    if (remainingReplies === 0) {
+                      commentItem.querySelector('.reply-list').innerHTML = '<p style="text-align: center; color: #6c757d; font-size: 0.8em;">아직 답글이 없습니다.</p>';
+                    }
+                  } else {
+                    alert('답글 삭제 실패: ' + data.message);
+                  }
+                })
+                .catch(error => {
+                  console.error('답글 삭제 중 오류 발생:', error);
+                  alert('답글 삭제 실패: ' + error.message);
+                });
+      }
+    });
+
+    // 페이지 로드 시 댓글 불러오기
+    loadComments();
+
   });
 </script>
 </body>

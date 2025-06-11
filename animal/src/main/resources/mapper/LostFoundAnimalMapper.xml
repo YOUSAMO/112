@@ -33,6 +33,7 @@
         <result property="fileName" column="file_name"/>
         <result property="filePath" column="file_path"/>
         <result property="fileType" column="file_type"/>
+        <result property="fileSize" column="file_size"/>
     </resultMap>
 
     <select id="findById" parameterType="long" resultMap="lostFoundAnimalMap">
@@ -50,8 +51,8 @@
     <select id="findAll" resultMap="lostFoundAnimalMap">
         SELECT
             a.*,
-            u.u_name AS author_name, -- users 테이블에서 u_name을 가져와 author_name으로 사용
-            (SELECT af.file_name
+            u.u_name AS author_name,
+            (SELECT af.file_path
              FROM attachment_file af
              WHERE af.board_id = a.id AND af.board_type = 'lostfound'
              ORDER BY af.id ASC
@@ -59,7 +60,7 @@
         FROM
             lost_found_animals a
             LEFT JOIN
-            users u ON a.user_id = u.u_id -- lost_found_animals(a)와 users(u) 테이블을 연결
+            users u ON a.user_id = u.u_id
         ORDER BY
             a.id DESC
     </select>
@@ -74,7 +75,8 @@
     <update id="update" parameterType="com.example.animal.entity.LostFoundAnimal">
         UPDATE lost_found_animals
         SET board_type=#{boardType}, title=#{title}, content=#{content}, animal_type=#{animalType}, gender=#{gender}, age=#{age},
-            location=#{location}, event_date=#{eventDate}, contact_name=#{contactName}, contact_phone=#{contactPhone}, contact_email=#{contactEmail}
+            location=#{location}, event_date=#{eventDate}, contact_name=#{contactName}, contact_phone=#{contactPhone}, contact_email=#{contactEmail},
+            updated_at = CURRENT_TIMESTAMP
         WHERE id=#{id}
     </update>
 
@@ -93,12 +95,15 @@
     </update>
 
     <insert id="insertAttachment" parameterType="com.example.animal.entity.AttachmentFile" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO attachment_file (board_type, board_id, file_name, file_path, file_type)
-        VALUES (#{boardType}, #{boardId}, #{fileName}, #{filePath}, #{fileType})
+        INSERT INTO attachment_file (board_type, board_id, file_name, file_path, file_type, file_size)
+        VALUES (#{boardType}, #{boardId}, #{fileName}, #{filePath}, #{fileType}, #{fileSize})
     </insert>
 
     <select id="findAttachmentsByAnimalId" parameterType="long" resultMap="attachmentFileMap">
-        SELECT * FROM attachment_file WHERE board_type = 'lostfound' AND board_id = #{animalId}
+        SELECT id, board_type, board_id, file_name, file_path, file_size, file_type
+        FROM attachment_file
+        WHERE board_type = 'lostfound' AND board_id = #{animalId}
+        ORDER BY id ASC
     </select>
 
     <delete id="deleteAttachmentsByAnimalId" parameterType="long">
@@ -107,7 +112,7 @@
     </delete>
 
     <select id="findAttachmentById" parameterType="long" resultMap="attachmentFileMap">
-        SELECT id, board_type, board_id, file_name, file_path, file_type
+        SELECT id, board_type, board_id, file_name, file_path, file_size, file_type
         FROM attachment_file
         WHERE id = #{attachmentId}
     </select>
@@ -116,5 +121,59 @@
         DELETE FROM attachment_file
         WHERE id = #{attachmentId}
     </delete>
+
+    <select id="findByPage" resultMap="lostFoundAnimalMap">
+        SELECT
+            a.id,
+            a.user_id,
+            u.u_name as author_name,
+            a.board_type,
+            a.title,
+            a.content,
+            a.animal_type,
+            a.gender,
+            a.age,
+            a.location,
+            a.event_date,
+            a.contact_name,
+            a.contact_phone,
+            a.contact_email,
+            a.view_count,
+            a.like_count,
+            a.created_at,
+            a.updated_at,
+            (SELECT af.file_path
+             FROM attachment_file af
+             WHERE af.board_id = a.id AND af.board_type = 'lostfound'
+             ORDER BY af.id ASC
+                        LIMIT 1) AS thumbnail_file_name
+        FROM
+            lost_found_animals a
+            LEFT JOIN
+            users u ON a.user_id = u.u_id
+        ORDER BY
+            a.created_at DESC, a.id DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM lost_found_animals
+    </select>
+
+    <select id="findAttachmentsByBoardTypeAndBoardIds" resultMap="attachmentFileMap">
+        SELECT
+        id,
+        board_type,
+        board_id,
+        file_name,
+        file_path,
+        file_size,
+        file_type FROM attachment_file
+        WHERE board_type = #{boardType}
+        AND board_id IN
+        <foreach item="boardId" collection="boardIds" open="(" separator="," close=")">
+            #{boardId}
+        </foreach>
+    </select>
 
 </mapper>
