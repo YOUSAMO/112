@@ -311,6 +311,7 @@
 
         <td>
             <a class="action-link" th:href="@{animals/{id}(id=${animal.id})}">상세보기</a>
+            <span th:if="${loggedInUserId != null and animal.created_by == loggedInUserId}">
             <a class="action-link" th:href="@{animals/edit/{id}(id=${animal.id})}">수정</a>
             <a class="action-link" onclick="return confirm('정말 삭제하시겠습니까?');"
                th:href="@{animals/delete/{id}(id=${animal.id})}">삭제</a>

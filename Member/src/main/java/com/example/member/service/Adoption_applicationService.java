@@ -13,7 +13,8 @@ public class Adoption_applicationService {
     private final Adoption_applicationRepository adoption_applicationRepository;
 
 
-    public void saveApplication(Adoption_application adoption) {
+    public void saveApplication(Adoption_application adoption, Long animal_id) {
+        adoption.setAnimal_id(animal_id);
         adoption_applicationRepository.insert(adoption);
     }
 

@@ -11,5 +11,4 @@ public interface Adoption_applicationRepository {
  void update(Adoption_application adoption_application);
  void delete(Adoption_application adoption_application);
 
-
 }

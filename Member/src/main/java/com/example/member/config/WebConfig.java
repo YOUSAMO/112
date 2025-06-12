@@ -13,6 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final AdminService adminService;
 
     public WebConfig(AdminService adminService) {
+
         this.adminService = adminService;
     }
 

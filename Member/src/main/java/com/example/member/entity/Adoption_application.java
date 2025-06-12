@@ -33,5 +33,6 @@ public class Adoption_application {
     private int agreement;
     private LocalDate created_at;
     private Integer pledge;
+    private Long animal_id;
 
 }

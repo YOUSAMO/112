@@ -74,6 +74,9 @@
 <div class="container">
     <h2>유기동물 입양신청서</h2>
     <form th:action="@{/adoption/apply}" th:object="${adoptionForm}" method="post" id="adoptionForm">
+
+        <!-- animal_id hidden input 추가 -->
+        <input type="hidden" th:field="*{animal_id}" th:value="${animalId}">
         <div class="section-title">신청자 기본 정보</div>
         <label>이름</label>
         <input type="text" th:value="${session.loginMember.u_name}" readonly pattern="^[가-힣]+$" title="한글만 입력하세요.">

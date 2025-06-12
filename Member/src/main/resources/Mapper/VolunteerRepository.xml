@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper  namespace="com.example.member.repository.VolunteerRepository">
+    <resultMap id="volunteerResultMap" type="com.example.member.entity.Volunteer">
+
+        <result property="shelter" column="shelter"/>
+        <result property="volunteer_date" column="volunteer_date"/>
+        <result property="volunteer_area" column="volunteer_area"/>
+        <result property="volunteer_time" column="volunteer_time"/>
+        <result property="motivation" column="motivation"/>
+        <result property="agreement" column="agreement"/>
+
+
+    </resultMap>
+
+    <insert id="insert" parameterType="com.example.member.entity.Volunteer">
+        INSERT INTO volunteer_application
+        (u_id,shelter,volunteer_date,volunteer_time,volunteer_area,motivation,agreement)
+        VALUES
+            (#{u_id},#{shelter},#{volunteer_date},#{volunteer_time},#{volunteer_area},#{motivation},
+             #{agreement})
+
+    </insert>
+
+
+
+
+
+
+
+</mapper>
