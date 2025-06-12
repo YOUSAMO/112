@@ -27,7 +27,9 @@ public class AdoptionReviewController {
 
     private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
     private static final String LOGIN_PAGE_URL = "/login";
-    public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview";
+    // ★★★ 수정 부분: ADOPTION_REVIEW_BOARD_TYPE 값을 "review"로 변경 ★★★
+    public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview"; // HTML의 currentBoardType과 일치
+    // ★★★ 수정 끝 ★★★
 
     // PageInfo 내부 클래스 - getSize() 메서드명 수정 완료
     public static class PageInfo {
@@ -116,6 +118,8 @@ public class AdoptionReviewController {
         model.addAttribute("review", review);
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("likeStatus", likeStatus);
+        // ★★★ 추가적인 model attribute 필요하다면 여기에 추가 (예: defaultBoardType) ★★★
+        // model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE); // 이미 HTML에서 'review'로 고정되어 사용 중
         return "review/reviewView";
     }
 

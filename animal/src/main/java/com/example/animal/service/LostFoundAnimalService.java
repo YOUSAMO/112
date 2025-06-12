@@ -28,15 +28,15 @@ public class LostFoundAnimalService {
 
     private final LostFoundAnimalRepository animalRepository;
     private final UserLikeRepository userLikeRepository;
+    // LikeService를 직접 주입받는 것이 더 깔끔할 수 있습니다.
+    // private final LikeService likeService;
 
-    private static final String BOARD_TYPE = "lostfound";
+    private static final String BOARD_TYPE = "lostfound"; // 이 서비스의 기본 boardType
     private static final String FOLDER_PREFIX = "LostFound_";
 
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    // 기존 getList()는 페이징 없는 전체 목록 조회용으로 남겨두거나, 제거하고 페이징 메서드로 대체할 수 있습니다.
-    // 여기서는 페이징 메서드를 추가하면서 기존 메서드는 그대로 둡니다.
     public List<LostFoundAnimal> getList() {
         return animalRepository.findAll();
     }
@@ -57,8 +57,10 @@ public class LostFoundAnimalService {
                 .collect(Collectors.toList());
 
         // LostFoundAnimalRepository에 이 메서드를 추가해야 합니다.
+        // 이 메서드는 AttachmentFileRepository에 있는 것이 더 논리적입니다.
+        // 현재 animalRepository에 있다고 가정하고 진행합니다.
         List<AttachmentFile> attachments = animalRepository.findAttachmentsByBoardTypeAndBoardIds(
-                BOARD_TYPE, animalIds);
+                BOARD_TYPE, animalIds); // BOARD_TYPE을 전달
 
         // Map으로 변환하여 각 LostFoundAnimal에 첨부파일 매핑
         Map<Long, List<AttachmentFile>> attachmentsMap = attachments.stream()
@@ -95,19 +97,22 @@ public class LostFoundAnimalService {
         return this.get(id, null);
     }
 
+    // ★★★ 수정된 부분: toggleLike 메서드에 boardType 인자 추가 ★★★
     @Transactional
-    public Map<String, Object> toggleLike(String userId, Long boardId) {
-        UserLike existingLike = userLikeRepository.findLike(userId, boardId, BOARD_TYPE);
+    public Map<String, Object> toggleLike(String userId, Long boardId, String boardType) {
+        // boardType을 이제 LikeService.toggleLike로 전달할 수 있습니다.
+        // 이 서비스는 lostfound 타입만 처리하므로 BOARD_TYPE 상수를 그대로 사용합니다.
+        UserLike existingLike = userLikeRepository.findLike(userId, boardId, boardType);
         boolean likedNow;
 
         if (existingLike != null) {
-            userLikeRepository.deleteLike(userId, boardId, BOARD_TYPE);
+            userLikeRepository.deleteLike(userId, boardId, boardType);
             likedNow = false;
         } else {
             UserLike newLike = new UserLike();
             newLike.setUserId(userId);
             newLike.setBoardId(boardId);
-            newLike.setBoardType(BOARD_TYPE);
+            newLike.setBoardType(boardType); // 전달받은 boardType 설정
             userLikeRepository.insertLike(newLike);
             likedNow = true;
         }
@@ -120,6 +125,7 @@ public class LostFoundAnimalService {
         result.put("likeCount", updatedAnimal.getLikeCount());
         return result;
     }
+    // ★★★ 수정 끝 ★★★
 
     @Transactional
     public void register(LostFoundAnimal animal, List<MultipartFile> files, String userId) throws IOException {
@@ -185,7 +191,6 @@ public class LostFoundAnimalService {
     private void saveAttachments(Long animalId, List<MultipartFile> files) throws IOException {
         if (files == null || files.isEmpty()) return;
 
-        // 실제 파일이 저장될 물리적 디렉토리 경로
         Path animalSpecificDir = Paths.get(uploadDir, BOARD_TYPE, FOLDER_PREFIX + animalId);
         if (!Files.exists(animalSpecificDir)) {
             Files.createDirectories(animalSpecificDir);

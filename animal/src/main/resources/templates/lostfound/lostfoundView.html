@@ -140,6 +140,8 @@
 </div>
 
 <script th:inline="javascript">
+  /*<![CDATA[*/ // Thymeleaf 인라인 모드 시작
+
   document.addEventListener('DOMContentLoaded', function() {
     const likeBtn = document.getElementById('likeBtn');
     if (!likeBtn || likeBtn.disabled) return;
@@ -185,6 +187,7 @@
 
     // --- 댓글 기능 JavaScript ---
     const postId = /*[[${animal.id}]]*/ null;
+    const boardType = /*[[${animal.boardType}]]*/ null; // 게시판 타입 (예: "lostfound", "missing")
     const currentUserId = /*[[${session.loggedInUserId}]]*/ null; // 현재 로그인된 사용자 ID
 
     const commentListDiv = document.getElementById('commentList');
@@ -195,8 +198,20 @@
     function loadComments() {
       if (!postId) return;
 
-      fetch(`/api/comments?postId=${postId}`)
-              .then(response => response.json())
+      // lostfound 게시판은 postId로 댓글을 가져오므로 postId 파라미터 사용
+      // ★★★ 수정된 부분: 템플릿 리터럴 문법 수정 ★★★
+      // Thymeleaf의 인라인 모드에서 $ 문자가 중복 해석되지 않도록 주의
+      const url = `/api/comments?postId=${postId}&boardType=${boardType}`; // 이 라인은 그대로 JavaScript 변수 사용
+      fetch(url)
+              // ★★★ 수정 끝 ★★★
+              .then(response => {
+                if (!response.ok) { // HTTP 상태 코드가 2xx가 아니면 에러로 처리
+                  return response.json().then(errorData => {
+                    throw new Error(errorData.message || '댓글 목록을 불러오는 중 서버 오류 발생');
+                  });
+                }
+                return response.json();
+              })
               .then(comments => {
                 commentListDiv.innerHTML = ''; // 기존 댓글 초기화
                 if (comments.length === 0) {
@@ -209,7 +224,7 @@
                   commentItem.className = 'comment-item';
                   commentItem.dataset.cmNo = comment.cmNo;
 
-                  // `authorNameDisplay`를 먼저 사용하고 없으면 `cmWriter` 사용 (엔티티의 `authorNameDisplay` 필드 사용)
+                  // `authorNameDisplay`를 먼저 사용하고 없으면 `cmWriter` 사용
                   const authorDisplayName = comment.authorNameDisplay || comment.cmWriter;
 
                   const isAuthor = currentUserId && currentUserId === comment.authorUid;
@@ -217,6 +232,9 @@
                   const hasUpdatedAt = comment.updatedAt && new Date(comment.createdAt).getTime() !== new Date(comment.updatedAt).getTime();
                   const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
 
+                  // ★★★ 수정된 부분: 템플릿 리터럴 내에서 $ 문자 처리 ★★★
+                  // `authorDisplayName`, `formattedDate`, `updatedText`, `comment.cmContent` 등은 JS 변수이므로
+                  // HTML 문자열 안에 직접 삽입할 때 `${변수명}` 형태로 정확히 사용합니다.
                   commentItem.innerHTML = `
               <div class="comment-meta">
                 <span class="comment-author">${authorDisplayName}</span>
@@ -225,7 +243,6 @@
               <div class="comment-content">${comment.cmContent}</div>
               <div class="comment-actions">
                 ${isAuthor ? `
-                  <button type="button" class="edit-comment-btn">수정</button>
                   <button type="button" class="delete-comment-btn">삭제</button>
                 ` : ''}
                 ${currentUserId ? `<button type="button" class="show-reply-input-btn">답글 달기</button>` : ''}
@@ -238,6 +255,7 @@
                 <div class="reply-list"></div>
               </div>
             `;
+                  // ★★★ 수정 끝 ★★★
                   commentListDiv.appendChild(commentItem);
 
                   // 각 댓글의 답글 수를 업데이트 (비동기적으로)
@@ -253,7 +271,10 @@
                           .catch(error => console.error('답글 수 로드 실패:', error));
                 });
               })
-              .catch(error => console.error('댓글을 불러오는 데 실패했습니다:', error));
+              .catch(error => {
+                console.error('댓글을 불러오는 데 실패했습니다:', error);
+                commentListDiv.innerHTML = `<p style="text-align: center; color: #dc3545;">댓글을 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
+              });
     }
 
     // 댓글 등록 함수
@@ -272,7 +293,7 @@
         fetch('/api/comments', {
           method: 'POST',
           headers: getCsrfHeaders(),
-          body: JSON.stringify({ postId: postId, cmContent: content })
+          body: JSON.stringify({ postId: postId, cmContent: content, boardType: boardType }) // boardType 추가
         })
                 .then(response => {
                   if (!response.ok) {
@@ -306,61 +327,10 @@
       if (!commentItem) return;
       const cmNo = commentItem.dataset.cmNo;
 
-      // 댓글 수정 버튼
-      if (target.classList.contains('edit-comment-btn')) {
-        const currentContentDiv = commentItem.querySelector('.comment-content');
-        const currentContent = currentContentDiv.textContent;
-
-        if (commentItem.querySelector('.comment-edit-form')) return; // 이미 수정 폼이 있으면 중복 생성 방지
-
-        const editForm = document.createElement('div');
-        editForm.className = 'comment-edit-form';
-        editForm.innerHTML = `
-          <textarea>${currentContent}</textarea>
-          <button type="button" class="save-comment-btn">저장</button>
-          <button type="button" class="cancel-edit-btn">취소</button>
-        `;
-        currentContentDiv.style.display = 'none'; // 기존 내용 숨기기
-        commentItem.insertBefore(editForm, currentContentDiv.nextSibling);
-
-        editForm.querySelector('.save-comment-btn').addEventListener('click', () => {
-          const newContent = editForm.querySelector('textarea').value.trim();
-          if (!newContent) {
-            alert('수정할 내용을 입력하세요.');
-            return;
-          }
-          fetch(`/api/comments/${cmNo}`, {
-            method: 'PUT',
-            headers: getCsrfHeaders(),
-            body: JSON.stringify({ cmContent: newContent })
-          })
-                  .then(response => {
-                    if (!response.ok) {
-                      return response.json().then(errorData => {
-                        throw new Error(errorData.message || '댓글 수정 중 서버 오류 발생');
-                      });
-                    }
-                    return response.json();
-                  })
-                  .then(data => {
-                    if (data.success) {
-                      loadComments();
-                      alert(data.message);
-                    } else {
-                      alert('댓글 수정 실패: ' + data.message);
-                    }
-                  })
-                  .catch(error => {
-                    console.error('댓글 수정 중 오류 발생:', error);
-                    alert('댓글 수정 실패: ' + error.message);
-                  });
-        });
-
-        editForm.querySelector('.cancel-edit-btn').addEventListener('click', () => {
-          editForm.remove();
-          currentContentDiv.style.display = 'block'; // 기존 내용 다시 보이기
-        });
-      }
+      // 댓글 수정 버튼 (완전히 제거)
+      // if (target.classList.contains('edit-comment-btn')) {
+      //   // 수정 기능 제거
+      // }
 
       // 댓글 삭제 버튼
       if (target.classList.contains('delete-comment-btn')) {
@@ -487,6 +457,7 @@
                   const hasUpdatedAt = reply.updatedAt && new Date(reply.createdAt).getTime() !== new Date(reply.updatedAt).getTime();
                   const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
 
+                  // ★★★ 수정된 부분: 템플릿 리터럴 내에서 $ 문자 처리 ★★★
                   replyItem.innerHTML = `
               <div class="reply-meta">
                 <span class="reply-author">${authorDisplayName}</span>
@@ -495,11 +466,11 @@
               <div class="reply-content">${reply.rpContent}</div>
               <div class="reply-actions">
                 ${isAuthor ? `
-                  <button type="button" class="edit-reply-btn">수정</button>
                   <button type="button" class="delete-reply-btn">삭제</button>
                 ` : ''}
               </div>
             `;
+                  // ★★★ 수정 끝 ★★★
                   replyListDiv.appendChild(replyItem);
                 });
               })
@@ -517,61 +488,10 @@
       const cmNo = commentItem ? commentItem.dataset.cmNo : null;
 
 
-      // 답글 수정 버튼
-      if (target.classList.contains('edit-reply-btn')) {
-        const currentContentDiv = replyItem.querySelector('.reply-content');
-        const currentContent = currentContentDiv.textContent;
-
-        if (replyItem.querySelector('.reply-edit-form')) return; // 이미 수정 폼이 있으면 중복 생성 방지
-
-        const editForm = document.createElement('div');
-        editForm.className = 'reply-edit-form';
-        editForm.innerHTML = `
-              <textarea>${currentContent}</textarea>
-              <button type="button" class="save-reply-btn">저장</button>
-              <button type="button" class="cancel-reply-edit-btn">취소</button>
-            `;
-        currentContentDiv.style.display = 'none'; // 기존 내용 숨기기
-        replyItem.insertBefore(editForm, currentContentDiv.nextSibling);
-
-        editForm.querySelector('.save-reply-btn').addEventListener('click', () => {
-          const newContent = editForm.querySelector('textarea').value.trim();
-          if (!newContent) {
-            alert('수정할 내용을 입력하세요.');
-            return;
-          }
-          fetch(`/api/replies/${rpNo}`, {
-            method: 'PUT',
-            headers: getCsrfHeaders(),
-            body: JSON.stringify({ rpContent: newContent, cmNo: cmNo }) // cmNo는 DTO에 맞게 전달
-          })
-                  .then(response => {
-                    if (!response.ok) {
-                      return response.json().then(errorData => {
-                        throw new Error(errorData.message || '답글 수정 중 서버 오류 발생');
-                      });
-                    }
-                    return response.json();
-                  })
-                  .then(data => {
-                    if (data.success) {
-                      loadReplies(cmNo, commentItem.querySelector('.reply-list')); // 답글 목록 다시 불러오기
-                      alert(data.message);
-                    } else {
-                      alert('답글 수정 실패: ' + data.message);
-                    }
-                  })
-                  .catch(error => {
-                    console.error('답글 수정 중 오류 발생:', error);
-                    alert('답글 수정 실패: ' + error.message);
-                  });
-        });
-
-        editForm.querySelector('.cancel-reply-edit-btn').addEventListener('click', () => {
-          editForm.remove();
-          currentContentDiv.style.display = 'block'; // 기존 내용 다시 보이기
-        });
-      }
+      // 답글 수정 버튼 (완전히 제거)
+      // if (target.classList.contains('edit-reply-btn')) {
+      //   // 수정 기능 제거
+      // }
 
       // 답글 삭제 버튼
       if (target.classList.contains('delete-reply-btn')) {
@@ -614,7 +534,7 @@
       }
     });
 
-    // 페이지 로드 시 댓글 불러오기
+    // 페이지 로드     시 댓글 불러오기
     loadComments();
 
   });

@@ -12,7 +12,24 @@
         <result property="createdAt" column="created_at"/>
         <result property="viewCount" column="view_count"/>
         <result property="likeCount" column="like_count"/>
-        <result property="authorName" column="u_name"/>
+    </resultMap>
+
+    <resultMap id="AdoptionReviewWithAttachmentsResultMap" type="com.example.animal.entity.AdoptionReview">
+        <id property="arNo" column="ar_no"/>
+        <result property="arTitle" column="ar_title"/>
+        <result property="authorUid" column="author_uid"/>
+        <result property="reviewContent" column="review_content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="authorName" column="u_name"/> <collection property="attachments" ofType="com.example.animal.entity.AttachmentFile">
+        <id property="id" column="attachment_id"/>
+        <result property="boardType" column="attachment_board_type"/>
+        <result property="boardId" column="attachment_board_id"/>
+        <result property="fileName" column="attachment_file_name"/>
+        <result property="filePath" column="attachment_file_path"/>
+        <result property="fileSize" column="attachment_file_size"/>
+    </collection>
     </resultMap>
 
     <insert id="insertReview" parameterType="com.example.animal.entity.AdoptionReview" useGeneratedKeys="true" keyProperty="arNo">
@@ -20,49 +37,53 @@
         VALUES (#{arTitle}, #{authorUid}, #{reviewContent}, NOW(), 0, 0)
     </insert>
 
-    <select id="findAllReviews" resultMap="adoptionReviewResultMap">
+    <select id="findAllReviews" resultMap="AdoptionReviewWithAttachmentsResultMap">
         SELECT
-            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name
+            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name,
+            af.id AS attachment_id,
+            af.board_type AS attachment_board_type,
+            af.board_id AS attachment_board_id,
+            af.file_name AS attachment_file_name,
+            af.file_path AS attachment_file_path,
+            af.file_size AS attachment_file_size
         FROM
             adoption_review ar
-                JOIN
+                LEFT JOIN
             users u ON ar.author_uid = u.u_id
+                LEFT JOIN
+            attachment_file af ON ar.ar_no = af.board_id AND af.board_type = 'adoptionReview'
         ORDER BY ar.created_at DESC
     </select>
 
-    <select id="findReviewsByPage" resultMap="adoptionReviewResultMap" parameterType="map">
+    <select id="findReviewsByPage" resultMap="AdoptionReviewWithAttachmentsResultMap" parameterType="map">
         SELECT
-            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name
+            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name,
+            af.id AS attachment_id,
+            af.board_type AS attachment_board_type,
+            af.board_id AS attachment_board_id,
+            af.file_name AS attachment_file_name,
+            af.file_path AS attachment_file_path,
+            af.file_size AS attachment_file_size
         FROM
             adoption_review ar
-                JOIN
+                LEFT JOIN
             users u ON ar.author_uid = u.u_id
+                LEFT JOIN
+            attachment_file af ON ar.ar_no = af.board_id AND af.board_type = 'adoptionReview'
         ORDER BY ar.created_at DESC
             LIMIT #{size} OFFSET #{offset}
-    </select>
-
-    <select id="findAttachmentsByBoardIds" resultMap="com.example.animal.repository.AttachmentFileRepository.attachmentFileMap">
-        SELECT *
-        FROM attachment_file
-        WHERE board_type = #{boardType}
-        AND board_id IN
-        <foreach item="id" collection="boardIds" open="(" separator="," close=")">
-            #{id}
-        </foreach>
     </select>
 
     <select id="countReviews" resultType="int">
         SELECT COUNT(*) FROM adoption_review
     </select>
 
-    <select id="findReviewById" parameterType="long" resultMap="adoptionReviewResultMap">
+    <select id="findReviewById" parameterType="java.lang.Long" resultMap="adoptionReviewResultMap">
         SELECT
-            ar.ar_no, ar.ar_title, ar.author_uid, ar.review_content, ar.created_at, ar.view_count, ar.like_count, u.u_name
+            ar_no, ar_title, author_uid, review_content, created_at, view_count, like_count
         FROM
-            adoption_review ar
-                LEFT JOIN
-            users u ON ar.author_uid = u.u_id
-        WHERE ar.ar_no = #{arNo}
+            adoption_review
+        WHERE ar_no = #{arNo}
     </select>
 
     <update id="updateReview" parameterType="com.example.animal.entity.AdoptionReview">

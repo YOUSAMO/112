@@ -28,8 +28,12 @@ public class BoardController {
 
     // 세션에서 로그인한 사용자 ID를 가져오는 키
     private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
-    // 이 컨트롤러에서 다루는 게시판의 기본 타입을 'board'로 가정
-    public static final String DEFAULT_BOARD_TYPE = "board";
+
+    // ★★★ 이 부분을 현재 이 컨트롤러가 담당하는 게시판 타입으로 명확하게 지정하세요. ★★★
+    // 예: "freeboard", "notice", "qna" 등.
+    // 만약 여러 게시판이 있다면, 각 게시판의 컨트롤러에서 해당 타입으로 변경해야 합니다.
+    public static final String DEFAULT_BOARD_TYPE = "board"; // 현재 이 컨트롤러가 일반 '자유게시판'을 다룬다고 가정
+
     private static final String LOGIN_PAGE_URL = "/login"; // 실제 로그인 페이지 경로
 
     @Autowired
@@ -54,6 +58,7 @@ public class BoardController {
         if (boards != null) {
             for (Board board : boards) {
                 if (board != null && board.getBNo() != null) {
+                    // 게시글 목록에서는 좋아요 상태를 가져올 때도 해당 게시판 타입을 넘겨줍니다.
                     likeStatuses.put(board.getBNo(), likeService.getLikeStatus(currentUserId, board.getBNo(), DEFAULT_BOARD_TYPE));
                 }
             }
@@ -66,8 +71,7 @@ public class BoardController {
         model.addAttribute("pageInfo", new PageInfo((int) Math.ceil((double) totalCount / size), page));
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("likeStatuses", likeStatuses);
-        model.addAttribute("defaultBoardType", DEFAULT_BOARD_TYPE);
-
+        model.addAttribute("defaultBoardType", DEFAULT_BOARD_TYPE); // 게시판 목록에도 defaultBoardType 전달
 
         return "boards/boardList";
     }
@@ -80,6 +84,8 @@ public class BoardController {
             return "redirect:" + LOGIN_PAGE_URL;
         }
         model.addAttribute("board", new Board());
+        // 게시글 작성 폼에도 기본 게시판 타입을 전달할 필요가 있다면 추가
+        // model.addAttribute("defaultBoardType", DEFAULT_BOARD_TYPE);
         return "boards/boardForm";
     }
 
@@ -95,6 +101,8 @@ public class BoardController {
         }
 
         try {
+            // board 객체에 boardType을 설정해야 할 수도 있습니다.
+            // board.setBoardType(DEFAULT_BOARD_TYPE); // Board 엔티티에 boardType 필드가 있다면
             boardService.createBoard(board, files, loggedInUserUid);
             redirectAttributes.addFlashAttribute("successMessage", "게시글이 성공적으로 등록되었습니다.");
         } catch (IOException e) {
@@ -119,18 +127,20 @@ public class BoardController {
             return "redirect:/boards?error=notfound";
         }
 
+        // 좋아요 상태를 가져올 때도 해당 게시판 타입을 넘겨줍니다.
         Map<String, Object> likeStatus = likeService.getLikeStatus(currentUserId, bNo, DEFAULT_BOARD_TYPE);
 
-        // 해당 게시글(bNo)에 달린 댓글 목록을 불러와 Model에 추가합니다.
-        List<Comment> comments = commentService.getCommentsByPostId(bNo);
+        // ★★★ 여기를 수정합니다: 댓글 목록을 불러올 때 게시판 타입도 함께 넘겨줍니다. ★★★
+        List<Comment> comments = commentService.getCommentsByPostId(bNo, DEFAULT_BOARD_TYPE); // boardType 전달
         model.addAttribute("comments", comments); // Thymeleaf 뷰에서 'comments'로 접근 가능
 
         model.addAttribute("board", board);
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("likeStatus", likeStatus);
-        model.addAttribute("defaultBoardType", DEFAULT_BOARD_TYPE);
+        model.addAttribute("defaultBoardType", DEFAULT_BOARD_TYPE); // 현재 게시판 타입을 프론트엔드로 전달 (JS에서 사용)
 
         System.out.println("### BoardController -> 뷰로 전달 직전 currentUserId: " + currentUserId);
+        System.out.println("### BoardController -> 뷰로 전달 직전 defaultBoardType: " + DEFAULT_BOARD_TYPE);
 
         return "boards/boardView"; // 이 뷰 파일에서 댓글 목록을 표시할 것입니다.
     }
@@ -149,12 +159,16 @@ public class BoardController {
             return "redirect:/boards";
         }
 
+        // 게시글 수정 권한 확인 시, 게시글의 boardType도 필요하다면 로직에 포함
+        // if (!loggedInUserUid.equals(boardToEdit.getAuthorUid()) || !DEFAULT_BOARD_TYPE.equals(boardToEdit.getBoardType())) { ... }
         if (!loggedInUserUid.equals(boardToEdit.getAuthorUid())) {
             redirectAttributes.addFlashAttribute("errorMessage", "이 게시글을 수정할 권한이 없습니다.");
             return "redirect:/boards/" + bNo;
         }
 
         model.addAttribute("board", boardToEdit);
+        // 게시글 수정 폼에도 기본 게시판 타입을 전달할 필요가 있다면 추가
+        // model.addAttribute("defaultBoardType", DEFAULT_BOARD_TYPE);
         return "boards/boardForm";
     }
 
@@ -171,6 +185,8 @@ public class BoardController {
         }
 
         try {
+            // boardDetailsFromForm 에 boardType을 설정해야 할 수도 있습니다.
+            // boardDetailsFromForm.setBoardType(DEFAULT_BOARD_TYPE); // Board 엔티티에 boardType 필드가 있다면
             boardService.updateBoard(bNo, boardDetailsFromForm, newFiles, loggedInUserUid);
             redirectAttributes.addFlashAttribute("successMessage", "게시글이 성공적으로 수정되었습니다.");
             return "redirect:/boards/" + bNo;
@@ -199,6 +215,9 @@ public class BoardController {
         }
 
         try {
+            // 게시글 삭제 권한 확인 시, 게시글의 boardType도 필요하다면 로직에 포함
+            // Board boardToDelete = boardService.getBoardById(bNo);
+            // if (!loggedInUserUid.equals(boardToDelete.getAuthorUid()) || !DEFAULT_BOARD_TYPE.equals(boardToDelete.getBoardType())) { ... }
             boardService.deleteBoard(bNo, loggedInUserUid);
             redirectAttributes.addFlashAttribute("successMessage", "게시글이 성공적으로 삭제되었습니다.");
         } catch (RuntimeException e) {

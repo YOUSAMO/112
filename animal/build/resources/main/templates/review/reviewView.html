@@ -17,6 +17,20 @@
     .action-links a:hover, .action-links button:hover { transform: translateY(-1px); opacity: 0.9; }
     .attachment-image { width: 180px; height: 135px; object-fit: cover; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition: transform 0.2s; }
     .attachment-image:hover { transform: scale(1.05); }
+
+    /* 댓글 섹션 스타일 */
+    .comments-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
+    .comment-item, .reply-item { border: 1px solid #e2e8f0; border-radius: 0.375rem; padding: 1rem; margin-bottom: 0.75rem; background-color: #f8fafc; }
+    .comment-item { background-color: #ffffff; } /* 댓글 항목 배경색 */
+    .reply-section { margin-top: 1rem; padding-left: 2rem; border-left: 2px solid #cbd5e1; } /* 대댓글 들여쓰기 */
+
+    /* 댓글/대댓글 액션 버튼 스타일 */
+    .comment-actions, .reply-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .comment-actions button, .reply-actions button { background: none; border: none; color: #4299e1; cursor: pointer; font-size: 0.875rem; padding: 0; }
+    .comment-actions button:hover, .reply-actions button:hover { text-decoration: underline; }
+
+    /* 대댓글 입력 폼 스타일 */
+    .reply-input-form { background-color: #f0f4f8; padding: 0.75rem; border-radius: 0.375rem; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -47,6 +61,21 @@
       </div>
     </div>
     <hr class="my-8"/>
+
+    <div class="comments-section mt-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center"><i class="fas fa-comments mr-3 text-blue-600"></i> 댓글</h2>
+      <div th:if="${currentUserId != null}" class="mb-6 bg-gray-50 p-6 rounded-lg shadow-sm">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
+        <textarea id="commentContent" rows="4" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 resize-y" placeholder="댓글 내용을 입력하세요..."></textarea>
+        <button id="submitCommentBtn" class="mt-3 px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition">댓글 등록</button>
+      </div>
+      <div th:unless="${currentUserId != null}" class="mb-6 p-6 text-center bg-gray-50 rounded-lg shadow-sm">
+        <p class="text-gray-600">댓글을 작성하려면 <a th:href="@{/login}" class="text-blue-600 hover:underline">로그인</a>이 필요합니다.</p>
+      </div>
+      <div id="commentsList" class="space-y-4">
+      </div>
+    </div>
+    <hr class="my-8"/>
     <div class="action-links mt-8">
       <th:block th:if="${currentUserId != null and review.authorUid == currentUserId}">
         <a class="edit-action" th:href="@{/reviews/{arNo}/edit(arNo=${review.arNo})}">수정</a>
@@ -68,68 +97,277 @@
 
 <script th:inline="javascript">
   /*<![CDATA[*/
+  // Thymeleaf에서 JavaScript 변수로 데이터 주입
+  const currentPostId = /*[[${review?.arNo}]]*/ null; // 게시글 ID를 review.arNo로 변경
+  const currentBoardType = 'adoptionReview'; // AdoptionReviewController의 상수와 일치
+  const currentLoggedInUserId = /*[[${currentUserId}]]*/ null;
+
   document.addEventListener("DOMContentLoaded", () => {
     const likeButton = document.getElementById("like-button");
-    if (!likeButton) return;
+    const commentsListDiv = document.getElementById('commentsList'); // 댓글 목록을 표시할 div
+    const commentContentTextarea = document.getElementById('commentContent'); // 댓글 작성 textarea
+    const submitCommentBtn = document.getElementById('submitCommentBtn'); // 댓글 등록 버튼
 
-    const likeButtonTextSpan = likeButton.querySelector('.like-button-text');
-    const likeCountElement = document.getElementById("like-count");
+    // 로그인 여부를 확인하는 유틸리티 함수
+    const isAuthenticated = () => {
+      return currentLoggedInUserId !== null && String(currentLoggedInUserId).trim() !== '' && String(currentLoggedInUserId).trim().toLowerCase() !== 'null';
+    };
 
-    likeButton.addEventListener("click", () => {
-      const reviewId = likeButton.dataset.arNo;
-      // boardType은 이제 백엔드 URL에 직접 사용되지 않고, 백엔드 서비스에서 BOARD_TYPE 상수로 사용됩니다.
+    // 좋아요 버튼 기능
+    if (likeButton) {
+      const likeButtonTextSpan = likeButton.querySelector('.like-button-text');
+      const likeCountElement = document.getElementById("like-count");
 
-      // **** URL 수정 및 응답 처리 로직 개선 ****
-      fetch(`/reviews/${reviewId}/like`, { // 백엔드 컨트롤러의 실제 URL에 맞춤
-        method: "POST",
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          "Content-Type": "application/json" // 서버가 JSON을 기대하도록 명시
-        }
-      })
-              .then(res => {
-                // 모든 응답이 JSON으로 통일되었으므로, 일단 JSON으로 파싱을 시도
-                return res.json().then(data => {
-                  // HTTP 상태 코드와 JSON 응답의 'success' 키를 조합하여 처리
-                  if (res.status === 401) { // 401 Unauthorized (로그인 필요)
-                    alert(data.message || '로그인이 필요합니다.');
-                    window.location.href = /*[[@{/login}]]*/ '/login';
-                    // Promise 체인 중단
-                    return Promise.reject(new Error('로그인 필요'));
-                  } else if (!res.ok || !data.success) { // 2xx 성공이 아니거나 JSON 응답에서 success: false인 경우
-                    alert(data.message || '오류가 발생했습니다.');
-                    // Promise 체인 중단
-                    return Promise.reject(new Error(data.message || '좋아요 처리 실패'));
+      likeButton.addEventListener("click", () => {
+        const reviewId = likeButton.dataset.arNo;
+
+        fetch(`/reviews/${reviewId}/like`, {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/json"
+          }
+        })
+                .then(res => {
+                  return res.json().then(data => {
+                    if (res.status === 401) {
+                      alert(data.message || '로그인이 필요합니다.');
+                      window.location.href = /*[[@{/login}]]*/ '/login';
+                      return Promise.reject(new Error('로그인 필요'));
+                    } else if (!res.ok || !data.success) {
+                      alert(data.message || '오류가 발생했습니다.');
+                      return Promise.reject(new Error(data.message || '좋아요 처리 실패'));
+                    }
+                    return data;
+                  });
+                })
+                .then(responseJson => {
+                  if (responseJson.success) {
+                    likeCountElement.textContent = responseJson.data.likeCount;
+                    if (responseJson.data.liked) {
+                      likeButtonTextSpan.textContent = '좋아요 취소';
+                      likeButton.classList.add('liked');
+                    } else {
+                      likeButtonTextSpan.textContent = '좋아요';
+                      likeButton.classList.remove('liked');
+                    }
                   }
-                  // 성공적인 JSON 응답이면 데이터를 다음 then 블록으로 전달
-                  return data;
+                })
+                .catch(err => {
+                  if (err.message !== '로그인 필요') {
+                    console.error("좋아요 에러:", err);
+                    alert('좋아요 처리 중 예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                  }
                 });
-              })
-              .then(responseJson => { // 백엔드에서 통일된 JSON 응답 ({ success: true, data: {...} } 또는 { success: false, message: "..." })
-                // 'success' 키가 true일 때만 UI 업데이트 로직 실행
-                if (responseJson.success) {
-                  // 실제 좋아요 정보는 'data' 키 안에 있습니다.
-                  likeCountElement.textContent = responseJson.data.likeCount;
-                  if (responseJson.data.liked) {
-                    likeButtonTextSpan.textContent = '좋아요 취소';
-                    likeButton.classList.add('liked');
-                  } else {
-                    likeButtonTextSpan.textContent = '좋아요';
-                    likeButton.classList.remove('liked');
-                  }
-                }
-                // 'success: false'인 경우는 위에서 이미 alert 띄우고 reject 되었으므로 여기서는 처리할 필요 없음
-              })
-              .catch(err => {
-                // 네트워크 오류나 위에서 throw된 에러를 여기서 잡습니다.
-                // '로그인 필요' 에러는 이미 처리했으므로 중복 알림 방지
-                if (err.message !== '로그인 필요') {
-                  console.error("좋아요 에러:", err);
-                  // 사용자에게 친화적인 메시지 제공
-                  alert('좋아요 처리 중 예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-                }
-              });
-    });
+      });
+    }
+
+    // API 응답 처리 공통 함수
+    const handleApiResponse = async (response) => {
+      if (response.status === 401) {
+        alert('로그인이 필요합니다.'); window.location.href = /*[[@{/login}]]*/ '/login'; throw new Error('로그인 필요');
+      }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '요청 처리 중 서버에서 오류가 발생했습니다.' }));
+        throw new Error(errorData.message);
+      }
+      return response.json();
+    };
+
+    // 댓글 로드 함수
+    const loadComments = async () => {
+      if (!currentPostId) return;
+      try {
+        // 백엔드 CommentController의 @GetMapping에서 arNo를 받도록 변경했으므로,
+        // 여기도 arNo로 보냅니다.
+        const response = await fetch(`/api/comments?arNo=${currentPostId}&boardType=${currentBoardType}`, { credentials: 'same-origin' });
+        if (!response.ok) throw new Error(`댓글 로드 실패: ${response.statusText}`);
+        const comments = await response.json();
+
+        commentsListDiv.innerHTML = '';
+        if (!comments || comments.length === 0) {
+          commentsListDiv.innerHTML = '<p class="text-center text-gray-500">아직 댓글이 없습니다.</p>'; return;
+        }
+
+        for (const comment of comments) {
+          const commentAuthorName = comment.authorNameDisplay || comment.cmWriter || '익명';
+          const commentDate = new Date(comment.createdAt).toLocaleString();
+          const commentHtml = `
+            <div class="comment-item" id="comment-${comment.cmNo}">
+              <p class="font-semibold text-gray-900">${commentAuthorName} <span class="text-gray-500 text-sm">(${commentDate})</span></p>
+              <p class="text-gray-700 mt-1">${comment.cmContent}</p>
+              <div class="comment-actions mt-2">
+                ${isAuthenticated() && currentLoggedInUserId === comment.authorUid ? `<button class="delete-comment-btn" data-cm-no="${comment.cmNo}">삭제</button>` : ''}
+                ${isAuthenticated() ? `<button class="toggle-reply-form-btn" data-cm-no="${comment.cmNo}">답글 달기</button>` : ''}
+              </div>
+              <div class="reply-input-form hidden mt-2" id="reply-form-${comment.cmNo}">
+                <textarea class="reply-content-textarea w-full p-2 border border-gray-300 rounded-md resize-y" rows="2" placeholder="대댓글 내용을 입력하세요..."></textarea>
+                <button class="submit-reply-btn mt-1 px-4 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600" data-cm-no="${comment.cmNo}">등록</button>
+                <button class="cancel-reply-btn mt-1 px-4 py-1.5 bg-gray-400 text-white text-sm rounded-md hover:bg-gray-500">취소</button>
+              </div>
+              <div class="replies-list mt-3 pl-4 border-l-2 border-gray-200 space-y-2" id="replies-for-comment-${comment.cmNo}"></div>
+            </div>`;
+          commentsListDiv.insertAdjacentHTML('beforeend', commentHtml);
+          await loadReplies(comment.cmNo);
+        }
+        attachCommentEventListeners();
+      } catch (error) {
+        console.error("댓글 로드 에러:", error);
+        commentsListDiv.innerHTML = `<p class="text-center text-red-500">댓글을 불러오지 못했습니다.</p>`;
+      }
+    };
+
+    // 대댓글 로드 함수
+    const loadReplies = async (cmNo) => {
+      const repliesListDiv = document.getElementById(`replies-for-comment-${cmNo}`);
+      if (!repliesListDiv) return;
+      try {
+        const response = await fetch(`/api/replies?cmNo=${cmNo}`, { credentials: 'same-origin' });
+        if (!response.ok) throw new Error(`대댓글 로드 실패: ${response.statusText}`);
+        const replies = await response.json();
+
+        repliesListDiv.innerHTML = '';
+        if (!replies || replies.length === 0) return;
+
+        for (const reply of replies) {
+          const replyAuthorName = reply.userNameDisplay || '익명';
+          const replyDate = new Date(reply.createdAt).toLocaleString();
+          const replyHtml = `
+            <div class="reply-item" id="reply-${reply.rpNo}">
+              <p class="font-semibold text-gray-900">${replyAuthorName} <span class="text-gray-500 text-sm">(${replyDate})</span></p>
+              <p class="text-gray-700 mt-1">${reply.rpContent}</p>
+              <div class="reply-actions mt-2">
+                ${isAuthenticated() && currentLoggedInUserId === reply.userId ? `<button class="delete-reply-btn" data-rp-no="${reply.rpNo}">삭제</button>` : ''}
+              </div>
+            </div>`;
+          repliesListDiv.insertAdjacentHTML('beforeend', replyHtml);
+        }
+        attachReplyEventListeners();
+      } catch (error) { console.error(`대댓글 로드 에러 (댓글 ${cmNo}):`, error); }
+    };
+
+    // 댓글 관련 이벤트 리스너 부착 함수
+    const attachCommentEventListeners = () => {
+      document.querySelectorAll('.delete-comment-btn').forEach(btn => btn.onclick = (e) => deleteComment(e.target.dataset.cmNo));
+      document.querySelectorAll('.toggle-reply-form-btn').forEach(btn => btn.onclick = (e) => document.getElementById(`reply-form-${e.target.dataset.cmNo}`).classList.toggle('hidden'));
+      document.querySelectorAll('.submit-reply-btn').forEach(btn => btn.onclick = (e) => addReply(e.target.dataset.cmNo));
+      document.querySelectorAll('.cancel-reply-btn').forEach(btn => { btn.onclick = (e) => { const form = e.target.closest('.reply-input-form'); form.classList.add('hidden'); form.querySelector('textarea').value = ''; };});
+    };
+
+    // 대댓글 관련 이벤트 리스너 부착 함수
+    const attachReplyEventListeners = () => {
+      document.querySelectorAll('.delete-reply-btn').forEach(btn => btn.onclick = (e) => deleteReply(e.target.dataset.rpNo, btn.closest('.comment-item').id.split('-')[1]));
+    };
+
+    // 댓글 추가 함수
+    const addComment = async (content) => {
+      if (!content.trim()) { alert('댓글 내용을 입력해주세요.'); return; }
+      if (!isAuthenticated()) {
+        alert('댓글을 작성하려면 로그인이 필요합니다.');
+        window.location.href = /*[[@{/login}]]*/ '/login';
+        return;
+      }
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            // 여기에 postId 대신 arNo를 보내야 합니다.
+            arNo: currentPostId, // arNo로 변경
+            cmContent: content,
+            boardType: currentBoardType
+          }),
+          credentials: 'same-origin'
+        });
+        await handleApiResponse(response);
+        commentContentTextarea.value = '';
+        await loadComments();
+      } catch (error) {
+        if (error.message !== '로그인 필요') {
+          console.error("댓글 추가 에러:", error);
+          alert(error.message || '댓글 추가 중 오류가 발생했습니다.');
+        }
+      }
+    };
+
+    // 댓글 삭제 함수
+    const deleteComment = async (cmNo) => {
+      if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+      if (!isAuthenticated()) {
+        alert('댓글을 삭제하려면 로그인이 필요합니다.');
+        window.location.href = /*[[@{/login}]]*/ '/login';
+        return;
+      }
+      try {
+        const response = await fetch(`/api/comments/${cmNo}`, { method: 'DELETE', credentials: 'same-origin' });
+        await handleApiResponse(response);
+        await loadComments();
+      } catch (error) {
+        if (error.message !== '로그인 필요') {
+          console.error("댓글 삭제 에러:", error);
+          alert(error.message || '댓글 삭제 중 오류가 발생했습니다.');
+        }
+      }
+    };
+
+    // 대댓글 추가 함수
+    const addReply = async (cmNo) => {
+      const textarea = document.getElementById(`reply-form-${cmNo}`).querySelector('textarea');
+      const content = textarea.value;
+      if (!content.trim()) { alert('대댓글 내용을 입력해주세요.'); return; }
+      if (!isAuthenticated()) {
+        alert('대댓글을 작성하려면 로그인이 필요합니다.');
+        window.location.href = /*[[@{/login}]]*/ '/login';
+        return;
+      }
+      try {
+        const response = await fetch('/api/replies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cmNo: cmNo, rpContent: content }),
+          credentials: 'same-origin'
+        });
+        await handleApiResponse(response);
+        textarea.value = '';
+        textarea.closest('.reply-input-form').classList.add('hidden');
+        await loadReplies(cmNo);
+      } catch (error) {
+        if (error.message !== '로그인 필요') {
+          console.error("대댓글 추가 에러:", error);
+          alert(error.message || '대댓글 추가 중 오류가 발생했습니다.');
+        }
+      }
+    };
+
+    // 대댓글 삭제 함수
+    const deleteReply = async (rpNo, cmNo) => {
+      if (!confirm('정말로 이 대댓글을 삭제하시겠습니까?')) return;
+      if (!isAuthenticated()) {
+        alert('대댓글을 삭제하려면 로그인이 필요합니다.');
+        window.location.href = /*[[@{/login}]]*/ '/login';
+        return;
+      }
+      try {
+        const response = await fetch(`/api/replies/${rpNo}`, { method: 'DELETE', credentials: 'same-origin' });
+        await handleApiResponse(response);
+        await loadReplies(cmNo);
+      } catch (error) {
+        if (error.message !== '로그인 필요') {
+          console.error("대댓글 삭제 에러:", error);
+          alert(error.message || '대댓글 삭제 중 오류가 발생했습니다.');
+        }
+      }
+    };
+
+
+    // 페이지 로드 시 댓글 로드
+    if (currentPostId) {
+      loadComments();
+    }
+    // 댓글 등록 버튼 클릭 이벤트
+    if (submitCommentBtn) {
+      submitCommentBtn.addEventListener('click', () => addComment(commentContentTextarea.value));
+    }
   });
   /*]]>*/
 </script>

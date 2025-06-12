@@ -33,6 +33,7 @@ public class LostFoundAnimalController {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    // 이 컨트롤러의 기본 boardType을 "lostfound"로 정의합니다.
     private static final String CONTROLLER_BOARD_TYPE = "lostfound";
     private static final String CONTROLLER_FOLDER_PREFIX = "LostFound_";
 
@@ -74,22 +75,19 @@ public class LostFoundAnimalController {
     }
 
     @GetMapping("/list")
-    public String list(@RequestParam(defaultValue = "1") int page, // 페이지 파라미터 추가
-                       @RequestParam(defaultValue = "10") int size, // 사이즈 파라미터 추가 (10개 기준)
+    public String list(@RequestParam(defaultValue = "1") int page,
+                       @RequestParam(defaultValue = "10") int size,
                        Model model, HttpSession session) {
-        // 페이징된 게시글 목록 가져오기
         List<LostFoundAnimal> list = animalService.getLostFoundAnimalsByPage(page, size);
-        // 전체 게시글 수 가져오기
         int totalCount = animalService.getTotalLostFoundAnimalCount();
-        // 총 페이지 수 계산
         int totalPages = (int) Math.ceil((double) totalCount / size);
 
         String currentUserId = (String) session.getAttribute("loggedInUserId");
 
         model.addAttribute("list", list);
         model.addAttribute("currentUserId", currentUserId);
-        model.addAttribute("totalCount", totalCount); // 전체 게시글 수
-        model.addAttribute("pageInfo", new PageInfo(totalPages, page, size)); // 페이징 정보
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("pageInfo", new PageInfo(totalPages, page, size));
 
         return "lostfound/lostfoundList";
     }
@@ -126,7 +124,16 @@ public class LostFoundAnimalController {
             return "redirect:/lostfound/list";
         }
         animalService.increaseViewCount(id);
+
+        // ★★★ 수정된 부분: boardType을 "lostfound"로 통일 ★★★
+        // animal.boardType이 "실종"이든 "보호"이든 상관없이 "lostfound"로 통일하여 프론트에 전달
+        // Animal 엔티티의 boardType 필드가 영속화된 값과 다를 수 있지만,
+        // 댓글 기능에서는 "lostfound"라는 표준화된 값을 사용하게 됩니다.
+        animal.setBoardType(CONTROLLER_BOARD_TYPE); // 또는 "lostfound" 문자열 직접 사용
+        // ★★★ 수정 끝 ★★★
+
         model.addAttribute("animal", animal);
+        model.addAttribute("currentUserId", userId); // userId를 직접 사용
         return "lostfound/lostfoundView";
     }
 
@@ -164,7 +171,8 @@ public class LostFoundAnimalController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
         try {
-            Map<String, Object> result = animalService.toggleLike(userId, boardId);
+            // 좋아요 서비스에도 통일된 CONTROLLER_BOARD_TYPE을 전달
+            Map<String, Object> result = animalService.toggleLike(userId, boardId, CONTROLLER_BOARD_TYPE);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류가 발생했습니다.");
@@ -192,6 +200,7 @@ public class LostFoundAnimalController {
                                               @PathVariable String boardId,
                                               @PathVariable String fileName) {
         try {
+            // 이 컨트롤러의 boardType과 일치하는지 확인
             if (!CONTROLLER_BOARD_TYPE.equals(boardType)) {
                 return ResponseEntity.badRequest().build();
             }

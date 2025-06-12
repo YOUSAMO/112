@@ -112,7 +112,7 @@
   /*<![CDATA[*/
   // Thymeleaf에서 JavaScript 변수로 데이터 주입
   const currentPostId = /*[[${board?.bNo}]]*/ null;
-  // currentLoggedInUserId 값이 null 또는 "null" 문자열이 아닌지 더 견고하게 확인
+  const currentBoardType = /*[[${defaultBoardType}]]*/ 'board';
   const currentLoggedInUserId = /*[[${currentUserId}]]*/ null;
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -123,16 +123,14 @@
 
     // 로그인 여부를 확인하는 유틸리티 함수
     const isAuthenticated = () => {
-      // currentLoggedInUserId가 null이 아니고, 'null' 문자열이 아니며, 공백이 아닌지 확인
       return currentLoggedInUserId !== null && String(currentLoggedInUserId).trim() !== '' && String(currentLoggedInUserId).trim().toLowerCase() !== 'null';
     };
 
     // 좋아요 버튼 기능
     if (likeButton) {
       const likeButtonTextSpan = likeButton.querySelector('span:not(#like-count)');
-      const likeStatus = /*[[${likeStatus}]]*/ null; // 좋아요 상태 (현재 사용자 좋아요 여부, 총 좋아요 수)
+      const likeStatus = /*[[${likeStatus}]]*/ null;
 
-      // 초기 좋아요 버튼 텍스트 및 클래스 설정
       if (likeStatus && likeStatus.currentUserLiked) {
         likeButton.classList.add('liked');
         likeButtonTextSpan.textContent = '좋아요 취소';
@@ -141,10 +139,8 @@
         likeButtonTextSpan.textContent = '좋아요';
       }
 
-      // 좋아요 버튼 클릭 이벤트 리스너
       likeButton.addEventListener("click", () => {
-        // 로그인 여부 확인
-        if (!isAuthenticated()) { // isAuthenticated 함수를 사용하여 로그인 상태 확인
+        if (!isAuthenticated()) {
           alert('로그인이 필요합니다.');
           window.location.href = /*[[@{/login}]]*/ '/login';
           return;
@@ -152,26 +148,24 @@
         const boardId = likeButton.dataset.boardId;
         const boardType = likeButton.dataset.boardType || 'board';
 
-        // 좋아요 API 호출 (수정된 부분: JavaScript 템플릿 리터럴 사용)
         fetch(`/api/likes/${boardType}/${boardId}`, {
           method: "POST",
           headers: { "X-Requested-With": "XMLHttpRequest" },
-          credentials: 'same-origin' // 동일 출처에서만 쿠키 전송
+          credentials: 'same-origin'
         })
                 .then(res => {
-                  // HTTP 상태 코드 401(Unauthorized) 처리
                   if (res.status === 401) { alert('로그인이 필요합니다.'); window.location.href = /*[[@{/login}]]*/ '/login'; throw new Error('로그인 필요'); }
                   return res.json().then(data => ({ ok: res.ok, status: res.status, body: data }));
                 })
                 .then(({ ok, status, body }) => {
                   if (!ok) { throw new Error(body.message || `좋아요 요청 실패`); }
-                  document.getElementById("like-count").textContent = body.likeCount; // 좋아요 수 업데이트
+                  document.getElementById("like-count").textContent = body.likeCount;
                   if (body.liked) {
                     likeButtonTextSpan.textContent = '좋아요 취소';
-                    likeButton.classList.add('liked'); // 'liked' 클래스 추가하여 스타일 변경
+                    likeButton.classList.add('liked');
                   } else {
                     likeButtonTextSpan.textContent = '좋아요';
-                    likeButton.classList.remove('liked'); // 'liked' 클래스 제거
+                    likeButton.classList.remove('liked');
                   }
                 })
                 .catch(err => {
@@ -199,25 +193,24 @@
     const loadComments = async () => {
       if (!currentPostId) return;
       try {
-        const response = await fetch(`/api/comments?postId=${currentPostId}`, { credentials: 'same-origin' });
+        const response = await fetch(`/api/comments?postId=${currentPostId}&boardType=${currentBoardType}`, { credentials: 'same-origin' });
         if (!response.ok) throw new Error(`댓글 로드 실패: ${response.statusText}`);
         const comments = await response.json();
 
-        commentsListDiv.innerHTML = ''; // 기존 댓글 삭제
+        commentsListDiv.innerHTML = '';
         if (!comments || comments.length === 0) {
           commentsListDiv.innerHTML = '<p class="text-center text-gray-500">아직 댓글이 없습니다.</p>'; return;
         }
 
-        // 각 댓글을 HTML로 생성하여 추가
         for (const comment of comments) {
-          const commentAuthorName = comment.authorNameDisplay || comment.cmWriter || '익명'; // 작성자 이름 표시
+          const commentAuthorName = comment.authorNameDisplay || comment.cmWriter || '익명';
+          const commentDate = new Date(comment.createdAt).toLocaleString();
           const commentHtml = `
             <div class="comment-item" id="comment-${comment.cmNo}">
-              <p class="font-semibold text-gray-900">${commentAuthorName} <span class="text-gray-500 text-sm">(${new Date(comment.createdAt).toLocaleString()})</span></p>
+              <p class="font-semibold text-gray-900">${commentAuthorName} <span class="text-gray-500 text-sm">(${commentDate})</span></p>
               <p class="text-gray-700 mt-1">${comment.cmContent}</p>
               <div class="comment-actions mt-2">
-                ${isAuthenticated() && currentLoggedInUserId === comment.authorUid ? `<button class="edit-comment-btn" data-cm-no="${comment.cmNo}" data-content="${comment.cmContent}">수정</button> <button class="delete-comment-btn" data-cm-no="${comment.cmNo}">삭제</button>` : ''}
-                ${isAuthenticated() ? `<button class="toggle-reply-form-btn" data-cm-no="${comment.cmNo}">답글 달기</button>` : ''}
+                ${isAuthenticated() && currentLoggedInUserId === comment.authorUid ? `<button class="delete-comment-btn" data-cm-no="${comment.cmNo}">삭제</button>` : ''} ${isAuthenticated() ? `<button class="toggle-reply-form-btn" data-cm-no="${comment.cmNo}">답글 달기</button>` : ''}
               </div>
               <div class="reply-input-form hidden mt-2" id="reply-form-${comment.cmNo}">
                 <textarea class="reply-content-textarea w-full p-2 border border-gray-300 rounded-md resize-y" rows="2" placeholder="대댓글 내용을 입력하세요..."></textarea>
@@ -227,9 +220,9 @@
               <div class="replies-list mt-3 pl-4 border-l-2 border-gray-200 space-y-2" id="replies-for-comment-${comment.cmNo}"></div>
             </div>`;
           commentsListDiv.insertAdjacentHTML('beforeend', commentHtml);
-          await loadReplies(comment.cmNo); // 각 댓글의 대댓글 로드
+          await loadReplies(comment.cmNo);
         }
-        attachCommentEventListeners(); // 댓글 관련 이벤트 리스너 부착
+        attachCommentEventListeners();
       } catch (error) {
         console.error("댓글 로드 에러:", error);
         commentsListDiv.innerHTML = `<p class="text-center text-red-500">댓글을 불러오지 못했습니다.</p>`;
@@ -248,71 +241,64 @@
         repliesListDiv.innerHTML = '';
         if (!replies || replies.length === 0) return;
 
-        // 각 대댓글을 HTML로 생성하여 추가
         for (const reply of replies) {
           const replyAuthorName = reply.userNameDisplay || '익명';
+          const replyDate = new Date(reply.createdAt).toLocaleString();
           const replyHtml = `
             <div class="reply-item" id="reply-${reply.rpNo}">
-              <p class="font-semibold text-gray-900">${replyAuthorName} <span class="text-gray-500 text-sm">(${new Date(reply.createdAt).toLocaleString()})</span></p>
+              <p class="font-semibold text-gray-900">${replyAuthorName} <span class="text-gray-500 text-sm">(${replyDate})</span></p>
               <p class="text-gray-700 mt-1">${reply.rpContent}</p>
               <div class="reply-actions mt-2">
-                ${isAuthenticated() && currentLoggedInUserId === reply.userId ? `<button class="edit-reply-btn" data-rp-no="${reply.rpNo}" data-content="${reply.rpContent}">수정</button> <button class="delete-reply-btn" data-rp-no="${reply.rpNo}">삭제</button>` : ''}
-              </div>
+                ${isAuthenticated() && currentLoggedInUserId === reply.userId ? `<button class="delete-reply-btn" data-rp-no="${reply.rpNo}">삭제</button>` : ''} </div>
             </div>`;
           repliesListDiv.insertAdjacentHTML('beforeend', replyHtml);
         }
-        attachReplyEventListeners(); // 대댓글 관련 이벤트 리스너 부착
+        attachReplyEventListeners();
       } catch (error) { console.error(`대댓글 로드 에러 (댓글 ${cmNo}):`, error); }
     };
 
     // 댓글 관련 이벤트 리스너 부착 함수
     const attachCommentEventListeners = () => {
-      // 댓글 수정 버튼
-      document.querySelectorAll('.edit-comment-btn').forEach(button => {
-        button.onclick = (e) => {
-          const cmNo = e.target.dataset.cmNo;
-          const commentItem = document.getElementById(`comment-${cmNo}`);
-          const contentElement = commentItem.querySelector('p.text-gray-700');
-          const originalContent = e.target.dataset.content;
-          if (commentItem.querySelector('textarea')) return; // 이미 수정 중이면 다시 만들지 않음
-          contentElement.innerHTML = `<textarea class="edit-cm-content w-full p-2 border" rows="3">${originalContent}</textarea><div class="mt-2"><button class="save-comment-btn px-3 py-1 bg-green-500 text-white text-xs rounded-md" data-cm-no="${cmNo}">저장</button> <button class="cancel-edit-comment-btn px-3 py-1 bg-gray-400 text-white text-xs rounded-md">취소</button></div>`;
-          commentItem.querySelector('.save-comment-btn').onclick = () => { const newContent = commentItem.querySelector('.edit-cm-content').value; updateComment(cmNo, newContent); };
-          commentItem.querySelector('.cancel-edit-comment-btn').onclick = () => loadComments(); // 취소 시 댓글 목록 다시 로드
-        };
-      });
-      // 댓글 삭제 버튼
+      // 수정 기능 제거
+      // document.querySelectorAll('.edit-comment-btn').forEach(button => {
+      //   button.onclick = (e) => {
+      //     const cmNo = e.target.dataset.cmNo;
+      //     const commentItem = document.getElementById(`comment-${cmNo}`);
+      //     const contentElement = commentItem.querySelector('p.text-gray-700');
+      //     const originalContent = e.target.dataset.content;
+      //     if (commentItem.querySelector('textarea')) return;
+      //     contentElement.innerHTML = `<textarea class="edit-cm-content w-full p-2 border" rows="3">${originalContent}</textarea><div class="mt-2"><button class="save-comment-btn px-3 py-1 bg-green-500 text-white text-xs rounded-md" data-cm-no="${cmNo}">저장</button> <button class="cancel-edit-comment-btn px-3 py-1 bg-gray-400 text-white text-xs rounded-md">취소</button></div>`;
+      //     commentItem.querySelector('.save-comment-btn').onclick = () => { const newContent = commentItem.querySelector('.edit-cm-content').value; updateComment(cmNo, newContent); };
+      //     commentItem.querySelector('.cancel-edit-comment-btn').onclick = () => loadComments();
+      //   };
+      // });
       document.querySelectorAll('.delete-comment-btn').forEach(btn => btn.onclick = (e) => deleteComment(e.target.dataset.cmNo));
-      // 답글 폼 토글 버튼
       document.querySelectorAll('.toggle-reply-form-btn').forEach(btn => btn.onclick = (e) => document.getElementById(`reply-form-${e.target.dataset.cmNo}`).classList.toggle('hidden'));
-      // 답글 등록 버튼
       document.querySelectorAll('.submit-reply-btn').forEach(btn => btn.onclick = (e) => addReply(e.target.dataset.cmNo));
-      // 답글 취소 버튼
       document.querySelectorAll('.cancel-reply-btn').forEach(btn => { btn.onclick = (e) => { const form = e.target.closest('.reply-input-form'); form.classList.add('hidden'); form.querySelector('textarea').value = ''; };});
     };
 
-    // 대댓글 관련 이벤트 리스너 부착 함수 (수정/삭제 기능 구현 시 여기에 추가)
+    // 대댓글 관련 이벤트 리스너 부착 함수
     const attachReplyEventListeners = () => {
-      // 대댓글 수정 버튼
-      document.querySelectorAll('.edit-reply-btn').forEach(button => {
-        button.onclick = (e) => {
-          const rpNo = e.target.dataset.rpNo;
-          const replyItem = document.getElementById(`reply-${rpNo}`);
-          const contentElement = replyItem.querySelector('p.text-gray-700');
-          const originalContent = e.target.dataset.content;
-          if (replyItem.querySelector('textarea')) return;
-          contentElement.innerHTML = `<textarea class="edit-rp-content w-full p-2 border" rows="3">${originalContent}</textarea><div class="mt-2"><button class="save-reply-btn px-3 py-1 bg-green-500 text-white text-xs rounded-md" data-rp-no="${rpNo}">저장</button> <button class="cancel-edit-reply-btn px-3 py-1 bg-gray-400 text-white text-xs rounded-md">취소</button></div>`;
-          replyItem.querySelector('.save-reply-btn').onclick = () => { const newContent = replyItem.querySelector('.edit-rp-content').value; updateReply(rpNo, newContent, replyItem.closest('.comment-item').id.split('-')[1]); }; // updateReply 함수와 부모 댓글 번호 전달
-          replyItem.querySelector('.cancel-edit-reply-btn').onclick = () => loadReplies(replyItem.closest('.comment-item').id.split('-')[1]); // 취소 시 대댓글 목록 다시 로드
-        };
-      });
-      // 대댓글 삭제 버튼
-      document.querySelectorAll('.delete-reply-btn').forEach(btn => btn.onclick = (e) => deleteReply(e.target.dataset.rpNo, btn.closest('.comment-item').id.split('-')[1])); // deleteReply 함수와 부모 댓글 번호 전달
+      // 수정 기능 제거
+      // document.querySelectorAll('.edit-reply-btn').forEach(button => {
+      //   button.onclick = (e) => {
+      //     const rpNo = e.target.dataset.rpNo;
+      //     const replyItem = document.getElementById(`reply-${rpNo}`);
+      //     const contentElement = replyItem.querySelector('p.text-gray-700');
+      //     const originalContent = e.target.dataset.content;
+      //     if (replyItem.querySelector('textarea')) return;
+      //     contentElement.innerHTML = `<textarea class="edit-rp-content w-full p-2 border" rows="3">${originalContent}</textarea><div class="mt-2"><button class="save-reply-btn px-3 py-1 bg-green-500 text-white text-xs rounded-md" data-rp-no="${rpNo}">저장</button> <button class="cancel-edit-reply-btn px-3 py-1 bg-gray-400 text-white text-xs rounded-md">취소</button></div>`;
+      //     replyItem.querySelector('.save-reply-btn').onclick = () => { const newContent = replyItem.querySelector('.edit-rp-content').value; updateReply(rpNo, newContent, replyItem.closest('.comment-item').id.split('-')[1]); };
+      //     replyItem.querySelector('.cancel-edit-reply-btn').onclick = () => loadReplies(replyItem.closest('.comment-item').id.split('-')[1]);
+      //   };
+      // });
+      document.querySelectorAll('.delete-reply-btn').forEach(btn => btn.onclick = (e) => deleteReply(e.target.dataset.rpNo, btn.closest('.comment-item').id.split('-')[1]));
     };
 
     // 댓글 추가 함수
     const addComment = async (content) => {
       if (!content.trim()) { alert('댓글 내용을 입력해주세요.'); return; }
-      // 댓글 추가 전 로그인 상태 재확인
       if (!isAuthenticated()) {
         alert('댓글을 작성하려면 로그인이 필요합니다.');
         window.location.href = /*[[@{/login}]]*/ '/login';
@@ -322,14 +308,17 @@
         const response = await fetch('/api/comments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ postId: currentPostId, cmContent: content }),
+          body: JSON.stringify({
+            postId: currentPostId,
+            cmContent: content,
+            boardType: currentBoardType
+          }),
           credentials: 'same-origin'
         });
         await handleApiResponse(response);
-        commentContentTextarea.value = ''; // 입력 필드 초기화
-        await loadComments(); // 댓글 목록 새로고침
+        commentContentTextarea.value = '';
+        await loadComments();
       } catch (error) {
-        // '로그인 필요' 에러 메시지는 handleApiResponse에서 처리되므로, 중복 알림 방지
         if (error.message !== '로그인 필요') {
           console.error("댓글 추가 에러:", error);
           alert(error.message || '댓글 추가 중 오류가 발생했습니다.');
@@ -337,36 +326,12 @@
       }
     };
 
-    // 댓글 수정 함수
-    const updateComment = async (cmNo, content) => {
-      if (!content.trim()) { alert('댓글 내용을 입력해주세요.'); return; }
-      // 댓글 수정 전 로그인 상태 재확인
-      if (!isAuthenticated()) {
-        alert('댓글을 수정하려면 로그인이 필요합니다.');
-        window.location.href = /*[[@{/login}]]*/ '/login';
-        return;
-      }
-      try {
-        const response = await fetch(`/api/comments/${cmNo}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cmContent: content }),
-          credentials: 'same-origin'
-        });
-        await handleApiResponse(response);
-        await loadComments(); // 댓글 목록 새로고침
-      } catch (error) {
-        if (error.message !== '로그인 필요') {
-          console.error("댓글 수정 에러:", error);
-          alert(error.message || '댓글 수정 중 오류가 발생했습니다.');
-        }
-      }
-    };
+    // 댓글 수정 함수 (완전히 제거)
+    // const updateComment = async (cmNo, content) => { /*...*/ };
 
-    // 댓글 삭제 함수
+    // 댓글 삭제 함수 (유지)
     const deleteComment = async (cmNo) => {
       if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
-      // 댓글 삭제 전 로그인 상태 재확인
       if (!isAuthenticated()) {
         alert('댓글을 삭제하려면 로그인이 필요합니다.');
         window.location.href = /*[[@{/login}]]*/ '/login';
@@ -375,7 +340,7 @@
       try {
         const response = await fetch(`/api/comments/${cmNo}`, { method: 'DELETE', credentials: 'same-origin' });
         await handleApiResponse(response);
-        await loadComments(); // 댓글 목록 새로고침
+        await loadComments();
       } catch (error) {
         if (error.message !== '로그인 필요') {
           console.error("댓글 삭제 에러:", error);
@@ -389,7 +354,6 @@
       const textarea = document.getElementById(`reply-form-${cmNo}`).querySelector('textarea');
       const content = textarea.value;
       if (!content.trim()) { alert('대댓글 내용을 입력해주세요.'); return; }
-      // 대댓글 추가 전 로그인 상태 재확인
       if (!isAuthenticated()) {
         alert('대댓글을 작성하려면 로그인이 필요합니다.');
         window.location.href = /*[[@{/login}]]*/ '/login';
@@ -403,9 +367,9 @@
           credentials: 'same-origin'
         });
         await handleApiResponse(response);
-        textarea.value = ''; // 입력 필드 초기화
-        textarea.closest('.reply-input-form').classList.add('hidden'); // 답글 폼 숨기기
-        await loadReplies(cmNo); // 대댓글 목록 새로고침
+        textarea.value = '';
+        textarea.closest('.reply-input-form').classList.add('hidden');
+        await loadReplies(cmNo);
       } catch (error) {
         if (error.message !== '로그인 필요') {
           console.error("대댓글 추가 에러:", error);
@@ -414,36 +378,12 @@
       }
     };
 
-    // 대댓글 수정 함수
-    const updateReply = async (rpNo, content, cmNo) => {
-      if (!content.trim()) { alert('대댓글 내용을 입력해주세요.'); return; }
-      // 대댓글 수정 전 로그인 상태 재확인
-      if (!isAuthenticated()) {
-        alert('대댓글을 수정하려면 로그인이 필요합니다.');
-        window.location.href = /*[[@{/login}]]*/ '/login';
-        return;
-      }
-      try {
-        const response = await fetch(`/api/replies/${rpNo}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rpContent: content }),
-          credentials: 'same-origin'
-        });
-        await handleApiResponse(response);
-        await loadReplies(cmNo); // 대댓글 목록 새로고침
-      } catch (error) {
-        if (error.message !== '로그인 필요') {
-          console.error("대댓글 수정 에러:", error);
-          alert(error.message || '대댓글 수정 중 오류가 발생했습니다.');
-        }
-      }
-    };
+    // 대댓글 수정 함수 (완전히 제거)
+    // const updateReply = async (rpNo, content, cmNo) => { /*...*/ };
 
-    // 대댓글 삭제 함수
+    // 대댓글 삭제 함수 (유지)
     const deleteReply = async (rpNo, cmNo) => {
       if (!confirm('정말로 이 대댓글을 삭제하시겠습니까?')) return;
-      // 대댓글 삭제 전 로그인 상태 재확인
       if (!isAuthenticated()) {
         alert('대댓글을 삭제하려면 로그인이 필요합니다.');
         window.location.href = /*[[@{/login}]]*/ '/login';
@@ -452,7 +392,7 @@
       try {
         const response = await fetch(`/api/replies/${rpNo}`, { method: 'DELETE', credentials: 'same-origin' });
         await handleApiResponse(response);
-        await loadReplies(cmNo); // 대댓글 목록 새로고침
+        await loadReplies(cmNo);
       } catch (error) {
         if (error.message !== '로그인 필요') {
           console.error("대댓글 삭제 에러:", error);
