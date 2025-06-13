@@ -165,7 +165,7 @@
         </div>
         <!-- 입양하기 버튼 추가 -->
         <div class="text-center" style="margin-top: 1rem;">
-            <a th:href="@{/adopt/apply/{id}(id=${animal.id})}" class="link-button" style="background-color: #4CAF50;">입양하기</a>
+            <a th:href="@{'/adoption/apply/' + ${animal.id}}" class="btn" style="background: #a69f8e">입양하기</a>
         </div>
     </div>
 

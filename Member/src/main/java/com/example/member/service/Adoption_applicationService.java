@@ -18,6 +18,14 @@ public class Adoption_applicationService {
         adoption_applicationRepository.insert(adoption);
     }
 
+    public boolean existsApplication(String u_id, Long animal_id) {
+
+        int count = adoption_applicationRepository.countByUserIdAndAnimalId(u_id, animal_id);
+
+        return count > 0;
+
+    }
+
 
 
 

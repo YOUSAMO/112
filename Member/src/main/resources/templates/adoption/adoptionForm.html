@@ -73,7 +73,7 @@
 <body>
 <div class="container">
     <h2>유기동물 입양신청서</h2>
-    <form th:action="@{/adoption/apply}" th:object="${adoptionForm}" method="post" id="adoptionForm">
+    <form th:action="@{'/adoption/apply/' + ${adoptionForm.animal_id}}" th:object="${adoptionForm}" method="post" id="adoptionForm">
 
         <!-- animal_id hidden input 추가 -->
         <input type="hidden" th:field="*{animal_id}" th:value="${animalId}">
@@ -178,7 +178,7 @@
     <a th:href="@{/}"><button type="submit" style="margin-top: 20px">홈으로</button></a>
 </div>
 <script th:inline="javascript">
-
+  /*
     document.getElementById('adoptionForm').addEventListener('submit', function(e) {
         // 한글만 허용하는 필드 검증
         function isKoreanOnly(str) {
@@ -197,6 +197,8 @@
         }
         // 필요시 다른 textarea도 동일하게 추가
     });
+    */
+
 
 </script>
 </body>

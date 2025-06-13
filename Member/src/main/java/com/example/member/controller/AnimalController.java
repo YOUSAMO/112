@@ -210,7 +210,7 @@ public class AnimalController {
         return "redirect:/animals/edit/" + animalId;
     }
 
-    /*
+
     // [로그인 사용자만 O] (추가) 입양 신청
     @PostMapping("/adopt/{id}")
     public String adoptAnimal(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
@@ -222,6 +222,6 @@ public class AnimalController {
         redirectAttributes.addFlashAttribute("message", "입양 신청이 완료되었습니다!");
         return "redirect:/animals/" + id;
     }
-    */
+
 
 }
