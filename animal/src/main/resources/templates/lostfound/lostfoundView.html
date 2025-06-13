@@ -21,7 +21,43 @@
     .content-box pre { font-family: inherit; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 1em; line-height: 1.7; }
     .attachment-section { margin-top: 30px; }
     .attachment-gallery { display: flex; flex-wrap: wrap; gap: 15px; }
-    .attachment-image { max-width: 250px; max-height: 250px; width: auto; height: auto; border: 1px solid #dee2e6; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; }
+    .image-container {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      cursor: pointer;
+    }
+    .attachment-image {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      display: block;
+    }
+    .image-info {
+      position: absolute;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      width: 100%;
+      text-align: center;
+      padding: 5px 0;
+      font-size: 0.8em;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .image-container:hover .image-info {
+      opacity: 1;
+    }
+
     .action-buttons { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
     .btn { display: inline-block; padding: 10px 20px; font-size: 1em; font-weight: 500; text-decoration: none; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; text-align: center; }
     .btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -33,7 +69,6 @@
     .btn-like.liked { background-color: #ef4444; color: white; border-color: #ef4444; }
     .like-text { margin-left: 8px; }
 
-    /* 댓글 섹션 스타일 */
     .comments-section { margin-top: 40px; }
     .comment-input-form { display: flex; gap: 10px; margin-bottom: 20px; }
     .comment-input-form textarea { flex-grow: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 60px; font-family: 'Noto Sans KR', sans-serif; }
@@ -55,7 +90,6 @@
     .reply-toggle-btn { background: none; border: none; color: #6c757d; cursor: pointer; font-size: 0.85em; padding: 5px 0; margin-left: auto; display: block; }
     .reply-toggle-btn:hover { text-decoration: underline; }
 
-    /* 대댓글 스타일 */
     .replies-section { margin-left: 30px; border-left: 2px solid #e9ecef; padding-left: 15px; margin-top: 10px; }
     .reply-input-form { display: flex; gap: 5px; margin-top: 15px; }
     .reply-input-form textarea { flex-grow: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 40px; font-family: 'Noto Sans KR', sans-serif; }
@@ -72,7 +106,6 @@
     .reply-edit-form textarea { flex-grow: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 40px; font-family: 'Noto Sans KR', sans-serif; }
     .reply-edit-form button { padding: 6px 10px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
     .reply-edit-form button:hover { background-color: #0056b3; }
-
   </style>
 </head>
 <body>
@@ -104,7 +137,17 @@
   <div th:if="${animal.attachments != null and not #lists.isEmpty(animal.attachments)}" class="attachment-section">
     <h3>첨부된 사진</h3>
     <div class="attachment-gallery">
-      <th:block th:each="attachment : ${animal.attachments}"><img th:src="@{/lostfound/uploads/{boardType}/{boardId}/{fileName}(boardType=${attachment.boardType}, boardId=${attachment.boardId}, fileName=${attachment.fileName})}" th:alt="${attachment.fileName}" class="attachment-image" /></th:block>
+      <th:block th:each="attachment : ${animal.attachments}">
+        <div class="image-container">
+          <img th:src="${attachment.filePath}"
+               th:alt="${attachment.fileName}"
+               class="attachment-image"
+               th:data-original-filename="${attachment.fileName}"
+               th:data-board-id="${attachment.boardId}"
+               onerror="this.onerror=null; this.src='/images/no-image.png'; console.log('Image failed to load:', this.src);" />
+          <div class="image-info" th:text="${attachment.fileName}"></div>
+        </div>
+      </th:block>
     </div>
   </div>
   <hr>
@@ -140,72 +183,77 @@
 </div>
 
 <script th:inline="javascript">
-  /*<![CDATA[*/ // Thymeleaf 인라인 모드 시작
-
+  /*<![CDATA[*/
   document.addEventListener('DOMContentLoaded', function() {
     const likeBtn = document.getElementById('likeBtn');
-    if (!likeBtn || likeBtn.disabled) return;
-    const animalId = /*[[${animal.id}]]*/ '0';
-    // CSRF 토큰 및 헤더 이름은 메타 태그에서 한 번만 가져옵니다.
+    const animalId = /*[[${animal.id}]]*/ 0;
     const csrfToken = document.querySelector("meta[name='_csrf']")?.content;
     const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content;
 
-    // CSRF 헤더를 포함한 HTTP 요청 헤더를 반환하는 유틸리티 함수
     function getCsrfHeaders() {
       const headers = { 'Content-Type': 'application/json' };
-      if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+      if (csrfToken && csrfHeader) {
+        headers[csrfHeader] = csrfToken;
+      }
       return headers;
     }
 
-    // 좋아요 버튼 이벤트 리스너
-    likeBtn.addEventListener('click', () => {
-      fetch(`/lostfound/like/${animalId}`, { method: 'POST', headers: getCsrfHeaders() })
-              .then(response => {
-                if (response.status === 401) { alert('로그인이 필요합니다.'); throw new Error('Unauthorized'); }
-                if (!response.ok) throw new Error('서버 응답 오류');
-                return response.json();
-              })
-              .then(data => {
-                document.getElementById('likeCount').textContent = data.likeCount;
-                const likeButtonText = likeBtn.querySelector('.like-text');
-                if (data.liked) {
-                  likeBtn.classList.add('liked');
-                  if(likeButtonText) likeButtonText.textContent = '좋아요 취소';
-                } else {
-                  likeBtn.classList.remove('liked');
-                  if(likeButtonText) likeButtonText.textContent = '좋아요';
-                }
-              })
-              .catch(error => {
-                if (error.message !== 'Unauthorized') console.error('좋아요 처리 실패:', error);
-                // CSRF 토큰 문제일 경우 403 Forbidden 응답을 받을 수 있습니다.
-                if (error.message.includes('403')) {
-                  alert('권한이 없습니다. (세션 만료 또는 CSRF 토큰 오류)');
-                }
-              });
-    });
+    if (likeBtn && !likeBtn.disabled) {
+      likeBtn.addEventListener('click', () => {
+        fetch(`/lostfound/like/${animalId}`, { method: 'POST', headers: getCsrfHeaders() })
+                .then(response => {
+                  if (response.status === 401) {
+                    alert('로그인이 필요합니다.');
+                    throw new Error('Unauthorized');
+                  }
+                  if (!response.ok) {
+                    throw new Error('서버 응답 오류');
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  document.getElementById('likeCount').textContent = data.likeCount;
+                  const likeButtonText = likeBtn.querySelector('.like-text');
+                  if (data.liked) {
+                    likeBtn.classList.add('liked');
+                    if (likeButtonText) {
+                      likeButtonText.textContent = '좋아요 취소';
+                    }
+                  } else {
+                    likeBtn.classList.remove('liked');
+                    if (likeButtonText) {
+                      likeButtonText.textContent = '좋아요';
+                    }
+                  }
+                })
+                .catch(error => {
+                  if (error.message !== 'Unauthorized') {
+                    console.error('좋아요 처리 실패:', error);
+                  }
+                  if (error.message.includes('403')) {
+                    alert('권한이 없습니다. (세션 만료 또는 CSRF 토큰 오류)');
+                  }
+                });
+      });
+    }
 
-    // --- 댓글 기능 JavaScript ---
     const postId = /*[[${animal.id}]]*/ null;
-    const boardType = /*[[${animal.boardType}]]*/ null; // 게시판 타입 (예: "lostfound", "missing")
-    const currentUserId = /*[[${session.loggedInUserId}]]*/ null; // 현재 로그인된 사용자 ID
+    const boardType = /*[[${animal.boardType}]]*/ null;
+    const currentUserId = /*[[${session.loggedInUserId}]]*/ null;
 
     const commentListDiv = document.getElementById('commentList');
     const commentContentInput = document.getElementById('commentContent');
     const addCommentBtn = document.getElementById('addCommentBtn');
 
-    // 댓글 목록 불러오기 함수
     function loadComments() {
-      if (!postId) return;
+      if (!postId) {
+        return;
+      }
 
-      // lostfound 게시판은 postId로 댓글을 가져오므로 postId 파라미터 사용
-      // ★★★ 수정된 부분: 템플릿 리터럴 문법 수정 ★★★
-      // Thymeleaf의 인라인 모드에서 $ 문자가 중복 해석되지 않도록 주의
-      const url = `/api/comments?postId=${postId}&boardType=${boardType}`; // 이 라인은 그대로 JavaScript 변수 사용
+      const url = `/api/comments?postId=${postId}&boardType=${boardType}`;
       fetch(url)
-              // ★★★ 수정 끝 ★★★
               .then(response => {
-                if (!response.ok) { // HTTP 상태 코드가 2xx가 아니면 에러로 처리
+                if (!response.ok) {
                   return response.json().then(errorData => {
                     throw new Error(errorData.message || '댓글 목록을 불러오는 중 서버 오류 발생');
                   });
@@ -213,7 +261,7 @@
                 return response.json();
               })
               .then(comments => {
-                commentListDiv.innerHTML = ''; // 기존 댓글 초기화
+                commentListDiv.innerHTML = '';
                 if (comments.length === 0) {
                   commentListDiv.innerHTML = '<p style="text-align: center; color: #6c757d;">아직 댓글이 없습니다.</p>';
                   return;
@@ -224,17 +272,19 @@
                   commentItem.className = 'comment-item';
                   commentItem.dataset.cmNo = comment.cmNo;
 
-                  // `authorNameDisplay`를 먼저 사용하고 없으면 `cmWriter` 사용
                   const authorDisplayName = comment.authorNameDisplay || comment.cmWriter;
 
                   const isAuthor = currentUserId && currentUserId === comment.authorUid;
-                  const formattedDate = new Date(comment.createdAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                  const formattedDate = new Date(comment.createdAt).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
                   const hasUpdatedAt = comment.updatedAt && new Date(comment.createdAt).getTime() !== new Date(comment.updatedAt).getTime();
                   const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
 
-                  // ★★★ 수정된 부분: 템플릿 리터럴 내에서 $ 문자 처리 ★★★
-                  // `authorDisplayName`, `formattedDate`, `updatedText`, `comment.cmContent` 등은 JS 변수이므로
-                  // HTML 문자열 안에 직접 삽입할 때 `${변수명}` 형태로 정확히 사용합니다.
                   commentItem.innerHTML = `
               <div class="comment-meta">
                 <span class="comment-author">${authorDisplayName}</span>
@@ -246,7 +296,8 @@
                   <button type="button" class="delete-comment-btn">삭제</button>
                 ` : ''}
                 ${currentUserId ? `<button type="button" class="show-reply-input-btn">답글 달기</button>` : ''}
-                <button type="button" class="reply-toggle-btn">답글 보기 (0)</button> </div>
+                <button type="button" class="reply-toggle-btn">답글 보기 (0)</button>
+              </div>
               <div class="replies-section" style="display: none;">
                 <div class="reply-input-form" data-cm-no="${comment.cmNo}">
                   <textarea placeholder="답글을 입력하세요." class="reply-content-input"></textarea>
@@ -255,17 +306,15 @@
                 <div class="reply-list"></div>
               </div>
             `;
-                  // ★★★ 수정 끝 ★★★
                   commentListDiv.appendChild(commentItem);
 
-                  // 각 댓글의 답글 수를 업데이트 (비동기적으로)
                   fetch(`/api/replies/count?cmNo=${comment.cmNo}`)
                           .then(res => res.json())
                           .then(data => {
                             const replyCountBtn = commentItem.querySelector('.reply-toggle-btn');
                             if (replyCountBtn) {
                               replyCountBtn.textContent = `답글 보기 (${data.count || 0})`;
-                              commentItem.dataset.replyCount = data.count || 0; // 데이터셋에 저장
+                              commentItem.dataset.replyCount = data.count || 0;
                             }
                           })
                           .catch(error => console.error('답글 수 로드 실패:', error));
@@ -277,10 +326,9 @@
               });
     }
 
-    // 댓글 등록 함수
     if (addCommentBtn) {
       addCommentBtn.addEventListener('click', () => {
-        if (!currentUserId) { // 이 조건은 로그인 여부 체크
+        if (!currentUserId) {
           alert('로그인이 필요합니다.');
           return;
         }
@@ -293,11 +341,10 @@
         fetch('/api/comments', {
           method: 'POST',
           headers: getCsrfHeaders(),
-          body: JSON.stringify({ postId: postId, cmContent: content, boardType: boardType }) // boardType 추가
+          body: JSON.stringify({ postId: postId, cmContent: content, boardType: boardType })
         })
                 .then(response => {
                   if (!response.ok) {
-                    // HTTP 상태 코드가 200번대가 아니면 에러로 처리
                     return response.json().then(errorData => {
                       throw new Error(errorData.message || '댓글 등록 중 서버 오류 발생');
                     });
@@ -306,33 +353,26 @@
                 })
                 .then(data => {
                   if (data.success) {
-                    commentContentInput.value = ''; // 입력창 비우기
-                    loadComments(); // 댓글 목록 다시 불러오기
-                    alert(data.message); // 성공 메시지 표시
+                    commentContentInput.value = '';
+                    loadComments();
+                    alert(data.message);
                   } else {
                     alert('댓글 등록 실패: ' + data.message);
                   }
                 })
                 .catch(error => {
                   console.error('댓글 등록 중 오류 발생:', error);
-                  alert('댓글 등록 실패: ' + error.message); // 사용자에게 더 구체적인 메시지 전달
+                  alert('댓글 등록 실패: ' + error.message);
                 });
       });
     }
 
-    // 댓글 수정/삭제, 답글 기능 위임 이벤트 리스너
     commentListDiv.addEventListener('click', function(event) {
       const target = event.target;
       const commentItem = target.closest('.comment-item');
       if (!commentItem) return;
       const cmNo = commentItem.dataset.cmNo;
 
-      // 댓글 수정 버튼 (완전히 제거)
-      // if (target.classList.contains('edit-comment-btn')) {
-      //   // 수정 기능 제거
-      // }
-
-      // 댓글 삭제 버튼
       if (target.classList.contains('delete-comment-btn')) {
         if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
         fetch(`/api/comments/${cmNo}`, {
@@ -361,7 +401,6 @@
                 });
       }
 
-      // 답글 보기/숨기기 버튼
       if (target.classList.contains('reply-toggle-btn')) {
         const repliesSection = commentItem.querySelector('.replies-section');
         const replyListDiv = repliesSection.querySelector('.reply-list');
@@ -369,7 +408,7 @@
 
         if (repliesSection.style.display === 'none') {
           repliesSection.style.display = 'block';
-          loadReplies(cmNo, replyListDiv); // 답글 로드
+          loadReplies(cmNo, replyListDiv);
           replyToggleBtn.textContent = '답글 숨기기';
         } else {
           repliesSection.style.display = 'none';
@@ -378,17 +417,17 @@
         }
       }
 
-      // 답글 달기 버튼 (답글 입력 폼 보이기)
       if (target.classList.contains('show-reply-input-btn')) {
         const repliesSection = commentItem.querySelector('.replies-section');
         const replyInputForm = repliesSection.querySelector('.reply-input-form');
-        repliesSection.style.display = 'block'; // 답글 섹션 보이도록
-        replyInputForm.style.display = 'flex'; // 답글 입력 폼 보이도록
+        repliesSection.style.display = 'block';
+        replyInputForm.style.display = 'flex';
         const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
-        if (replyToggleBtn) replyToggleBtn.textContent = '답글 숨기기'; // 답글 숨기기 버튼으로 변경
+        if (replyToggleBtn) {
+          replyToggleBtn.textContent = '답글 숨기기';
+        }
       }
 
-      // 답글 등록 버튼
       if (target.classList.contains('add-reply-btn')) {
         const replyInputForm = target.closest('.reply-input-form');
         const replyContentInput = replyInputForm.querySelector('.reply-content-input');
@@ -413,13 +452,11 @@
                 })
                 .then(data => {
                   if (data.success) {
-                    replyContentInput.value = ''; // 입력창 비우기
-                    loadReplies(cmNo, commentItem.querySelector('.reply-list')); // 답글 목록 다시 불러오기
-
-                    // 답글 수 UI 업데이트
+                    replyContentInput.value = '';
+                    loadReplies(cmNo, commentItem.querySelector('.reply-list'));
                     const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
                     let currentReplyCount = parseInt(commentItem.dataset.replyCount || '0');
-                    commentItem.dataset.replyCount = currentReplyCount + 1; // 데이터셋 업데이트
+                    commentItem.dataset.replyCount = currentReplyCount + 1;
                     replyToggleBtn.textContent = `답글 숨기기 (${commentItem.dataset.replyCount})`;
                     alert(data.message);
                   } else {
@@ -433,12 +470,11 @@
       }
     });
 
-    // 답글 목록 불러오기 함수
     function loadReplies(cmNo, replyListDiv) {
       fetch(`/api/replies?cmNo=${cmNo}`)
               .then(response => response.json())
               .then(replies => {
-                replyListDiv.innerHTML = ''; // 기존 답글 초기화
+                replyListDiv.innerHTML = '';
                 if (replies.length === 0) {
                   replyListDiv.innerHTML = '<p style="text-align: center; color: #6c757d; font-size: 0.8em;">아직 답글이 없습니다.</p>';
                   return;
@@ -450,14 +486,18 @@
                   replyItem.dataset.rpNo = reply.rpNo;
 
                   const isAuthor = currentUserId && currentUserId === reply.userId;
-                  // `userNameDisplay`를 먼저 사용하고 없으면 `userId` 사용
                   const authorDisplayName = reply.userNameDisplay || reply.userId;
 
-                  const formattedDate = new Date(reply.createdAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                  const formattedDate = new Date(reply.createdAt).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
                   const hasUpdatedAt = reply.updatedAt && new Date(reply.createdAt).getTime() !== new Date(reply.updatedAt).getTime();
                   const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
 
-                  // ★★★ 수정된 부분: 템플릿 리터럴 내에서 $ 문자 처리 ★★★
                   replyItem.innerHTML = `
               <div class="reply-meta">
                 <span class="reply-author">${authorDisplayName}</span>
@@ -470,30 +510,21 @@
                 ` : ''}
               </div>
             `;
-                  // ★★★ 수정 끝 ★★★
                   replyListDiv.appendChild(replyItem);
                 });
               })
               .catch(error => console.error('답글을 불러오는 데 실패했습니다:', error));
     }
 
-    // 답글 수정/삭제 위임 이벤트 리스너 (댓글 목록 div에서)
     commentListDiv.addEventListener('click', function(event) {
       const target = event.target;
       const replyItem = target.closest('.reply-item');
-      if (!replyItem) return; // 답글 항목이 아니면 무시
+      if (!replyItem) return;
 
       const rpNo = replyItem.dataset.rpNo;
-      const commentItem = target.closest('.comment-item'); // 답글이 속한 댓글 항목 찾기
+      const commentItem = target.closest('.comment-item');
       const cmNo = commentItem ? commentItem.dataset.cmNo : null;
 
-
-      // 답글 수정 버튼 (완전히 제거)
-      // if (target.classList.contains('edit-reply-btn')) {
-      //   // 수정 기능 제거
-      // }
-
-      // 답글 삭제 버튼
       if (target.classList.contains('delete-reply-btn')) {
         if (!confirm('정말로 이 답글을 삭제하시겠습니까?')) return;
         fetch(`/api/replies/${rpNo}`, {
@@ -510,15 +541,12 @@
                 })
                 .then(data => {
                   if (data.success) {
-                    // UI에서 답글 삭제
                     replyItem.remove();
                     alert(data.message);
-                    // 답글 개수 업데이트 (UI 상)
                     const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
                     let currentReplyCount = parseInt(commentItem.dataset.replyCount || '0');
                     commentItem.dataset.replyCount = Math.max(0, currentReplyCount - 1);
                     replyToggleBtn.textContent = `답글 보기 (${commentItem.dataset.replyCount})`;
-                    // 만약 모든 답글이 삭제되면 "아직 답글이 없습니다." 메시지 표시
                     const remainingReplies = commentItem.querySelector('.reply-list').children.length;
                     if (remainingReplies === 0) {
                       commentItem.querySelector('.reply-list').innerHTML = '<p style="text-align: center; color: #6c757d; font-size: 0.8em;">아직 답글이 없습니다.</p>';
@@ -534,10 +562,9 @@
       }
     });
 
-    // 페이지 로드     시 댓글 불러오기
     loadComments();
-
   });
+  /*]]>*/
 </script>
 </body>
 </html>
