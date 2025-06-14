@@ -12,4 +12,7 @@ public interface AttachmentFileRepository {
     void deleteByBoardTypeAndBoardId(@Param("boardType") String boardType, @Param("boardId") Long boardId);
     AttachmentFile findById(Long id);
     int deleteById(Long id);
+
+
+
 }

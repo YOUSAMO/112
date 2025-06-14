@@ -4,7 +4,9 @@ import com.example.member.entity.AdoptionReview;
 import com.example.member.service.AdoptionReviewService;
 import com.example.member.service.LikeService;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/reviews")
+@RequiredArgsConstructor
 public class AdoptionReviewController {
 
     private final AdoptionReviewService reviewService;
@@ -24,22 +27,34 @@ public class AdoptionReviewController {
 
     private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
     private static final String LOGIN_PAGE_URL = "/login";
-    public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview";
+    // ★★★ 수정 부분: ADOPTION_REVIEW_BOARD_TYPE 값을 "review"로 변경 ★★★
+    public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview"; // HTML의 currentBoardType과 일치
+    // ★★★ 수정 끝 ★★★
 
-    @Autowired
-    public AdoptionReviewController(AdoptionReviewService reviewService, LikeService likeService) {
-        this.reviewService = reviewService;
-        this.likeService = likeService;
-    }
-
+    // PageInfo 내부 클래스 - getSize() 메서드명 수정 완료
     public static class PageInfo {
         private final int totalPages;
         private final int currentPage;
         private final int size;
-        public PageInfo(int totalPages, int currentPage, int size) { this.totalPages = totalPages; this.currentPage = currentPage; this.size = size; }
-        public int getTotalPages() { return totalPages; }
-        public int getCurrentPage() { return currentPage; }
-        public int getSize() { return size; }
+
+        public PageInfo(int totalPages, int currentPage, int size) {
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
+            this.size = size;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
+
+        public int getCurrentPage() {
+            return currentPage;
+        }
+
+        // **** 수정된 부분: getter 메서드 이름을 getSize()로 변경 ****
+        public int getSize() {
+            return size;
+        }
     }
 
     @GetMapping
@@ -50,20 +65,12 @@ public class AdoptionReviewController {
         int totalCount = reviewService.getTotalReviewCount();
         int totalPages = (int) Math.ceil((double) totalCount / size);
         String currentUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
-//        Map<Long, Map<String, Object>> likeStatuses = new HashMap<>();
-//        if (reviews != null) {
-//            for (AdoptionReview review : reviews) {
-//                if (review != null && review.getArNo() != null) {
-//                    likeStatuses.put(review.getArNo(), likeService.getLikeStatus(currentUserId, review.getArNo(), ADOPTION_REVIEW_BOARD_TYPE));
-//                }
-//            }
-//        }
+
         model.addAttribute("reviews", reviews);
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("pageInfo", new PageInfo(totalPages, page, size));
         model.addAttribute("currentUserId", currentUserId);
-//        model.addAttribute("likeStatuses", likeStatuses);
-//        model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE);
+
         return "review/reviewList";
     }
 
@@ -75,6 +82,7 @@ public class AdoptionReviewController {
             return "redirect:" + LOGIN_PAGE_URL;
         }
         model.addAttribute("review", new AdoptionReview());
+        model.addAttribute("isNew", true);
         return "review/reviewForm";
     }
 
@@ -101,23 +109,24 @@ public class AdoptionReviewController {
     @GetMapping("/{arNo}")
     public String viewReview(@PathVariable Long arNo, Model model, HttpSession session) {
         reviewService.increaseViewCount(arNo);
-        AdoptionReview review = reviewService.getReviewById(arNo);
+        String currentUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        AdoptionReview review = reviewService.getReviewById(arNo, currentUserId); // 좋아요 상태 포함하여 조회
         if (review == null) {
             return "redirect:/reviews?error=notfound";
         }
-        String currentUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
         Map<String, Object> likeStatus = likeService.getLikeStatus(currentUserId, arNo, ADOPTION_REVIEW_BOARD_TYPE);
         model.addAttribute("review", review);
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("likeStatus", likeStatus);
-        model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE);
+        // ★★★ 추가적인 model attribute 필요하다면 여기에 추가 (예: defaultBoardType) ★★★
+        // model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE); // 이미 HTML에서 'review'로 고정되어 사용 중
         return "review/reviewView";
     }
 
     @GetMapping("/{arNo}/edit")
     public String showEditReviewForm(@PathVariable Long arNo, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
-        AdoptionReview review = reviewService.getReviewById(arNo);
+        AdoptionReview review = reviewService.getReviewById(arNo); // 작성자 이름 포함하여 조회
         if (loggedInUserUid == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
             return "redirect:" + LOGIN_PAGE_URL;
@@ -131,6 +140,7 @@ public class AdoptionReviewController {
             return "redirect:/reviews/" + arNo;
         }
         model.addAttribute("review", review);
+        model.addAttribute("isNew", false);
         return "review/reviewForm";
     }
 
@@ -147,18 +157,13 @@ public class AdoptionReviewController {
             reviewService.updateReview(arNo, reviewDetails, loggedInUserUid, newFiles);
             redirectAttributes.addFlashAttribute("successMessage", "리뷰가 성공적으로 수정되었습니다.");
             return "redirect:/reviews/" + arNo;
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/reviews/" + arNo + "/edit";
-        } catch (IOException e) {
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "리뷰 수정 중 파일 오류 발생");
             return "redirect:/reviews/" + arNo + "/edit";
         }
     }
 
-    // ★★★★★ IOException 처리 구문 추가 ★★★★★
     @PostMapping("/{arNo}/delete")
     public String deleteReview(@PathVariable Long arNo, HttpSession session, RedirectAttributes redirectAttributes) {
         String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
@@ -169,13 +174,51 @@ public class AdoptionReviewController {
         try {
             reviewService.deleteReview(arNo, loggedInUserUid);
             redirectAttributes.addFlashAttribute("successMessage", "리뷰가 성공적으로 삭제되었습니다.");
-        } catch (IOException e) { // IOException 처리 블록 추가
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "리뷰 삭제 중 파일 시스템 오류가 발생했습니다.");
         } catch (RuntimeException e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/reviews";
+    }
+
+    @PostMapping("/{arNo}/like")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> toggleReviewLike(@PathVariable Long arNo, HttpSession session) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+
+        if (loggedInUserUid == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+
+        try {
+            Map<String, Object> likeResult = likeService.toggleLike(loggedInUserUid, arNo, ADOPTION_REVIEW_BOARD_TYPE);
+            return ResponseEntity.ok(Map.of("success", true, "data", likeResult));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요."));
+        }
+    }
+
+    @PostMapping("/attachments/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteAttachment(@RequestParam Long attachmentId, HttpSession session) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (loggedInUserUid == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+        try {
+            reviewService.deleteSingleAttachment(attachmentId, loggedInUserUid);
+            return ResponseEntity.ok(Map.of("success", true, "message", "첨부파일이 삭제되었습니다."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "파일 삭제 중 알 수 없는 오류가 발생했습니다."));
+        }
     }
 }

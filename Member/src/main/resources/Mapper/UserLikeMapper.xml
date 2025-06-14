@@ -28,4 +28,9 @@
         WHERE user_id = #{userId} AND board_id = #{boardId} AND board_type = #{boardType}
     </delete>
 
+    <delete id="deleteLikesByContent">
+        DELETE FROM users_like
+        WHERE board_id = #{boardId} AND board_type = #{boardType}
+    </delete>
+
 </mapper>

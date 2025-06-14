@@ -16,6 +16,9 @@ public interface UserLikeRepository {
                       @Param("boardId") Long boardId,
                       @Param("boardType") String boardType);
 
+    int deleteLikesByContent(@Param("boardId") Long boardId, @Param("boardType") String boardType);
+
+
     // int countLikesByBoard(@Param("boardId") Long boardId,
     //                       @Param("boardType") String boardType);
 }

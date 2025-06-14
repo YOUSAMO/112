@@ -18,9 +18,9 @@
 
     <insert id="insert" parameterType="com.example.member.entity.Animal" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO animal (name, species, age, description, gender, vaccinated, neutered,
-                            arrival_date, likes, dislikes, created_by)
+                            arrival_date, likes, dislikes)
         VALUES (#{name}, #{species}, #{age}, #{description}, #{gender}, #{vaccinated}, #{neutered},
-                #{arrivalDate}, #{likes}, #{dislikes}, #{created_by})
+                #{arrivalDate}, #{likes}, #{dislikes})
     </insert>
 
     <update id="update" parameterType="com.example.member.entity.Animal">

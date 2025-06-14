@@ -21,4 +21,5 @@ public class AdoptionReview {
     private Integer viewCount;
     private Integer likeCount;
     private List<AttachmentFile> attachments = new ArrayList<>();
+    private boolean likedByCurrentUser;
 }
