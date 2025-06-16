@@ -1,182 +1,194 @@
 package com.example.animal.service;
 
+import com.example.animal.controller.AdoptionReviewController;
 import com.example.animal.entity.AdoptionReview;
 import com.example.animal.entity.AttachmentFile;
-import com.example.animal.repository.AttachmentFileRepository;
 import com.example.animal.repository.AdoptionReviewRepository;
+import com.example.animal.repository.AttachmentFileRepository;
+import com.example.animal.repository.UserLikeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class AdoptionReviewService {
 
-
-    private final AdoptionReviewRepository reviewRepository;
+    private final AdoptionReviewRepository adoptionReviewRepository;
     private final AttachmentFileRepository attachmentFileRepository;
+    private final UserLikeRepository userLikeRepository;
 
-    @Value("${file.upload.dir}")
-    private String baseUploadDir;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
-    private final String ATTACHMENT_TYPE_REVIEW = "adoption_review";
-    private final String UPLOAD_SUB_PATH_REVIEW = "adoption_review_files";
-
-    public AdoptionReviewService(AdoptionReviewRepository reviewRepository,
-                                 AttachmentFileRepository attachmentFileRepository) {
-        this.reviewRepository = reviewRepository;
-        this.attachmentFileRepository = attachmentFileRepository;
+    public void createReview(AdoptionReview review, String loggedInUserUid, List<MultipartFile> files) throws IOException {
+        review.setAuthorUid(loggedInUserUid);
+        adoptionReviewRepository.insertReview(review);
+        saveFiles(files, review.getArNo());
     }
 
-    //입양 후기 작성
-    @Transactional
-    public void createReview(AdoptionReview review, List<MultipartFile> files) throws IOException {
-        reviewRepository.insert(review);
-        Long arNo = review.getArNo();
+    public void updateReview(Long arNo, AdoptionReview reviewDetails, String loggedInUserUid, List<MultipartFile> newFiles) throws IOException {
+        AdoptionReview existingReview = adoptionReviewRepository.findReviewById(arNo)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시글입니다."));
 
-        if (arNo == null) {
-            throw new IllegalStateException("입양 후기 저장 후 ID(arNo)를 가져올 수 없습니다.");
+        if (!loggedInUserUid.equals(existingReview.getAuthorUid())) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+        existingReview.setArTitle(reviewDetails.getArTitle());
+        existingReview.setReviewContent(reviewDetails.getReviewContent());
+        adoptionReviewRepository.updateReview(existingReview);
+        saveFiles(newFiles, arNo);
+    }
+
+    public void deleteReview(Long arNo, String loggedInUserUid) {
+        AdoptionReview reviewToDelete = adoptionReviewRepository.findReviewById(arNo)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시글입니다."));
+
+        if (!loggedInUserUid.equals(reviewToDelete.getAuthorUid())) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
-        saveAttachments(arNo, files);
+        userLikeRepository.deleteLikesByContent(arNo, AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE);
+        attachmentFileRepository.deleteByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo);
+        adoptionReviewRepository.deleteReview(arNo);
+
+        Path directoryPath = Paths.get(uploadDir, "adoption_review_files", "arNo_" + arNo);
+        if (Files.exists(directoryPath)) {
+            try {
+                Files.walk(directoryPath)
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException e) {
+                                System.err.println("파일/폴더 삭제 실패: " + path + " - " + e.getMessage());
+                            }
+                        });
+            } catch (IOException e) {
+                System.err.println("폴더 순회 중 오류 발생: " + directoryPath + " - " + e.getMessage());
+            }
+        }
     }
 
+    private void saveFiles(List<MultipartFile> files, Long boardId) throws IOException {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+
+        Path directoryPath = Paths.get(uploadDir, "adoption_review_files", "arNo_" + boardId);
+        Files.createDirectories(directoryPath);
+
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
+
+            String originalFileName = file.getOriginalFilename();
+            String storedFileName = UUID.randomUUID() + "_" + originalFileName;
+            Path physicalFilePath = directoryPath.resolve(storedFileName);
+
+            file.transferTo(physicalFilePath);
+
+            String dbFilePath = Paths.get("/uploads", "adoption_review_files", "arNo_" + boardId, storedFileName).toString().replace("\\", "/");
+
+            AttachmentFile attachment = new AttachmentFile();
+            attachment.setBoardType(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE);
+            attachment.setBoardId(boardId);
+            attachment.setFileName(originalFileName);
+            attachment.setFilePath(dbFilePath);
+            attachment.setFileSize(file.getSize());
+            attachmentFileRepository.insertAttachment(attachment);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdoptionReview> getReviewsByPage(int page, int size) {
+        int offset = (page - 1) * size;
+        List<AdoptionReview> reviews = adoptionReviewRepository.findReviewsByPage(size, offset);
+
+        // ★★★ 이 부분의 N+1 해결 로직을 삭제합니다. ★★★
+        // 이제 findReviewsByPage 쿼리 자체가 첨부파일을 함께 가져온다고 가정합니다.
+        // List<Long> reviewIds = reviews.stream()
+        //         .map(AdoptionReview::getArNo)
+        //         .collect(Collectors.toList());
+        //
+        // List<AttachmentFile> attachments = attachmentFileRepository.findAttachmentsByBoardIds(
+        //         AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, reviewIds);
+        //
+        // Map<Long, List<AttachmentFile>> attachmentsMap = attachments.stream()
+        //         .collect(Collectors.groupingBy(AttachmentFile::getBoardId));
+        //
+        // reviews.forEach(review ->
+        //         review.setAttachments(attachmentsMap.getOrDefault(review.getArNo(), Collections.emptyList()))
+        // );
+        // ★★★ 삭제 끝 ★★★
+
+        return reviews;
+    }
+
+    @Transactional(readOnly = true)
+    public int getTotalReviewCount() {
+        return adoptionReviewRepository.countReviews();
+    }
+
+    @Transactional(readOnly = true)
     public AdoptionReview getReviewById(Long arNo) {
-        AdoptionReview review = reviewRepository.selectById(arNo);
+        return adoptionReviewRepository.findReviewById(arNo)
+                .orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public AdoptionReview getReviewById(Long arNo, String userId) {
+        AdoptionReview review = adoptionReviewRepository.findReviewById(arNo)
+                .orElse(null);
+
         if (review != null) {
-            List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, arNo);
-            review.setAttachments(attachments != null ? attachments : Collections.emptyList());
+            review.setAttachments(attachmentFileRepository.findByBoardTypeAndBoardId(
+                    AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo));
+
+            if (userId != null && !userId.isEmpty()) {
+                boolean isLiked = userLikeRepository.findLike(userId, arNo,
+                        AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE) != null;
+                review.setLikedByCurrentUser(isLiked);
+            }
         }
         return review;
     }
 
-    @Transactional
-    public void updateReview(AdoptionReview review, List<MultipartFile> newFiles) throws IOException {
-        int updatedRows = reviewRepository.update(review);
-        if (updatedRows == 0) {
-            throw new RuntimeException("ID가 " + review.getArNo() + "인 입양 후기를 찾을 수 없거나 업데이트에 실패했습니다.");
-        }
-        saveAttachments(review.getArNo(), newFiles);
+    public void increaseViewCount(Long arNo) {
+        adoptionReviewRepository.incrementReviewViewCount(arNo);
     }
 
-    @Transactional
-    public void deleteReview(Long arNo) throws IOException {
-        List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, arNo);
-
-        if (attachments != null) {
-            for (AttachmentFile att : attachments) {
-                deletePhysicalFile(att.getFilePath());
-            }
-        }
-        attachmentFileRepository.deleteByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, arNo);
-
-        reviewRepository.delete(arNo);
-    }
-
-
-    @Transactional
-    public void deleteAdoptionReviewAttachment(Long attachmentId) throws IOException {
-
+    public void deleteSingleAttachment(Long attachmentId, String loggedInUserUid) throws IOException {
         AttachmentFile attachment = attachmentFileRepository.findById(attachmentId);
         if (attachment == null) {
-
             throw new RuntimeException("ID가 " + attachmentId + "인 첨부파일을 찾을 수 없습니다.");
         }
 
-        if (!ATTACHMENT_TYPE_REVIEW.equals(attachment.getBoardType())) {
+        AdoptionReview review = adoptionReviewRepository.findReviewById(attachment.getBoardId())
+                .orElseThrow(() -> new RuntimeException("첨부파일이 속한 게시글을 찾을 수 없습니다."));
 
-            throw new SecurityException("잘못된 타입의 첨부파일 삭제 시도입니다.");
+        if (!loggedInUserUid.equals(review.getAuthorUid())) {
+            throw new RuntimeException("이 첨부파일을 삭제할 권한이 없습니다.");
         }
 
-        deletePhysicalFile(attachment.getFilePath());
-
-
-        int deletedDbRows = attachmentFileRepository.deleteById(attachmentId);
-        if (deletedDbRows > 0) {
-
-        } else {
-
-            throw new RuntimeException("데이터베이스에서 첨부파일 레코드 삭제에 실패했습니다: attachmentId=" + attachmentId);
+        String relativePath = attachment.getFilePath();
+        if (relativePath.startsWith("/uploads/")) {
+            relativePath = relativePath.substring("/uploads/".length());
         }
 
-    }
+        Path filePath = Paths.get(uploadDir, relativePath);
+        Files.deleteIfExists(filePath);
 
-    private void deletePhysicalFile(String filePath) throws IOException {
-        if (filePath != null && !filePath.isEmpty()) {
-            File fileToDelete = new File(baseUploadDir, filePath);
-                if (fileToDelete.delete()) {
-                    throw new IOException(" 파일 삭제에 실패했습니다: " + fileToDelete.getAbsolutePath() + ". 파일 권한이나 사용 중인지 확인하세요.");
-                }
-        }
-    }
-    private void saveAttachments(Long arNo, List<MultipartFile> files) throws IOException {
-        if (files != null && !files.isEmpty()) {
-            String reviewSpecificFolder = UPLOAD_SUB_PATH_REVIEW + File.separator + "arNo_" + arNo;
-            File uploadPathDir = new File(baseUploadDir, reviewSpecificFolder);
-                if (!uploadPathDir.mkdirs()) {
-                    throw new IOException("첨부파일 폴더 생성에 실패했습니다: " + uploadPathDir.getAbsolutePath());
-                }
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    String originalFilename = file.getOriginalFilename();
-                    String saveName = UUID.randomUUID().toString() + "_" + originalFilename;
-                    File dest = new File(uploadPathDir, saveName);
-                    file.transferTo(dest);
-                    AttachmentFile att = new AttachmentFile();
-                    att.setBoardType(ATTACHMENT_TYPE_REVIEW);
-                    att.setBoardId(arNo);
-                    att.setFileName(originalFilename);
-                    att.setFilePath(reviewSpecificFolder + File.separator + saveName);
-                    att.setFileType(file.getContentType());
-                    attachmentFileRepository.insertAttachment(att);
-                }
-            }
-        }
-    }
-
-    public List<AdoptionReview> getReviewsWithSearch(String keyword, String species, int limit, int offset) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("keyword", keyword);
-        params.put("species", species);
-        params.put("limit", limit);
-        params.put("offset", offset);
-
-        List<AdoptionReview> reviews = reviewRepository.selectReviewsWithSearch(params);
-        if (reviews != null && !reviews.isEmpty()) {
-            for (AdoptionReview review : reviews) {
-                List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(ATTACHMENT_TYPE_REVIEW, review.getArNo());
-                if (attachments != null && !attachments.isEmpty()) {
-                    review.setAttachments(List.of(attachments.get(0))); // 목록에서 첫 번째 썸네일만 설정
-                } else {
-                    review.setAttachments(Collections.emptyList());
-                }
-            }
-        }
-        return reviews;
-    }
-
-    public int getTotalCountWithSearch(String keyword, String species) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("keyword", keyword);
-        params.put("species", species);
-        return reviewRepository.selectTotalCountWithSearch(params);
-    }
-
-    @Transactional
-    public void incrementViewCount(Long arNo) {
-        reviewRepository.incrementViewCount(arNo);
-    }
-
-    @Transactional
-    public void incrementLikeCount(Long arNo) {
-        reviewRepository.incrementLikeCount(arNo);
+        attachmentFileRepository.deleteById(attachmentId);
     }
 }

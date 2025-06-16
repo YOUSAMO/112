@@ -1,0 +1,176 @@
+<!-- src/main/resources/templates/admin/register.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 등록 - 유기동물 보호소</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fefaf6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 420px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #6d4c41;
+            margin-bottom: 20px;
+        }
+
+        form input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #btnRegister {
+            width: 95%;
+            padding: 12px;
+            background-color: #8d6e63;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        #btnRegister:hover {
+            background-color: #6d4c41;
+        }
+
+        #btnRegister2 {
+            width: 95%;
+            padding: 12px;
+            background-color: #8d6e63;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        #btnRegister2:hover {
+            background-color: #6d4c41;
+        }
+
+        .msg {
+            color: red;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .back-link {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .back-link a {
+            text-decoration: none;
+            color: #6d4c41;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+    <h2>관리자 등록</h2>
+
+    <form th:action="@{/admin/register}" method="post" th:object="${adminDTO}" id="valid">
+        <input type="text" id="a_id" name ="a_id" th:field="*{a_id}" placeholder="아이디" required />
+        <span class="msg" id="idError"></span>
+        <input type="password" id="a_pass" name="a_pass" th:field="*{a_pass}" placeholder="비밀번호" required />
+        <span class="msg" id="passError"></span>
+        <input type="text" id="a_name" name="a_name" th:field="*{a_name}" placeholder="이름" required />
+        <span class="msg" id="nameError"></span>
+
+        <button type="submit" id="btnRegister">등록하기</button>
+        <button type="button" id="btnRegister2" onclick="location.href='/admin/list'">조회하기</button>
+
+
+    </form>
+
+    <div class="back-link">
+        <a th:href="@{/login}"> 로그인으로 돌아가기</a>
+    </div>
+
+</div>
+
+</body>
+</html>
+<script>
+
+
+    document.getElementById("valid").addEventListener("submit", function(e){
+        let isValid = true;
+
+        // 1) 아이디 유효성 (5~15자 영문/숫자)
+        const idInput  = document.getElementById('a_id');
+        const idError  = document.getElementById('idError');
+        const idVal    = idInput.value.trim();
+        const idRegex  = /^[a-zA-Z0-9]{5,15}$/;
+
+        if (!idRegex.test(idVal)) {
+            isValid = false;
+            idError.textContent = "아이디는 5~15자의 영문자 또는 숫자만 가능합니다.";
+        } else {
+            idError.textContent = "";
+        }
+
+        // 2) 비밀번호 유효성 (8자 이상, 영문+숫자+특수문자)
+        const passInput = document.getElementById('a_pass');
+        const passError = document.getElementById('passError');
+        const passVal   = passInput.value.trim();
+        const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+
+        if (!passRegex.test(passVal)) {
+            isValid = false;
+            passError.textContent = "비밀번호는 8자 이상이며, 영문자+숫자+특수문자를 포함해야 합니다.";
+        } else {
+            passError.textContent = "";
+        }
+
+        // 3) 이름 유효성 (한글 2~10자)
+        const nameInput = document.getElementById('a_name');
+        const nameError = document.getElementById('nameError');
+        const nameVal = nameInput.value.trim();
+        const nameRegex = /^[가-힣]{2,10}$/;
+
+        if (!nameRegex.test(nameVal)) {
+            isValid = false;
+            nameError.textContent = "이름은 한글 2~10자만 입력 가능합니다.";
+        } else {
+            nameError.textContent = "";
+        }
+
+        // 검증 실패 시 폼 제출 중단
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+
+
+
+</script>

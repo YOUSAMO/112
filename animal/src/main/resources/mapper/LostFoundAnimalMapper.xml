@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.animal.repository.LostFoundAnimalRepository">
+
+    <resultMap id="lostFoundAnimalMap" type="com.example.animal.entity.LostFoundAnimal">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="boardType" column="board_type"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="animalType" column="animal_type"/>
+        <result property="gender" column="gender"/>
+        <result property="age" column="age"/>
+        <result property="location" column="location"/>
+        <result property="eventDate" column="event_date"/>
+        <result property="contactName" column="contact_name"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="contactEmail" column="contact_email"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="thumbnailFileName" column="thumbnail_file_name"/>
+        <result property="authorName" column="author_name"/>
+    </resultMap>
+
+    <resultMap id="attachmentFileMap" type="com.example.animal.entity.AttachmentFile">
+        <id property="id" column="id"/>
+        <result property="boardType" column="board_type"/>
+        <result property="boardId" column="board_id"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="fileType" column="file_type"/>
+        <result property="fileSize" column="file_size"/>
+    </resultMap>
+
+    <select id="findById" parameterType="long" resultMap="lostFoundAnimalMap">
+        SELECT
+            a.*,
+            u.u_name as author_name
+        FROM
+            lost_found_animals a
+                LEFT JOIN
+            users u ON a.user_id = u.u_id
+        WHERE
+            a.id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="lostFoundAnimalMap">
+        SELECT
+            a.*,
+            u.u_name AS author_name,
+            (SELECT af.file_path
+             FROM attachment_file af
+             WHERE af.board_id = a.id AND af.board_type = 'lostfound'
+             ORDER BY af.id ASC
+                        LIMIT 1) AS thumbnail_file_name
+        FROM
+            lost_found_animals a
+            LEFT JOIN
+            users u ON a.user_id = u.u_id
+        ORDER BY
+            a.id DESC
+    </select>
+
+    <insert id="insert" parameterType="com.example.animal.entity.LostFoundAnimal" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO lost_found_animals
+        (user_id, board_type, title, content, animal_type, gender, age, location, event_date, contact_name, contact_phone, contact_email, view_count, like_count)
+        VALUES
+            (#{userId}, #{boardType}, #{title}, #{content}, #{animalType}, #{gender}, #{age}, #{location}, #{eventDate}, #{contactName}, #{contactPhone}, #{contactEmail}, 0, 0)
+    </insert>
+
+    <update id="update" parameterType="com.example.animal.entity.LostFoundAnimal">
+        UPDATE lost_found_animals
+        SET board_type=#{boardType}, title=#{title}, content=#{content}, animal_type=#{animalType}, gender=#{gender}, age=#{age},
+            location=#{location}, event_date=#{eventDate}, contact_name=#{contactName}, contact_phone=#{contactPhone}, contact_email=#{contactEmail},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM lost_found_animals WHERE id = #{id}
+    </delete>
+
+    <update id="increaseViewCount" parameterType="long">
+        UPDATE lost_found_animals SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+
+    <update id="updateLikeCount">
+        UPDATE lost_found_animals
+        SET like_count = (SELECT COUNT(*) FROM users_like WHERE board_id = #{id} AND board_type = 'lostfound')
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertAttachment" parameterType="com.example.animal.entity.AttachmentFile" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO attachment_file (board_type, board_id, file_name, file_path, file_type, file_size)
+        VALUES (#{boardType}, #{boardId}, #{fileName}, #{filePath}, #{fileType}, #{fileSize})
+    </insert>
+
+    <select id="findAttachmentsByAnimalId" parameterType="long" resultMap="attachmentFileMap">
+        SELECT id, board_type, board_id, file_name, file_path, file_size, file_type
+        FROM attachment_file
+        WHERE board_type = 'lostfound' AND board_id = #{animalId}
+        ORDER BY id ASC
+    </select>
+
+    <delete id="deleteAttachmentsByAnimalId" parameterType="long">
+        DELETE FROM attachment_file
+        WHERE board_id = #{animalId} AND board_type = 'lostfound'
+    </delete>
+
+    <select id="findAttachmentById" parameterType="long" resultMap="attachmentFileMap">
+        SELECT id, board_type, board_id, file_name, file_path, file_size, file_type
+        FROM attachment_file
+        WHERE id = #{attachmentId}
+    </select>
+
+    <delete id="deleteSingleAttachmentById" parameterType="long">
+        DELETE FROM attachment_file
+        WHERE id = #{attachmentId}
+    </delete>
+
+    <select id="findByPage" resultMap="lostFoundAnimalMap">
+        SELECT
+            a.id,
+            a.user_id,
+            u.u_name as author_name,
+            a.board_type,
+            a.title,
+            a.content,
+            a.animal_type,
+            a.gender,
+            a.age,
+            a.location,
+            a.event_date,
+            a.contact_name,
+            a.contact_phone,
+            a.contact_email,
+            a.view_count,
+            a.like_count,
+            a.created_at,
+            a.updated_at,
+            (SELECT af.file_path
+             FROM attachment_file af
+             WHERE af.board_id = a.id AND af.board_type = 'lostfound'
+             ORDER BY af.id ASC
+                        LIMIT 1) AS thumbnail_file_name
+        FROM
+            lost_found_animals a
+            LEFT JOIN
+            users u ON a.user_id = u.u_id
+        ORDER BY
+            a.created_at DESC, a.id DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM lost_found_animals
+    </select>
+
+    <select id="findAttachmentsByBoardTypeAndBoardIds" resultMap="attachmentFileMap">
+        SELECT
+        id,
+        board_type,
+        board_id,
+        file_name,
+        file_path,
+        file_size,
+        file_type FROM attachment_file
+        WHERE board_type = #{boardType}
+        AND board_id IN
+        <foreach item="boardId" collection="boardIds" open="(" separator="," close=")">
+            #{boardId}
+        </foreach>
+    </select>
+
+</mapper>

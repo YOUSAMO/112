@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.animal.repository.ReplyRepository">
+
+    <resultMap id="replyResultMap" type="com.example.animal.entity.Reply">
+        <id property="rpNo" column="rp_no"/>
+        <result property="cmNo" column="cm_no"/>
+        <result property="userId" column="user_id"/>
+        <result property="rpContent" column="rp_content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="userNameDisplay" column="user_name_display"/>
+    </resultMap>
+
+    <insert id="insertReply" parameterType="com.example.animal.entity.Reply" useGeneratedKeys="true" keyProperty="rpNo">
+        INSERT INTO reply (cm_no, user_id, rp_content)
+        VALUES (#{cmNo}, #{userId}, #{rpContent})
+    </insert>
+
+    <update id="updateReply" parameterType="com.example.animal.entity.Reply">
+        UPDATE reply
+        SET
+            rp_content = #{rpContent},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE rp_no = #{rpNo} AND user_id = #{userId} </update>
+
+    <delete id="deleteReply" parameterType="long">
+        DELETE FROM reply
+        WHERE rp_no = #{rpNo}
+    </delete>
+
+    <select id="selectReplyById" parameterType="long" resultMap="replyResultMap">
+        SELECT
+            r.*,
+            u.u_name AS user_name_display
+        FROM
+            reply r
+                LEFT JOIN
+            users u ON r.user_id = u.u_id
+        WHERE
+            r.rp_no = #{rpNo}
+    </select>
+
+    <select id="selectRepliesByCommentNo" parameterType="long" resultMap="replyResultMap">
+        SELECT
+            r.*,
+            u.u_name AS user_name_display
+        FROM
+            reply r
+                LEFT JOIN
+            users u ON r.user_id = u.u_id
+        WHERE
+            r.cm_no = #{cmNo}
+        ORDER BY
+            r.created_at ASC
+    </select>
+
+    <select id="countRepliesByCommentNo" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM reply WHERE cm_no = #{cmNo}
+    </select>
+
+    <delete id="deleteRepliesByCommentNo" parameterType="long">
+        DELETE FROM reply WHERE cm_no = #{cmNo}
+    </delete>
+
+</mapper>

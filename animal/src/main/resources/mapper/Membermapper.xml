@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.animal.repository.MemberRepository">
+
+    <resultMap id="memberMap" type="com.example.animal.entity.Member">
+        <result property="u_no" column="u_no"/>
+        <result property="u_id" column="u_id"/>
+        <result property="u_pass" column="u_pass"/>
+        <result property="u_name" column="u_name"/>
+        <result property="u_pnumber" column="u_pnumber"/>
+        <result property="u_email" column="u_email"/>
+        <result property="u_gender" column="u_gender"/>
+    </resultMap>
+
+    <resultMap id="memberResultMap" type="com.example.animal.entity.Member">
+        <result property="u_no" column="u_no"/>
+        <result property="u_name" column="u_name"/>
+        <result property="u_email" column="u_email"/>
+        <result property="u_pass" column="u_pass"/>
+        <result property="u_pnumber" column="u_pnumber"/>
+        <result property="u_id" column="u_id"/>
+        <result property="u_gender" column="u_gender"/>
+    </resultMap>
+
+
+
+        <select id="findAll" resultMap="memberResultMap">
+            SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender
+            FROM users
+        </select>
+        <select id="findMemberByno" parameterType="Integer" resultType="com.example.animal.entity.Member">
+            SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender
+            FROM users
+            WHERE u_no = #{u_no}
+        </select>
+    <select id="findById" resultType="com.example.animal.entity.Member">
+        SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender FROM users WHERE u_name = #{u_name}
+    </select>
+
+
+    <insert id="insertMember" parameterType="com.example.animal.entity.Member">
+            INSERT INTO users (
+                u_id, u_pass, u_name, u_pnumber, u_email, u_gender
+            ) VALUES (
+                         #{u_id}, #{u_pass}, #{u_name}, #{u_pnumber}, #{u_email}, #{u_gender}
+                     )
+        </insert>
+        <update id="updateMember" parameterType="com.example.animal.entity.Member">
+            UPDATE users
+            SET u_id = #{u_id},
+                u_pass = #{u_pass},
+                u_name = #{u_name},
+                u_pnumber = #{u_pnumber},
+                u_email = #{u_email},
+                u_gender = #{u_gender}
+            where u_no = #{u_no}
+
+
+        </update>
+    <delete id="deleteById" parameterType="string">
+        DELETE FROM users WHERE u_id = #{u_id}
+    </delete>
+
+
+
+    <select id="isDuplicateId" parameterType="string" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE u_id = #{u_id}
+    </select>
+
+
+
+    <select id="findByLoginIdAndPass" resultMap="memberMap">
+        SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender
+        FROM users
+        WHERE u_id = #{u_id} AND u_pass = #{u_pass}
+    </select>
+
+
+
+        <select id="findIdsByNameAndEmail" resultType="string">
+            SELECT u_id
+            FROM users
+            WHERE u_name = #{u_name}
+              AND u_email = #{u_email}
+        </select>
+
+
+    <update id="updatepassword" parameterType="String">
+        UPDATE users
+        SET u_pass = #{u_pass}
+        WHERE u_id = #{u_id}
+    </update>
+
+    <select id="countByUserInfo" resultType="int">
+        SELECT COUNT(*)
+        FROM members
+        WHERE u_id = #{username}
+          AND u_name = #{name}
+          AND u_email = #{email}
+    </select>
+
+
+
+</mapper>

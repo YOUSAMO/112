@@ -25,4 +25,3 @@ public class AnimalFileService {
         animalFileRepository.deleteFilesByPaths(filePaths);
     }
 }
-

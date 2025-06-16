@@ -1,5 +1,6 @@
 package com.example.animal.service;
 
+
 import com.example.animal.entity.Faq;
 import com.example.animal.repository.FaqRepository;
 import org.springframework.stereotype.Service;

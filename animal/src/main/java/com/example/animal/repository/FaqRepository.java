@@ -12,4 +12,3 @@ public interface FaqRepository {
     void updateFaq(Faq faq);
     void deleteFaq(Long faqNo);
 }
-

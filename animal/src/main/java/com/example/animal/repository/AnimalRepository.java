@@ -1,11 +1,9 @@
 package com.example.animal.repository;
-
 import com.example.animal.entity.Animal;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Mapper
@@ -32,4 +30,3 @@ public interface AnimalRepository {
             @Param("keyword") String keyword,
             @Param("species") String species);
 }
-

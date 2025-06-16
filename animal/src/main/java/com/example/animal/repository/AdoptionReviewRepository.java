@@ -2,22 +2,36 @@ package com.example.animal.repository;
 
 import com.example.animal.entity.AdoptionReview;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @Mapper
 public interface AdoptionReviewRepository {
+    void insertReview(AdoptionReview review);
 
-    AdoptionReview selectById(Long arNo); // 서비스에서 getReviewById 호출 시 사용
-    int insert(AdoptionReview review);     // 서비스에서 createReview 호출 시 사용
-    int update(AdoptionReview review);     // 서비스에서 updateReview 호출 시 사용
-    int delete(Long arNo);             // 서비스에서 deleteReview 호출 시 사용
+    // 기존 findReviewById를 Optional을 반환하도록 변경 (가장 권장)
+    Optional<AdoptionReview> findReviewById(Long arNo); // Optional<AdoptionReview>로 변경
 
-    // 검색 및 페이징 (컨트롤러에서 Map으로 파라미터를 넘기는 방식과 일치)
-    List<AdoptionReview> selectReviewsWithSearch(Map<String, Object> params);
-    int selectTotalCountWithSearch(Map<String, Object> params);
+    // 만약 기존 findReviewById가 null을 반환하고, Optional 버전이 필요하다면:
+    // Optional<AdoptionReview> findByArNo(Long arNo);
 
 
-    void incrementViewCount(Long arNo);
-    void incrementLikeCount(Long arNo);
+    List<AdoptionReview> findAllReviews();
+
+    List<AdoptionReview> findReviewsByPage(@Param("size") int size, @Param("offset") int offset);
+
+    int countReviews();
+
+    int updateReview(AdoptionReview review);
+
+    void deleteReview(Long arNo);
+
+    void incrementReviewViewCount(Long arNo);
+
+    // === '좋아요' 관련 메서드 ===
+    void incrementReviewLikeCount(Long arNo);
+    void decrementReviewLikeCount(Long arNo);
+    Integer getReviewLikeCount(Long arNo);
 }

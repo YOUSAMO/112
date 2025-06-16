@@ -29,4 +29,9 @@ public interface BoardRepository {
 
     int getLikeCount(Long bNo);
 
+
+    void incrementBoardLikeCount(Long bNo); // board_id 대신 bNo 사용
+
+    void decrementBoardLikeCount(Long bNo); // board_id 대신 bNo 사용
+
 }

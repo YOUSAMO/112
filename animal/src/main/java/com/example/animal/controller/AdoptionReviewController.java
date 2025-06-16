@@ -1,200 +1,224 @@
 package com.example.animal.controller;
 
 import com.example.animal.entity.AdoptionReview;
-import com.example.animal.entity.AttachmentFile;
 import com.example.animal.service.AdoptionReviewService;
+import com.example.animal.service.LikeService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/reviews")
+@RequiredArgsConstructor
 public class AdoptionReviewController {
 
+    private final AdoptionReviewService reviewService;
+    private final LikeService likeService;
 
-    private final AdoptionReviewService service;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
+    private static final String LOGIN_PAGE_URL = "/login";
+    // ★★★ 수정 부분: ADOPTION_REVIEW_BOARD_TYPE 값을 "review"로 변경 ★★★
+    public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview"; // HTML의 currentBoardType과 일치
+    // ★★★ 수정 끝 ★★★
 
-    private static final String ATTRIBUTE_REVIEW = "review";
-    private static final String ATTRIBUTE_REVIEWS = "reviews";
-    private static final String ATTRIBUTE_CURRENT_PAGE = "currentPage";
-    private static final String ATTRIBUTE_PAGE_SIZE = "pageSize";
-    private static final String ATTRIBUTE_TOTAL_COUNT = "totalCount";
-    private static final String ATTRIBUTE_TOTAL_PAGES = "totalPages";
-    private static final String ATTRIBUTE_KEYWORD = "keyword";
-    private static final String ATTRIBUTE_SPECIES = "species";
-    private static final String SUCCESS_MESSAGE_ATTR = "successMessage";
-    private static final String ERROR_MESSAGE_ATTR = "errorMessage";
+    // PageInfo 내부 클래스 - getSize() 메서드명 수정 완료
+    public static class PageInfo {
+        private final int totalPages;
+        private final int currentPage;
+        private final int size;
 
-    private static final String VIEW_REVIEW_LIST = "review/reviewList";
-    private static final String VIEW_REVIEW_FORM = "review/reviewForm";
-    private static final String VIEW_REVIEW_VIEW = "review/reviewView";
-    private static final String REDIRECT_REVIEWS = "redirect:/reviews";
+        public PageInfo(int totalPages, int currentPage, int size) {
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
+            this.size = size;
+        }
 
-    public AdoptionReviewController(AdoptionReviewService service) {
-        this.service = service;
+        public int getTotalPages() {
+            return totalPages;
+        }
+
+        public int getCurrentPage() {
+            return currentPage;
+        }
+
+        // **** 수정된 부분: getter 메서드 이름을 getSize()로 변경 ****
+        public int getSize() {
+            return size;
+        }
     }
 
     @GetMapping
-    public String list(
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
-            @RequestParam(value = "species", required = false, defaultValue = "") String species,
-            Model model) {
-
-        int offset = (page - 1) * size;
-        List<AdoptionReview> reviewsFromService = service.getReviewsWithSearch(keyword, species, size, offset);
-        int totalCount = service.getTotalCountWithSearch(keyword, species);
+    public String listReviews(@RequestParam(defaultValue = "1") int page,
+                              @RequestParam(defaultValue = "10") int size,
+                              Model model, HttpSession session) {
+        List<AdoptionReview> reviews = reviewService.getReviewsByPage(page, size);
+        int totalCount = reviewService.getTotalReviewCount();
         int totalPages = (int) Math.ceil((double) totalCount / size);
+        String currentUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
 
-        List<Map<String, Object>> reviewListPresentation = reviewsFromService.stream()
-                .map(r -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("arNo", r.getArNo());
-                    map.put("uNo", r.getUNo());
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("pageInfo", new PageInfo(totalPages, page, size));
+        model.addAttribute("currentUserId", currentUserId);
 
-                    map.put("reviewContent", r.getReviewContent() != null && r.getReviewContent().length() > 50
-                            ? r.getReviewContent().substring(0, 50) + "..." : r.getReviewContent());
-                    map.put("createdAtStr", r.getCreatedAt() != null ? r.getCreatedAt().format(formatter) : "N/A");
-                    map.put("viewCount", r.getViewCount());
-                    map.put("likeCount", r.getLikeCount());
-                    map.put("thumbnailPath", (r.getAttachments() != null && !r.getAttachments().isEmpty())
-                            ? r.getAttachments().get(0).getFilePath() : null);
-                    return map;
-                })
-                .collect(Collectors.toList());
-
-        model.addAttribute(ATTRIBUTE_REVIEWS, reviewListPresentation);
-        model.addAttribute(ATTRIBUTE_CURRENT_PAGE, page);
-        model.addAttribute(ATTRIBUTE_PAGE_SIZE, size);
-        model.addAttribute(ATTRIBUTE_TOTAL_COUNT, totalCount);
-        model.addAttribute(ATTRIBUTE_TOTAL_PAGES, totalPages);
-        model.addAttribute(ATTRIBUTE_KEYWORD, keyword);
-        model.addAttribute(ATTRIBUTE_SPECIES, species);
-
-        return VIEW_REVIEW_LIST;
+        return "review/reviewList";
     }
 
     @GetMapping("/new")
-    public String form(Model model) {
-        model.addAttribute(ATTRIBUTE_REVIEW, new AdoptionReview());
-        return VIEW_REVIEW_FORM;
+    public String showCreateReviewForm(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (loggedInUserUid == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+            return "redirect:" + LOGIN_PAGE_URL;
+        }
+        model.addAttribute("review", new AdoptionReview());
+        model.addAttribute("isNew", true);
+        return "review/reviewForm";
     }
 
     @PostMapping
-    public String create(@ModelAttribute(ATTRIBUTE_REVIEW) AdoptionReview review,
-                         @RequestParam(value = "files", required = false) List<MultipartFile> files,
-                         RedirectAttributes redirectAttributes, Model model) {
-        try {
-            service.createReview(review, files);
-            redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_ATTR, "입양 후기가 등록되었습니다.");
-            return REDIRECT_REVIEWS;
-        } catch (IOException e) {
-
-            e.printStackTrace(); // 예외 발생 시 콘솔에 스택 트레이스 출력 (개발 중에는 유용하나, 프로덕션에서는 적절한 예외 처리 필요)
-            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_ATTR, "파일 업로드 중 오류가 발생했습니다.");
-        } catch (Exception e) {
-
-            e.printStackTrace(); // 예외 발생 시 콘솔에 스택 트레이스 출력
-            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_ATTR, "등록 중 오류가 발생했습니다.");
+    public String createReview(@ModelAttribute AdoptionReview review,
+                               @RequestParam(value = "files", required = false) List<MultipartFile> files,
+                               HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (loggedInUserUid == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+            return "redirect:" + LOGIN_PAGE_URL;
         }
-        model.addAttribute(ATTRIBUTE_REVIEW, review);
-        return VIEW_REVIEW_FORM;
+        try {
+            reviewService.createReview(review, loggedInUserUid, files);
+            redirectAttributes.addFlashAttribute("successMessage", "리뷰가 성공적으로 등록되었습니다.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "리뷰 등록 중 파일 오류 발생: " + e.getMessage());
+            return "redirect:/reviews/new";
+        }
+        return "redirect:/reviews";
     }
 
     @GetMapping("/{arNo}")
-    public String view(@PathVariable Long arNo, Model model) {
-        service.incrementViewCount(arNo);
-        AdoptionReview review = service.getReviewById(arNo);
+    public String viewReview(@PathVariable Long arNo, Model model, HttpSession session) {
+        reviewService.increaseViewCount(arNo);
+        String currentUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        AdoptionReview review = reviewService.getReviewById(arNo, currentUserId); // 좋아요 상태 포함하여 조회
         if (review == null) {
-
-            return REDIRECT_REVIEWS;
+            return "redirect:/reviews?error=notfound";
         }
-        model.addAttribute(ATTRIBUTE_REVIEW, review);
-        return VIEW_REVIEW_VIEW;
+        Map<String, Object> likeStatus = likeService.getLikeStatus(currentUserId, arNo, ADOPTION_REVIEW_BOARD_TYPE);
+        model.addAttribute("review", review);
+        model.addAttribute("currentUserId", currentUserId);
+        model.addAttribute("likeStatus", likeStatus);
+        // ★★★ 추가적인 model attribute 필요하다면 여기에 추가 (예: defaultBoardType) ★★★
+        // model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE); // 이미 HTML에서 'review'로 고정되어 사용 중
+        return "review/reviewView";
     }
 
     @GetMapping("/{arNo}/edit")
-    public String editForm(@PathVariable Long arNo, Model model) {
-        AdoptionReview review = service.getReviewById(arNo);
-        if (review == null) {
-
-            return REDIRECT_REVIEWS;
+    public String showEditReviewForm(@PathVariable Long arNo, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        AdoptionReview review = reviewService.getReviewById(arNo); // 작성자 이름 포함하여 조회
+        if (loggedInUserUid == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+            return "redirect:" + LOGIN_PAGE_URL;
         }
-
-        model.addAttribute(ATTRIBUTE_REVIEW, review);
-        return VIEW_REVIEW_FORM;
+        if (review == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "리뷰를 찾을 수 없습니다.");
+            return "redirect:/reviews";
+        }
+        if (!loggedInUserUid.equals(review.getAuthorUid())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "이 리뷰를 수정할 권한이 없습니다.");
+            return "redirect:/reviews/" + arNo;
+        }
+        model.addAttribute("review", review);
+        model.addAttribute("isNew", false);
+        return "review/reviewForm";
     }
 
     @PostMapping("/{arNo}/edit")
-    public String update(@PathVariable Long arNo,
-                         @ModelAttribute(ATTRIBUTE_REVIEW) AdoptionReview review,
-                         @RequestParam(value = "files", required = false) List<MultipartFile> newFiles,
-                         RedirectAttributes redirectAttributes, Model model) {
-        review.setArNo(arNo);
+    public String updateReview(@PathVariable Long arNo, @ModelAttribute("review") AdoptionReview reviewDetails,
+                               @RequestParam(value = "files", required = false) List<MultipartFile> newFiles,
+                               HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (loggedInUserUid == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+            return "redirect:" + LOGIN_PAGE_URL;
+        }
         try {
-            service.updateReview(review, newFiles);
-            redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_ATTR, "입양 후기가 수정되었습니다.");
-            return REDIRECT_REVIEWS + "/" + arNo;
-        } catch (IOException e) {
-
+            reviewService.updateReview(arNo, reviewDetails, loggedInUserUid, newFiles);
+            redirectAttributes.addFlashAttribute("successMessage", "리뷰가 성공적으로 수정되었습니다.");
+            return "redirect:/reviews/" + arNo;
+        } catch (RuntimeException | IOException e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_ATTR, "파일 업로드 중 오류가 발생했습니다.");
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_ATTR, "수정 중 오류가 발생했습니다.");
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/reviews/" + arNo + "/edit";
         }
-        AdoptionReview currentReviewState = service.getReviewById(arNo);
-        if (currentReviewState != null) {
-            review.setAttachments(currentReviewState.getAttachments());
-        }
-        model.addAttribute(ATTRIBUTE_REVIEW, review);
-        return VIEW_REVIEW_FORM;
     }
 
     @PostMapping("/{arNo}/delete")
-    public String delete(@PathVariable Long arNo, RedirectAttributes redirectAttributes) {
-        try {
-            service.deleteReview(arNo);
-            redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_ATTR, "입양 후기가 삭제되었습니다.");
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_ATTR, "삭제 중 오류가 발생했습니다.");
+    public String deleteReview(@PathVariable Long arNo, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (loggedInUserUid == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+            return "redirect:" + LOGIN_PAGE_URL;
         }
-        return REDIRECT_REVIEWS;
+        try {
+            reviewService.deleteReview(arNo, loggedInUserUid);
+            redirectAttributes.addFlashAttribute("successMessage", "리뷰가 성공적으로 삭제되었습니다.");
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/reviews";
     }
 
     @PostMapping("/{arNo}/like")
     @ResponseBody
-    public Map<String, Object> like(@PathVariable Long arNo) {
-        service.incrementLikeCount(arNo);
-        AdoptionReview review = service.getReviewById(arNo);
-        Map<String, Object> result = new HashMap<>();
-        result.put("newLikeCount", review != null ? review.getLikeCount() : 0);
-        return result;
-    }
+    public ResponseEntity<Map<String, Object>> toggleReviewLike(@PathVariable Long arNo, HttpSession session) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
 
-    @PostMapping("/review-attachments/{attachmentId}/delete")
-    public String deleteAttachment(@PathVariable Long attachmentId,
-                                   @RequestParam Long arNo,
-                                   RedirectAttributes redirectAttributes) {
+        if (loggedInUserUid == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
 
         try {
-            service.deleteAdoptionReviewAttachment(attachmentId);
-            redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_ATTR, "첨부파일이 성공적으로 삭제되었습니다.");
+            Map<String, Object> likeResult = likeService.toggleLike(loggedInUserUid, arNo, ADOPTION_REVIEW_BOARD_TYPE);
+            return ResponseEntity.ok(Map.of("success", true, "data", likeResult));
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_ATTR, "첨부파일 삭제 중 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요."));
         }
-        return REDIRECT_REVIEWS + "/" + arNo + "/edit";
+    }
+
+    @PostMapping("/attachments/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteAttachment(@RequestParam Long attachmentId, HttpSession session) {
+        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        if (loggedInUserUid == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+        try {
+            reviewService.deleteSingleAttachment(attachmentId, loggedInUserUid);
+            return ResponseEntity.ok(Map.of("success", true, "message", "첨부파일이 삭제되었습니다."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "파일 삭제 중 알 수 없는 오류가 발생했습니다."));
+        }
     }
 }
