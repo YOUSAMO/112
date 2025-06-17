@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.petbridge.repository.AttachmentFileRepository">
+
+    <resultMap id="attachmentFileMap" type="com.example.petbridge.entity.AttachmentFile">
+        <id property="id" column="id"/>
+        <result property="boardType" column="board_type"/>
+        <result property="boardId" column="board_id"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="fileType" column="file_type"/>
+        <result property="fileSize" column="file_size"/>
+    </resultMap>
+
+    <insert id="insertAttachment" parameterType="com.example.petbridge.entity.AttachmentFile" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO attachment_file (board_type, board_id, file_name, file_path, file_type, file_size)
+        VALUES (#{boardType}, #{boardId}, #{fileName}, #{filePath}, #{fileType}, #{fileSize})
+    </insert>
+
+    <select id="findByBoardTypeAndBoardId" resultMap="attachmentFileMap">
+        SELECT *
+        FROM attachment_file
+        WHERE board_type = #{boardType} AND board_id = #{boardId}
+    </select>
+
+    <select id="findById" resultMap="attachmentFileMap">
+        SELECT *
+        FROM attachment_file
+        WHERE id = #{id}
+    </select>
+
+    <delete id="deleteByBoardTypeAndBoardId">
+        DELETE FROM attachment_file
+        WHERE board_type = #{boardType} AND board_id = #{boardId}
+    </delete>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM attachment_file WHERE id = #{id}
+    </delete>
+
+</mapper>

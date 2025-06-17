@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>유기동물 보호소 - 회원가입</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery CDN 추가 -->
+  <style>
+    body {
+      background-color: #fefcf9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding-top: 150px;
+      margin: 0;
+    }
+
+    .container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #f57c00;
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .field-inline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .field-inline input {
+      flex: 1;
+    }
+
+    .check-btn {
+      padding: 10px 14px;
+      background-color: #ffcc80;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .check-btn:hover {
+      background-color: #ffb74d;
+    }
+
+    button[type="submit"], button[type="reset"] {
+      width: 100%;
+      background-color: #f57c00;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 14px;
+    }
+
+    button[type="submit"]:hover, button[type="reset"]:hover {
+      background-color: #e65100;
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: #777;
+      margin-top: -6px;
+      margin-bottom: 10px;
+      padding-left: 2px;
+    }
+
+    /* 에러 메시지 스타일 */
+    .error {
+      color: red;
+      font-size: 12px;
+      margin-bottom: 10px;
+      display: block;
+      min-height: 16px; /* 메시지 없을 때도 공간 확보 */
+    }
+  </style>
+</head>
+<body>
+
+<!-- 공통 헤더 삽입 -->
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="container">
+  <h2>회원가입</h2>
+  <form th:action="@{/member/register}" th:object="${member}" method="post" novalidate>
+    <label for="u_id">아이디</label>
+    <div class="field-inline">
+      <input type="text" id="u_id" th:field="*{u_id}" required>
+      <button type="button" class="check-btn" id="checkIdBtn">중복확인</button>
+      <span id="idCheckResult"></span>
+    </div>
+    <span id="idError" class="error"></span>
+
+    <label for="u_pass">비밀번호</label>
+    <input type="password" id="u_pass" th:field="*{u_pass}" placeholder="8~20자, 영문+숫자+특수문자(!?#$%) 포함" required>
+
+    <span id="pwError" class="error"></span>
+
+    <label for="u_pass_check">비밀번호 확인</label>
+    <input type="password" id="u_pass_check" required>
+    <span id="pwCheckError" class="error"></span>
+
+    <label for="u_name">이름</label>
+    <input type="text" id="u_name" th:field="*{u_name}" required placeholder="이름 (한글만)">
+    <span id="nameError" class="error"></span>
+
+    <label for="u_pnumber">전화번호</label>
+    <div class="field-inline" style="gap:6px;">
+      <input type="text" id="u_pnumber1"name="u_pnumber1" maxlength="3" pattern="\d{3}" required placeholder="010" value="010" readonly style="width: 60px; text-align:center;">
+      <span>-</span>
+      <input type="text" id="u_pnumber2"name="u_pnumber2" maxlength="4" pattern="\d{4}" required placeholder="0000" style="width: 70px; text-align:center;">
+      <span>-</span>
+      <input type="text" id="u_pnumber3"name="u_pnumber3" maxlength="4" pattern="\d{4}" required placeholder="0000" style="width: 70px; text-align:center;">
+    </div>
+
+    <span id="phoneError" class="error"></span>
+    <input type="hidden" id="u_pnumber" name="u_pnumber" th:field="*{u_pnumber}">
+
+    <label for="u_email">이메일</label>
+    <div class="field-inline">
+      <input type="text" id="u_email_id"name="u_email_id" placeholder="아이디" required>
+      <span style="padding: 0 4px;">@</span>
+      <select id="email_domain_select"name="u_email_domain" required style="flex:1;">
+        <option value="">선택하세요</option>
+        <option value="gmail.com">gmail.com</option>
+        <option value="naver.com">naver.com</option>
+        <option value="icloud.com">icloud.com</option>
+        <option value="outlook.com">outlook.com</option>
+        <option value="hanmail.net">hanmail.net</option>
+        <option value="direct">직접 입력</option>
+      </select>
+      <input type="text" id="email_domain_input"name="u_email_domain" placeholder="도메인 입력" style="display:none; flex:1;">
+    </div>
+    <span id="emailError" class="error"></span>
+    <input type="hidden" id="u_email" name="u_email" th:field="*{u_email}">
+
+
+    <label for="u_gender">성별</label>
+    <select id="u_gender" th:field="*{u_gender}" required>
+      <option value="">성별 선택</option>
+      <option value="M">남</option>
+      <option value="F">여</option>
+    </select>
+    <span id="genderError" class="error"></span>
+
+    <button type="submit">등록</button>
+    <button type="reset">취소</button>
+    <a th:href="@{/}" class="check-btn" style="display:block; text-align:center; margin-top:10px; background-color:#ccc; color:#333; text-decoration:none; padding:12px; border-radius:8px; font-weight:bold;">메인화면으로</a>
+
+  </form>
+</div>
+
+<script>
+  //  아이디 입력 제한 (소문자, 숫자, _, .)
+  document.querySelector("#u_id").addEventListener("input", function () {
+    this.value = this.value.toLowerCase().replace(/[^a-z0-9._-]/g, '');
+  });
+
+  //  아이디 유효성 검사 함수
+  function validateId(id) {
+    // 1. 길이 체크
+    if (id.length < 4 || id.length > 15) {
+      return "아이디는 4~15자여야 합니다.";
+    }
+    // 2. 영문자로 시작
+    if (!/^[a-z]/.test(id)) {
+      return "아이디는 영문자로 시작해야 합니다.";
+    }
+    // 3. 숫자 반드시 포함
+    if (!/[0-9]/.test(id)) {
+      return "아이디에 숫자가 반드시 포함되어야 합니다.";
+    }
+    // 4. 연속된 숫자 2개 이상 금지 (예시)
+    if (/[0-9]{2,}/.test(id)) {
+      return "숫자는 연속해서 2개 이상 사용할 수 없습니다.";
+    }
+    // 5. 허용 문자만 사용 (입력 제한과 동일, 혹시 모를 우회 대비)
+    if (!/^[a-z0-9._-]+$/.test(id)) {
+      return "소문자, 숫자, '_', '.', '-'만 사용할 수 있습니다.";
+    }
+    return ""; // 모든 조건 통과
+  }
+
+  //  아이디 유효성 메시지 표시
+  document.querySelector("#u_id").addEventListener("blur", function () {
+    const idVal = this.value.trim();
+    const idError = document.querySelector("#idError");
+    const msg = validateId(idVal);
+
+    if (!idVal) {
+      idError.textContent = "아이디를 입력하세요.";
+    } else if (msg) {
+      idError.textContent = msg;
+    } else {
+      idError.textContent = "";
+    }
+  });
+
+  //  아이디 중복 확인 (비동기 AJAX - jQuery 사용)
+  $("#checkIdBtn").click(() => {
+    const uid = $("#u_id").val().trim();
+    if (!uid) {
+      alert("아이디를 입력하세요.");
+      return;
+    }
+    if (!validateId(uid)) {
+      alert("아이디는 4~15자, 소문자/숫자/‘_’ ‘.’ 만 가능합니다.");
+      $("#u_id").focus();
+      return;
+    }
+
+    $.ajax({
+      url: "/member/checkId",
+      type: "GET",
+      data: { u_id: uid },
+      dataType: "text",
+      success: function(data) {
+        const result = $("#idCheckResult");
+        if (data === "duplicated") {
+          alert("중복된 아이디입니다.");
+          $("#u_id").val('').focus();
+          result.text("이미 사용 중인 아이디입니다.").css("color", "red");
+        } else if (data === "available") {
+          alert("사용 가능한 아이디입니다.");
+          result.text(uid + " 사용 가능 아이디").css("color", "green");
+        } else {
+          alert("서버 응답 오류: " + data);
+        }
+      },
+      error: function() {
+        alert("통신 오류 발생");
+      }
+    });
+  });
+
+  // ✅ 동기식 유효성 검사
+  document.querySelector("form").addEventListener("submit", function(e) {
+    let isValid = true;
+
+    const id = document.querySelector("#u_id").value.trim();
+    const pw = document.querySelector("#u_pass").value.trim();
+    const pwCheck = document.querySelector("#u_pass_check").value.trim();
+    const name = document.querySelector("#u_name").value.trim();
+    const p1 = document.querySelector("#u_pnumber1").value.trim();
+    const p2 = document.querySelector("#u_pnumber2").value.trim();
+    const p3 = document.querySelector("#u_pnumber3").value.trim();
+    const emailId = document.querySelector("#u_email_id").value.trim();
+    const emailSelect = document.querySelector("#email_domain_select");
+    const emailInput = document.querySelector("#email_domain_input");
+    const gender = document.querySelector("#u_gender").value;
+
+    // 아이디 검사
+    if (!validateId(id)) {
+      isValid = false;
+      document.querySelector("#idError").textContent = "아이디는 4~15자, 소문자/숫자/‘_’ ‘.’ 만 가능합니다.";
+    } else {
+      document.querySelector("#idError").textContent = "";
+    }
+
+    // 비밀번호 검사
+    const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!?#$%])[A-Za-z\d!?#$%]{8,20}$/;
+    if (!pwRegex.test(pw)) {
+      isValid = false;
+      document.querySelector("#pwError").textContent = "비밀번호는 8~20자, 영문+숫자+특수문자(!?#$%) 포함해야 합니다.";
+    } else {
+      document.querySelector("#pwError").textContent = "";
+    }
+
+    // 비밀번호 확인
+    if (pw !== pwCheck) {
+      isValid = false;
+      document.querySelector("#pwCheckError").textContent = "비밀번호가 일치하지 않습니다.";
+      document.querySelector("#pwCheckError").style.color = "red";
+    } else {
+      document.querySelector("#pwCheckError").textContent = "비밀번호가 일치합니다.";
+      document.querySelector("#pwCheckError").style.color = "green";
+    }
+
+    // 이름 한글 확인
+    if (!/^[가-힣]+$/.test(name)) {
+      isValid = false;
+      document.querySelector("#nameError").textContent = "이름은 한글만 입력 가능합니다.";
+    } else {
+      document.querySelector("#nameError").textContent = "";
+    }
+
+    // 전화번호 유효성
+    if (p1.length !== 3 || p2.length < 3 || p2.length > 4 || p3.length < 3 || p3.length > 4) {
+      isValid = false;
+      document.querySelector("#phoneError").textContent = "전화번호를 올바르게 입력하세요.";
+    } else {
+      document.querySelector("#phoneError").textContent = "";
+      // 전화번호를 hidden 필드에 넣기 (추가/수정 부분)
+      document.querySelector("#u_pnumber").value = `${p1}-${p2}-${p3}`;
+    }
+
+    // 이메일 유효성
+    let domain = emailSelect.value === "direct" ? emailInput.value.trim() : emailSelect.value;
+    if (!emailId || !domain) {
+      isValid = false;
+      document.querySelector("#emailError").textContent = "이메일을 정확히 입력하세요.";
+    } else {
+      document.querySelector("#emailError").textContent = "";
+      // 이메일을 hidden 필드에 넣기 (추가/수정 부분)
+      document.querySelector("#u_email").value = emailId + "@" + domain;
+    }
+
+    // 성별 선택 확인
+    if (!gender) {
+      isValid = false;
+      document.querySelector("#genderError").textContent = "성별을 선택하세요.";
+    } else {
+      document.querySelector("#genderError").textContent = "";
+    }
+
+    if (!isValid) {
+      e.preventDefault(); // 제출 중단
+    }
+  });
+
+  //  이름 한글만
+  document.querySelector("#u_name").addEventListener("input", function () {
+    this.value = this.value.replace(/[^가-힣]/g, '');
+  });
+
+  //  이메일 ID 제한
+  document.querySelector("#u_email_id").addEventListener("input", function () {
+    this.value = this.value.replace(/[^a-zA-Z0-9._-]/g, '');
+  });
+
+  //  이메일 도메인 입력 제한
+  document.querySelector("#email_domain_input").addEventListener("input", function () {
+    const pattern = /^(?=[a-zA-Z])(?=.*[0-9])(?!.*[0-9]{2,})[a-zA-Z0-9._-]{4,15}$/;
+    if (!pattern.test(this.value)) {
+      this.setCustomValidity("도메인은 영문자로 시작하고, 숫자를 포함하며, 연속된 숫자는 허용되지 않으며, 4~15자 이내여야 합니다.");
+    } else {
+      this.setCustomValidity("");
+    }
+  });
+
+  //  이메일 도메인 직접입력 토글 (추가/수정 부분)
+  document.querySelector("#email_domain_select").addEventListener("change", function () {
+    const domainInput = document.querySelector("#email_domain_input");
+    if (this.value === "direct") {
+      domainInput.style.display = "inline";
+      domainInput.required = true;
+    } else {
+      domainInput.style.display = "none";
+      domainInput.required = false;
+      domainInput.value = "";
+    }
+  });
+
+  // 전화번호 입력 시 숫자만 허용
+  document.querySelectorAll("#u_pnumber1, #u_pnumber2, #u_pnumber3").forEach(function(input) {
+    input.addEventListener("input", function () {
+      this.value = this.value.replace(/[^0-9]/g, '');
+    });
+  });
+
+</script>
+
+
+
+
+

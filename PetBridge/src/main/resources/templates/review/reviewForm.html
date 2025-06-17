@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${review != null && review.arNo != null ? '입양 후기 수정' : '입양 후기 작성'}">입양 후기 작성/수정</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .btn {
+      padding: 0.625rem 1.25rem; border-radius: 0.375rem; font-weight: 500;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+    }
+    .btn-primary { background-color: dodgerblue; color: white; }
+    .btn-primary:hover { background-color: royalblue; }
+    .btn-secondary { background-color: #e2e8f0; color: #2d3748; border: 1px solid #cbd5e1; }
+    .btn-secondary:hover { background-color: #cbd5e1; color: #1a202c; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24"> <h1 class="text-2xl font-bold text-gray-900 mb-6"
+                                                                             th:text="${review != null && review.arNo != null ? '입양 후기 수정' : '입양 후기 작성'}">입양 후기 작성</h1>
+
+  <form th:if="${review != null && review.arNo != null}"
+        th:action="@{'/reviews/' + ${review.arNo} + '/edit'}"
+        th:object="${review}" method="post" enctype="multipart/form-data"
+        class="bg-white shadow-xl rounded-lg p-6 sm:p-8 space-y-6">
+    <input type="hidden" th:field="*{arNo}" />
+
+    <div>
+      <label for="arTitle_edit" class="block text-sm font-medium text-gray-700 mb-1">제목:</label>
+      <input type="text" id="arTitle_edit" th:field="*{arTitle}" required
+             class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+    </div>
+
+    <div>
+      <label for="reviewContent_edit" class="block text-sm font-medium text-gray-700 mb-1">내용:</label>
+      <textarea id="reviewContent_edit" th:field="*{reviewContent}" rows="10" required
+                class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-y min-h-[200px]"></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">작성자:</label>
+      <input type="text" th:value="${review.authorName != null ? review.authorName : ''} + (${review.authorUid != null ? ' (' + review.authorUid + ')' : ''})"
+             readonly class="w-full p-3 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"/>
+    </div>
+
+    <div>
+      <label for="files_edit1" class="block text-sm font-medium text-gray-700 mb-1">첨부파일1 (새로 추가)</label>
+      <input type="file" id="files_edit1" name="files" multiple
+             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+             onchange="previewImages(event, 'edit')" />
+    </div>
+    <div>
+      <label for="files_edit2" class="block text-sm font-medium text-gray-700 mb-1">첨부파일2 (새로 추가)</label>
+      <input type="file" id="files_edit2" name="files" multiple
+             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+             onchange="previewImages(event, 'edit')" />
+    </div>
+    <div id="previewContainer_edit" class="flex flex-wrap gap-4 mt-2"></div>
+
+    <div th:if="${review.attachments != null and not #lists.isEmpty(review.attachments)}">
+      <label class="block text-sm font-medium text-gray-700 mb-2">현재 첨부된 사진들</label>
+      <div class="flex flex-wrap gap-4">
+        <div th:each="att : ${review.attachments}" class="relative w-[150px] h-[150px]">
+          <img th:src="@{'/uploads/' + ${att.filePath}}" alt="첨부파일 이미지"
+               class="w-full h-full object-cover border border-gray-300 rounded-md" />
+          <button type="button"
+                  class="absolute top-1 right-1 text-xs bg-red-600 text-white px-2 py-1 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                  th:attr="data-id=${att.id}, data-review-id=${review.arNo}"
+                  onclick="deleteReviewAttachment(this)">삭제</button>
+        </div>
+      </div>
+    </div>
+    <div th:if="${review.attachments == null or #lists.isEmpty(review.attachments)}" class="text-sm text-gray-500 mt-2">
+      첨부된 사진이 없습니다.
+    </div>
+
+    <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+      <a th:href="@{/reviews}" class="btn btn-secondary">취소</a>
+      <button type="submit" class="btn btn-primary">수정 저장</button>
+    </div>
+  </form>
+
+  <form th:unless="${review != null && review.arNo != null}"
+        th:action="@{/reviews}" th:object="${review}" method="post" enctype="multipart/form-data"
+        class="bg-white shadow-xl rounded-lg p-6 sm:p-8 space-y-6">
+    <div>
+      <label for="arTitle_new" class="block text-sm font-medium text-gray-700 mb-1">제목:</label>
+      <input type="text" id="arTitle_new" th:field="*{arTitle}" required
+             class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+    </div>
+    <div>
+      <label for="reviewContent_new" class="block text-sm font-medium text-gray-700 mb-1">내용:</label>
+      <textarea id="reviewContent_new" th:field="*{reviewContent}" rows="10" required
+                class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-y min-h-[200px]"></textarea>
+    </div>
+    <div>
+      <label for="files_new" class="block text-sm font-medium text-gray-700 mb-1">첨부파일</label>
+      <input type="file" id="files_new" name="files" multiple
+             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+             onchange="previewImages(event, 'new')" />
+    </div>
+    <div id="previewContainer_new" class="flex flex-wrap gap-4 mt-2"></div>
+
+    <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+      <a th:href="@{/reviews}" class="btn btn-secondary">취소</a>
+      <button type="submit" class="btn btn-primary">등록</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function deleteReviewAttachment(btn) {
+    if (!confirm("이 파일을 삭제하시겠습니까?")) return;
+    const attachmentId = btn.getAttribute('data-id');
+    const reviewId = btn.getAttribute('data-review-id');
+
+    // 실제 첨부파일 삭제 API 경로로 수정해야 합니다.
+    // 예: /reviews/attachments/${attachmentId}/delete 또는 /api/review-attachments/${attachmentId}
+    // 여기서는 Controller에서 /attachments/{id}/delete 와 같은 경로를 사용한다고 가정.
+    fetch(`/attachments/${attachmentId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ reviewId: reviewId }) // 또는 arNo: reviewId
+    })
+            .then(response => {
+              if (response.ok) {
+                alert('첨부파일이 삭제되었습니다.');
+                window.location.reload();
+              } else {
+                response.json().then(err => alert(err.message || '삭제 실패')).catch(() => alert('삭제 실패'));
+              }
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              alert('삭제 요청 실패');
+            });
+  }
+
+  function previewImages(event, mode) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById(`previewContainer_${mode}`);
+    previewContainer.innerHTML = '';
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = "w-[150px] h-[150px] object-cover border border-gray-300 rounded-md";
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+
+</body>
+</html>

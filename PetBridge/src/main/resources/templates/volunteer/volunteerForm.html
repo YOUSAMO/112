@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>봉사신청서 | 유기동물 보호소</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 520px;
+            margin: 48px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(60,90,60,0.08);
+            padding: 36px 28px 28px 28px;
+        }
+        h2 {
+            text-align: center;
+            color: #386641;
+            margin-bottom: 28px;
+            letter-spacing: 1px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #344e41;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 9px;
+            margin-bottom: 18px;
+            border: 1px solid #b7b7b7;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .section-title {
+            margin: 22px 0 10px 0;
+            font-size: 1.08em;
+            color: #588157;
+            font-weight: bold;
+            border-bottom: 1px solid #d3d3d3;
+            padding-bottom: 4px;
+        }
+        button {
+            width: 100%;
+            background: #6a994e;
+            color: #fff;
+            border: none;
+            padding: 13px;
+            border-radius: 4px;
+            font-size: 1.08em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #386641;
+        }
+        .required {
+            color: #e63946;
+            font-weight: bold;
+        }
+        .info {
+            color: #757575;
+            font-size: 0.97em;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>유기동물 보호소 봉사 신청서</h2>
+    <div class="info">
+        유기동물 보호소에서의 소중한 봉사활동에 지원해주셔서 감사합니다.<br>
+        아래 정보를 성실하게 작성해 주세요.
+    </div>
+    <form  th:action="@{/volunteer/apply}" th:object="${volunteerForm}" method="post" id="volunteerForm">
+        <div class="section-title">기본 정보</div>
+        <label>이름 <span class="required">*</span></label>
+        <input type="text" name="name" th:value="${session.loginMember.u_name}" required placeholder="예: 김봉사" pattern="^[가-힣a-zA-Z\s]+$" title="한글 또는 영문만 입력하세요.">
+
+        <label>연락처 <span class="required">*</span></label>
+        <input type="tel" name="phone" th:value="${session.loginMember.u_pnumber}" required placeholder="예: 010-1234-5678" pattern="^01[016789]-\d{3,4}-\d{4}$" title="휴대폰 번호 형식으로 입력하세요.">
+
+        <label>이메일</label>
+        <input type="email" name="email" th:value="${session.loginMember.u_email}" placeholder="예: volunteer@email.com">
+
+        <div class="section-title">봉사 정보</div>
+        <label>봉사단체 선택 <span class="required">*</span></label>
+        <select th:field="*{shelter}" required>
+            <option value="">단체를 선택하세요</option>
+            <optgroup label="서울">
+                <option value="동물구조119입양센터">동물구조119입양센터 (영등포구)</option>
+                <option value="쉬어가개냥">쉬어가개냥 (숙대입구)</option>
+                <option value="행동하는 동물사랑 입양뜰">행동하는 동물사랑 입양뜰 (관악구 신림동)</option>
+                <option value="다시사랑받개">다시사랑받개 (중랑구 용마산로)</option>
+                <option value="동물과함께행복한세상">동물과함께행복한세상 (동대문 약령시장)</option>
+                <option value="원피스쉼터">원피스쉼터 (은평구)</option>
+                <option value="팅커벨프로젝트">팅커벨프로젝트 (까치산-목동사거리)</option>
+                <option value="포인핸드 입양문화센터">포인핸드 입양문화센터 (마포구)</option>
+                <option value="도그어스플래닛">도그어스플래닛 (경동시장 근처)</option>
+                <option value="유기견묘쉼터천사의집">유기견묘쉼터천사의집 (강동구 암사동)</option>
+                <option value="강동리본센터">강동리본센터</option>
+            </optgroup>
+            <optgroup label="경기">
+                <option value="카라 더봄센터">카라 더봄센터 (파주시)</option>
+                <option value="삼송보호소">삼송보호소</option>
+                <option value="행동하는 동물사랑 쉼뜰">행동하는 동물사랑 쉼뜰 (운정역 근처)</option>
+                <option value="성남시보호소">성남시보호소 (성남시 수정구)</option>
+                <option value="시흥동물누리보호센터">시흥동물누리보호센터 (시흥시)</option>
+                <option value="여주 반려마루">여주 반려마루</option>
+                <option value="반려동물 입양센터">반려동물 입양센터 (수원)</option>
+                <option value="도우미견나눔센터">도우미견나눔센터 (화성)</option>
+                <option value="한아름센터">한아름센터 (고양시)</option>
+                <option value="하하호호양주쉼터">하하호호양주쉼터 (양주)</option>
+                <option value="마석보호소">마석보호소 (남양주)</option>
+            </optgroup>
+            <optgroup label="인천">
+                <option value="도로시지켜줄개">도로시지켜줄개 (서구)</option>
+                <option value="행복하개">행복하개 (서구)</option>
+                <option value="아크">아크 (계양산)</option>
+            </optgroup>
+            <optgroup label="대구/경북">
+                <option value="앵두네쉼터">앵두네쉼터 (대구)</option>
+                <option value="한나네보호소">한나네보호소 (대구)</option>
+                <option value="진해유기동물보호소">진해유기동물보호소 (진해)</option>
+                <option value="러피월드">러피월드 (경산)</option>
+            </optgroup>
+            <optgroup label="기타 지역">
+                <option value="비글구조네트워크 보은쉼터">비글구조네트워크 보은쉼터 (보은)</option>
+                <option value="포해피니스">포해피니스 (천안)</option>
+                <option value="시온쉼터">시온쉼터 (대전)</option>
+                <option value="광주광역시동물보호소">광주광역시동물보호소 (광주)</option>
+                <option value="하얀강아지">하얀강아지 (익산)</option>
+                <option value="꿈꾸는 고양이쉼터">꿈꾸는 고양이쉼터 (창원)</option>
+            </optgroup>
+        </select>
+
+        <label>희망 봉사 일자 <span class="required">*</span></label>
+        <input type="date" th:field="*{volunteer_date}" id="volunteer_date" required>
+
+        <label>희망 봉사 시간대 <span class="required">*</span></label>
+        <select th:field="*{volunteer_time}" required>
+            <option value="">선택</option>
+            <option value="오전">오전 (09:00~12:00)</option>
+            <option value="오후">오후 (13:00~17:00)</option>
+            <option value="종일">종일 (09:00~17:00)</option>
+        </select>
+
+        <label>봉사 희망 분야 <span class="required">*</span></label>
+        <select th:field="*{volunteer_area}" required>
+            <option value="">선택</option>
+            <option value="동물 돌봄">동물 돌봄</option>
+            <option value="청소/환경 정비">청소/환경 정비</option>
+            <option value="홍보/캠페인">홍보/캠페인</option>
+            <option value="기타">기타</option>
+        </select>
+
+        <label>간단한 자기소개 및 봉사 동기</label>
+        <textarea th:field="*{motivation}" maxlength="500" placeholder="간단한 자기소개와 봉사 동기를 적어주세요."></textarea>
+
+        <div class="section-title">기타</div>
+        <label>
+            <input type="checkbox" th:field="*{agreement}" value="1" required>
+            개인정보 제공 및 봉사 규정 준수에 동의합니다. <span class="required">*</span>
+        </label>
+
+        <button type="submit">신청하기</button>
+        <button type="reset" style="background:#b7b7b7; color:#222; margin-top:10px;">초기화</button>
+        <button type="button" onclick="location.href='/'" style="background:#b7b7b7; color:#222; margin-top:10px;">홈으로</button>
+
+    </form>
+</div>
+<script>
+    // 오늘 날짜를 yyyy-mm-dd 형식으로 반환
+    function getTodayString() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // 페이지 로드 시 min 속성 자동 설정
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('volunteer_date');
+        if (dateInput) {
+            dateInput.min = getTodayString();
+        }
+    });
+</script>
+</body>
+</html>
