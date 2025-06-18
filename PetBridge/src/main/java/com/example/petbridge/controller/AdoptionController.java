@@ -12,12 +12,30 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.Period;
+
+//Period.between(birthdate, LocalDate.now())
+//
+//birthdate(생년월일)과 현재 날짜(LocalDate.now()) 사이의 기간(년, 월, 일)을 구합니다.
+//
+//즉, 두 날짜 사이의 "차이"를 Period 객체로 반환합니다.
+//
+//.getYears()
+
+//위에서 구한 기간(Period)에서 "몇 년 차이인지"를 정수로 반환합니다.
+//즉, 생년월일로부터 오늘까지 만 나이(몇 년이 지났는지)를 계산합니다.
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/adoption")
 public class AdoptionController {
 
     private final Adoption_applicationService adoption_applicationService;
+
+    public static int calculateAge(LocalDate birthdate) {
+        if (birthdate == null) return 0;
+        return Period.between(birthdate, LocalDate.now()).getYears();
+    }
 
     // GET: 입양 신청 폼 (특정 동물)
     @GetMapping("/apply/{id}")
@@ -64,6 +82,16 @@ public class AdoptionController {
             model.addAttribute("animalId", animal_id);
             return "adoption/adoptionForm";
         }
+
+        LocalDate birthdate = loginMember.getU_birthdate();
+        int age = calculateAge(birthdate);
+        if (age < 19) {
+            model.addAttribute("error", "입양 신청은 만 19세 이상만 가능합니다.");
+            model.addAttribute("adoptionForm", adoption);
+            model.addAttribute("animalId", animal_id);
+            return "adoption/adoptionForm";
+        }
+
 
         // 3. 로그인 사용자 정보 세팅
         adoption.setU_id(loginMember.getU_id());

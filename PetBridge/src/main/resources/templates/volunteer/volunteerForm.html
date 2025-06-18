@@ -171,6 +171,13 @@
         <label>간단한 자기소개 및 봉사 동기</label>
         <textarea th:field="*{motivation}" maxlength="500" placeholder="간단한 자기소개와 봉사 동기를 적어주세요."></textarea>
 
+        <!-- 보호자 이름 입력란 (만 17세 미만만 표시) -->
+        <label for="guardianName" id="guardianLabel" style="display:none;">
+            보호자 이름 (만 17세 미만 필수)
+        </label>
+        <input type="text" id="guardianName" name="guardianName" th:value="${guardianName}" placeholder="보호자 이름을 입력하세요" style="display:none;">
+        <span id="guardianNameError" class="error"></span>
+
         <div class="section-title">기타</div>
         <label>
             <input type="checkbox" th:field="*{agreement}" value="1" required>
@@ -183,7 +190,7 @@
 
     </form>
 </div>
-<script>
+<script th:inline="javascript">
     // 오늘 날짜를 yyyy-mm-dd 형식으로 반환
     function getTodayString() {
         const today = new Date();
@@ -193,13 +200,58 @@
         return `${yyyy}-${mm}-${dd}`;
     }
 
-    // 페이지 로드 시 min 속성 자동 설정
+    // 로그인 사용자의 생년월일(yyyy-mm-dd)을 서버에서 변수로 전달 (Thymeleaf가 자동 치환)
+    const userBirthdate = [[${session.loginMember.u_birthdate} == null ? '' : "'" + session.loginMember.u_birthdate + "'"]];
+
+    // 만 나이 계산 함수
+    function calculateAge(birthdateStr) {
+        if (!birthdateStr) return 0;
+        const today = new Date();
+        const birth = new Date(birthdateStr);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        // 1. 봉사일자 min 속성 자동 설정
         const dateInput = document.getElementById('volunteer_date');
         if (dateInput) {
             dateInput.min = getTodayString();
         }
+
+        // 2. 만 17세 미만 보호자 입력란 표시
+        const age = calculateAge(userBirthdate);
+        const guardianLabel = document.getElementById('guardianLabel');
+        const guardianInput = document.getElementById('guardianName');
+        if (guardianLabel && guardianInput) {
+            if (age < 17) {
+                guardianLabel.style.display = '';
+                guardianInput.style.display = '';
+            } else {
+                guardianLabel.style.display = 'none';
+                guardianInput.style.display = 'none';
+            }
+        }
+    });
+
+    // (선택) 폼 제출 시 보호자 이름 필수 검사
+    document.getElementById('volunteerForm').addEventListener('submit', function(e) {
+        const age = calculateAge(userBirthdate);
+        const guardianInput = document.getElementById('guardianName');
+        const errorSpan = document.getElementById('guardianNameError');
+        if (age < 17 && (!guardianInput.value || guardianInput.value.trim() === '')) {
+            errorSpan.textContent = "중학생은 보호자 이름을 반드시 입력해야 합니다.";
+            e.preventDefault();
+        } else {
+            errorSpan.textContent = "";
+        }
     });
 </script>
+
+
 </body>
 </html>

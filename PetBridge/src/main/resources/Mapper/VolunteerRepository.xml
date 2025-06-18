@@ -16,10 +16,10 @@
 
     <insert id="insert" parameterType="com.example.petbridge.entity.Volunteer">
         INSERT INTO volunteer_application
-        (u_id,shelter,volunteer_date,volunteer_time,volunteer_area,motivation,agreement)
+        (u_id,shelter,volunteer_date,volunteer_time,volunteer_area,motivation,agreement,guardianName)
         VALUES
             (#{u_id},#{shelter},#{volunteer_date},#{volunteer_time},#{volunteer_area},#{motivation},
-             #{agreement})
+             #{agreement},#{guardianName})
 
     </insert>
 

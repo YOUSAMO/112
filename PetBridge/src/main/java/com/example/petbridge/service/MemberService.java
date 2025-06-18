@@ -34,6 +34,7 @@ public class MemberService {
         member.setU_pnumber(memberDTO.getFullPnumber());
         member.setU_email(memberDTO.getFullEmail());
         member.setU_gender(memberDTO.getU_gender());
+        member.setU_birthdate(memberDTO.getU_birthdate());
 
         System.out.println("▶ 저장할 회원 정보: " + member);
 

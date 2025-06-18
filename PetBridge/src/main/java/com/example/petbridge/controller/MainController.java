@@ -65,6 +65,7 @@ public class MainController {
             sessionMemberDto.setU_email(loginMemberEntity.getU_email());
             sessionMemberDto.setU_pnumber(loginMemberEntity.getU_pnumber());
             sessionMemberDto.setU_gender(loginMemberEntity.getU_gender());
+            sessionMemberDto.setU_birthdate(loginMemberEntity.getU_birthdate());
 
             session.setAttribute("loginMember", sessionMemberDto);
             session.setAttribute(LOGGED_IN_USER_ID_SESSION_KEY, loginMemberEntity.getU_id());

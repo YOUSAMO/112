@@ -21,6 +21,7 @@ public class Volunteer {
     private String volunteer_area;
     private String motivation;
     private int agreement;
+    private String guardianName;
     private LocalDate datetime;
 
 
