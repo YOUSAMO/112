@@ -92,13 +92,19 @@
         WHERE u_id = #{u_id}
     </update>
 
-    <select id="countByUserInfo" resultType="int">
-        SELECT COUNT(*)
-        FROM members
-        WHERE u_id = #{username}
-          AND u_name = #{name}
-          AND u_email = #{email}
+    <select id="countUserByInfo" resultType="int">
+        SELECT COUNT(*) FROM users
+        WHERE u_id = #{u_id}
+          AND u_name = #{u_name}
+          AND u_email = #{u_email}
     </select>
+
+    <update id="updatePassword" >
+        UPDATE users
+        SET u_pass = #{u_pass}
+        WHERE u_id = #{u_id}
+    </update>
+
 
 
 

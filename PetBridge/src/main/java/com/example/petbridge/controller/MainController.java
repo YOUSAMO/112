@@ -105,6 +105,24 @@ public class MainController {
         return "find/findPassword";
     }
 
+    @PostMapping("/findPw")
+    public String findPassword(
+            @RequestParam String u_id,
+            @RequestParam String u_name,
+            @RequestParam String u_email,
+            Model model
+    ) {
+        boolean valid = memberService.validateUserInfo(u_id, u_name, u_email);
+        if (valid) {
+            // 아이디, 이름, 이메일이 모두 맞으면 세션에 userid 저장 후 비밀번호 변경 화면으로 이동
+            model.addAttribute("userid", u_id);
+            return "find/newPassword"; // 새 비밀번호 입력 페이지(Thymeleaf 파일명)
+        } else {
+            model.addAttribute("error", "입력 정보가 일치하지 않습니다.");
+            return "find/findPassword"; // 비밀번호 찾기 페이지로 다시
+        }
+    }
+
     @GetMapping("/mypage")
     public String showMyPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         System.out.println("MainController의 /mypage 요청 받음");
@@ -126,6 +144,35 @@ public class MainController {
     public String termsPage() {
         return "term/terms";
     }
+
+    @GetMapping("/setNewPassword")
+    public String setNewPassword(Model model) {
+        return "find/newPassword";
+    }
+
+    @PostMapping("/setNewPassword")
+    public String setNewPassword(
+            @RequestParam("u_id") String u_id,
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("confirmPassword") String confirmPassword,
+            Model model
+    ) {
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            model.addAttribute("userid", u_id);
+            return "find/newPassword"; // 비밀번호 입력 폼으로 다시
+        }
+        boolean result = memberService.updatePassword(u_id, newPassword);
+        if (result) {
+            return "redirect:/login";
+        } else {
+            model.addAttribute("error", "비밀번호 변경에 실패했습니다.");
+            model.addAttribute("userid", u_id);
+            return "find/newPassword";
+        }
+    }
+
+
 
 
 }

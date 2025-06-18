@@ -140,7 +140,15 @@ public class MemberService {
     }
 
 
-    public boolean checkUserExists(String u_id, String u_name, String u_email) {
-        return memberRepository.countByUserInfo(u_id, u_name, u_email) > 0;
+    public boolean validateUserInfo(String u_id, String u_name, String u_email) {
+        // DB에서 해당 정보가 모두 일치하는 사용자가 있는지 확인
+        return memberRepository.countUserByInfo(u_id, u_name, u_email) > 0;
+    }
+
+
+
+    public boolean updatePassword(String u_id, String u_pass) {
+        int result = memberRepository.updatePassword(u_id, u_pass);
+        return result > 0;
     }
 }
