@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.petbridge.repository.Adoption_applicationRepository">
+
+    <insert id="insert" parameterType="com.example.petbridge.entity.Adoption_application">
+        INSERT INTO adoption_application
+        ( animal_id,u_id,housing, housing_type, pet_allowed, family_info, motivation, pledge,
+         current_pets, experience, job, work_type, pet_care_plan, financial_status, animal_type, animal_detail,
+         care_time, exercise_plan, travel_plan, agreement)
+        VALUES
+            ( #{animal_id},#{u_id},#{housing}, #{housing_type}, #{pet_allowed}, #{family_info}, #{motivation}, #{pledge},
+             #{current_pets}, #{experience}, #{job}, #{work_type}, #{pet_care_plan}, #{financial_status}, #{animal_type}, #{animal_detail},
+             #{care_time}, #{exercise_plan}, #{travel_plan}, #{agreement})
+    </insert>
+
+    <update id="update" parameterType="com.example.petbridge.entity.Adoption_application">
+        UPDATE adoption_application
+        SET
+            housing = #{housing},
+            housing_type = #{housing_type},
+            pet_allowed = #{pet_allowed},
+            family_info = #{family_info},
+            motivation = #{motivation},
+            pledge = #{pledge},
+            current_pets = #{current_pets},
+            experience = #{experience},
+            job = #{job},
+            work_type = #{work_type},
+            pet_care = #{pet_care},
+            financial = #{financial},
+            animal_type = #{animal_type},
+            animal_detail = #{animal_detail},
+            care_time = #{care_time},
+            exercise_plan = #{exercise_plan},
+            travel_plan = #{travel_plan},
+            agreement = #{agreement}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="com.example.petbridge.entity.Adoption_application">
+        DELETE FROM adoption_application WHERE id = #{id}
+    </delete>
+
+    <!-- adoptionApplicationMapper.xml -->
+
+        <select id="countByUserIdAndAnimalId" resultType="int">
+            SELECT COUNT(*)
+            FROM adoption_application
+            WHERE u_id = #{u_id}
+              AND animal_id = #{animal_id}
+        </select>
+
+
+
+</mapper>
