@@ -41,7 +41,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         // 2. 업로드된 파일은 로컬 디스크에서 로드
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:///C:/IdeaProjects/Member/uploads/");
+                .addResourceLocations("file:///C:/IdeaProjects/Petbridge/uploads/");
     }
 
 }

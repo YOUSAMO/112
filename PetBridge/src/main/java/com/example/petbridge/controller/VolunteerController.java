@@ -54,7 +54,7 @@ public class VolunteerController {
             model.addAttribute("error", "중학생(만 14세) 이상부터 봉사 신청이 가능합니다.");
             model.addAttribute("loginMember", loginMember);
             model.addAttribute("volunteerForm", volunteerForm);
-            return "volunteer/volunteerForm";
+            return "volunteer/ageDenied";
         }
         if (age < 17) { // 중학생: 보호자 동반 필수
             if (guardianName == null || guardianName.trim().isEmpty()) {

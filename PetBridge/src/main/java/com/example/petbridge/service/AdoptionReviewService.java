@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -28,11 +29,11 @@ public class AdoptionReviewService {
     private final UserLikeRepository userLikeRepository;
 
     @Value("${file.upload-dir}")
-    private String uploadDir;
+    private String uploadDir; // application.properties에 file.upload-dir 설정 필요
 
     public void createReview(AdoptionReview review, String loggedInUserUid, List<MultipartFile> files) throws IOException {
         review.setAuthorUid(loggedInUserUid);
-        adoptionReviewRepository.insertReview(review);
+        adoptionReviewRepository.insertReview(review); // review.arNo가 이 시점에서 생성됨
         saveFiles(files, review.getArNo());
     }
 
@@ -58,7 +59,25 @@ public class AdoptionReviewService {
         }
 
         userLikeRepository.deleteLikesByContent(arNo, AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE);
+
+        // 물리 파일 삭제 및 DB 레코드 삭제
+        List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo);
+        if (attachments != null && !attachments.isEmpty()) {
+            for (AttachmentFile att : attachments) {
+                try {
+                    String relativePath = att.getFilePath();
+                    if (relativePath.startsWith("/uploads/")) {
+                        relativePath = relativePath.substring("/uploads/".length());
+                    }
+                    Path filePath = Paths.get(uploadDir, relativePath);
+                    Files.deleteIfExists(filePath);
+                } catch (IOException e) {
+                    System.err.println("파일 삭제 실패 (물리 파일): " + att.getFilePath() + " - " + e.getMessage());
+                }
+            }
+        }
         attachmentFileRepository.deleteByBoardTypeAndBoardId(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo);
+
         adoptionReviewRepository.deleteReview(arNo);
 
         Path directoryPath = Paths.get(uploadDir, "adoption_review_files", "arNo_" + arNo);
@@ -69,6 +88,7 @@ public class AdoptionReviewService {
                         .forEach(path -> {
                             try {
                                 Files.delete(path);
+                                System.out.println("Deleted: " + path);
                             } catch (IOException e) {
                                 System.err.println("파일/폴더 삭제 실패: " + path + " - " + e.getMessage());
                             }
@@ -98,7 +118,7 @@ public class AdoptionReviewService {
 
             file.transferTo(physicalFilePath);
 
-            String dbFilePath = Paths.get("/uploads", "adoption_review_files", "arNo_" + boardId, storedFileName).toString().replace("\\", "/");
+            String dbFilePath = Paths.get("adoption_review_files", "arNo_" + boardId, storedFileName).toString().replace("\\", "/");
 
             AttachmentFile attachment = new AttachmentFile();
             attachment.setBoardType(AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE);
@@ -115,22 +135,23 @@ public class AdoptionReviewService {
         int offset = (page - 1) * size;
         List<AdoptionReview> reviews = adoptionReviewRepository.findReviewsByPage(size, offset);
 
-        // ★★★ 이 부분의 N+1 해결 로직을 삭제합니다. ★★★
-        // 이제 findReviewsByPage 쿼리 자체가 첨부파일을 함께 가져온다고 가정합니다.
-        // List<Long> reviewIds = reviews.stream()
-        //         .map(AdoptionReview::getArNo)
-        //         .collect(Collectors.toList());
-        //
-        // List<AttachmentFile> attachments = attachmentFileRepository.findAttachmentsByBoardIds(
-        //         AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, reviewIds);
-        //
-        // Map<Long, List<AttachmentFile>> attachmentsMap = attachments.stream()
-        //         .collect(Collectors.groupingBy(AttachmentFile::getBoardId));
-        //
-        // reviews.forEach(review ->
-        //         review.setAttachments(attachmentsMap.getOrDefault(review.getArNo(), Collections.emptyList()))
-        // );
-        // ★★★ 삭제 끝 ★★★
+        // ★★★ N+1 해결 로직 재활성화 및 findByBoardTypeAndBoardIdIn 사용 ★★★
+        if (!reviews.isEmpty()) {
+            List<Long> reviewIds = reviews.stream()
+                    .map(AdoptionReview::getArNo)
+                    .collect(Collectors.toList());
+
+            List<AttachmentFile> attachments = attachmentFileRepository.findByBoardTypeAndBoardIdIn(
+                    AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, reviewIds);
+
+            Map<Long, List<AttachmentFile>> attachmentsMap = attachments.stream()
+                    .collect(Collectors.groupingBy(AttachmentFile::getBoardId));
+
+            reviews.forEach(review ->
+                    review.setAttachments(attachmentsMap.getOrDefault(review.getArNo(), Collections.emptyList()))
+            );
+        }
+        // ★★★ N+1 해결 로직 끝 ★★★
 
         return reviews;
     }
@@ -140,12 +161,20 @@ public class AdoptionReviewService {
         return adoptionReviewRepository.countReviews();
     }
 
+    // ★★★ 후기 상세 조회 (수정 폼에서 호출되는 메서드) - 첨부파일을 함께 로드하도록 수정 ★★★
     @Transactional(readOnly = true)
     public AdoptionReview getReviewById(Long arNo) {
-        return adoptionReviewRepository.findReviewById(arNo)
+        AdoptionReview review = adoptionReviewRepository.findReviewById(arNo)
                 .orElse(null);
+        if (review != null) {
+            // 해당 리뷰의 첨부파일들을 조회하여 설정
+            review.setAttachments(attachmentFileRepository.findByBoardTypeAndBoardId(
+                    AdoptionReviewController.ADOPTION_REVIEW_BOARD_TYPE, arNo));
+        }
+        return review;
     }
 
+    // 좋아요 상태를 포함하여 후기 조회 (오버로딩 메서드)
     @Transactional(readOnly = true)
     public AdoptionReview getReviewById(Long arNo, String userId) {
         AdoptionReview review = adoptionReviewRepository.findReviewById(arNo)

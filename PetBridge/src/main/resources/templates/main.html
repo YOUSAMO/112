@@ -19,7 +19,7 @@
         background: var(--main-bg);
         color: var(--text-main);
         margin: 0;
-        padding-bottom: 70px; /* 하단 퀵메뉴 공간 확보 */
+        padding-bottom: 70px;
     }
     .top-menu {
         position: fixed;
@@ -88,11 +88,10 @@
         background: #d84315;
         transform: translateY(-2px) scale(1.04);
     }
-    /* 슬라이더 */
     .slider {
         margin: 40px auto 32px auto;
         max-width: 900px;
-        height: 260px;
+        height: 220px;
         position: relative;
         overflow: hidden;
         border-radius: 20px;
@@ -102,7 +101,7 @@
     .slide {
         position: absolute;
         top: 0; left: 0; width: 100%; height: 100%;
-        opacity: 0; transition: opacity 0.8s ease-in-out; /* transition 효과 개선 */
+        opacity: 0; transition: opacity 0.8s ease-in-out;
         display: flex; align-items: center; justify-content: center;
         font-size: 2em; font-weight: bold;
         color: var(--accent-dark);
@@ -112,7 +111,7 @@
     .slide.active { opacity: 1; z-index: 1; }
     .slider .dots {
         position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-        display: flex; gap: 10px; z-index: 2; /* 점이 슬라이드 위에 오도록 z-index 추가 */
+        display: flex; gap: 10px; z-index: 2;
     }
     .slider .dot {
         width: 12px; height: 12px; border-radius: 50%;
@@ -121,8 +120,6 @@
         transition: background 0.2s;
     }
     .slider .dot.active { background: var(--accent-dark); }
-
-    /* 입양 절차 안내 */
     .adopt-process {
         max-width: 900px; margin: 48px auto;
         background: #fff8ee;
@@ -154,8 +151,6 @@
     .step .desc {
         color: var(--text-main); font-size: 1em;
     }
-
-    /* 보호소 소개 */
     .shelter-info {
         max-width: 900px; margin: 48px auto;
         background: #fff8ee;
@@ -182,8 +177,6 @@
     }
     .shelter-card .name { color: var(--accent-dark); font-weight: bold;}
     .shelter-card .desc { font-size: 0.9em; color: #6d4c41; margin-top: 6px; }
-
-    /* 동물 카드 */
     #animal-section {
         max-width: 1000px;
         margin: 48px auto;
@@ -194,6 +187,13 @@
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 28px;
     }
+    .animal-cards.single-item {
+        display: flex;
+        justify-content: center;
+    }
+    .animal-cards.single-item .animal-card {
+        max-width: 400px;
+    }
     .animal-card {
         background: #fff;
         border-radius: 14px;
@@ -202,10 +202,13 @@
         display: flex; flex-direction: column;
         transition: transform 0.18s, opacity 0.3s;
         animation: fadeIn 1.2s;
+        cursor: pointer;
     }
-    .animal-card:hover { transform: translateY(-5px) scale(1.025);}
+    .animal-card:hover { transform: translateY(-5px) scale(1.025); }
     .animal-card img {
-        width: 100%; height: 220px; object-fit: cover;
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
         border-bottom: 3px solid var(--accent);
     }
     .animal-card .info {
@@ -230,8 +233,74 @@
         display: inline-block;
         margin-top: auto;
     }
-
-    /* 페이지네이션 버튼 공통 스타일 (보호소, 동물 목록 공용) */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 2000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+    .modal-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        width: 600px;
+        max-width: 90%;
+        overflow: hidden;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .modal-overlay.active .modal-card {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    .modal-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-bottom: 4px solid var(--accent);
+    }
+    .modal-card .info {
+        padding: 24px 20px;
+    }
+    .modal-card .info h4 {
+        font-size: 1.8em;
+        color: var(--accent-dark);
+        margin-bottom: 12px;
+    }
+    .modal-card .info p {
+        font-size: 1.1em;
+        color: #6d4c41;
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+    .modal-card .info .tag {
+        font-size: 1em;
+        padding: 5px 12px;
+    }
+    @media (max-width: 700px) {
+        .modal-card {
+            width: 90%;
+        }
+        .modal-card img {
+            height: 220px;
+        }
+        .modal-card .info h4 {
+            font-size: 1.5em;
+        }
+        .modal-card .info p {
+            font-size: 1em;
+        }
+    }
     .pagination-container {
         display: flex; justify-content: center; align-items: center; margin-top: 24px; gap: 8px; flex-wrap: wrap;
     }
@@ -250,8 +319,10 @@
         color: white;
         transform: scale(1.1);
     }
-
-    /* 하단 퀵메뉴 */
+    .pagination-container button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
     .bottom-quick-menu {
         position: fixed; bottom: 0; left: 0; width: 100%;
         height: 54px; background: var(--card-bg);
@@ -266,23 +337,17 @@
         cursor: pointer; transition: background 0.18s;
     }
     .bottom-quick-menu button:hover { background: #d84315; }
-
-    /* 애니메이션 */
     @keyframes fadeInDown { from {opacity:0; transform:translateY(-40px);} to {opacity:1; transform:translateY(0);} }
     @keyframes fadeInUp { from {opacity:0; transform:translateY(40px);} to {opacity:1; transform:translateY(0);} }
     @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-
-    /* 반응형 */
     @media (max-width: 700px) {
         .animal-cards { grid-template-columns: 1fr;}
         .hero h1 { font-size: 2em;}
         .hero { padding: 32px 6px 26px 6px;}
-        .slider { height: 180px;}
+        .slider { height: 150px;}
         .process-steps { flex-direction: column; gap: 12px;}
         .shelter-list { flex-direction: column; gap: 10px;}
     }
-
-    /* 후기/스토리 */
     .adoption-stories {
         max-width: 900px; margin: 0 auto 36px auto;
     }
@@ -300,13 +365,13 @@
         animation: fadeIn 1.2s;
     }
     .story-card img {
-        width: 70px; height: 70px; border-radius: 50%; object-fit: cover;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%; object-fit: cover;
         margin-bottom: 10px;
     }
     .story-card .text { color: #6d4c41; font-size: 0.98em; text-align: center; }
     .story-card .author { color: var(--accent-dark); font-weight: bold; margin-top: 8px; font-size: 0.95em; }
-
-    /* FAQ */
     .faq-section {
         max-width: 900px; margin: 0 auto 48px auto;
         background: #fff8ee;
@@ -328,8 +393,6 @@
         display: none; color: #6d4c41; margin-top: 5px;
     }
     .faq-item.active .faq-a { display: block; }
-
-    /* 공지/이벤트/참여 */
     .notice-banner {
         background: linear-gradient(90deg, #ffe0b2 80%, #ffb74d 120%);
         border-radius: 13px;
@@ -343,21 +406,6 @@
         animation: fadeInDown 1.3s;
         box-shadow: var(--shadow);
     }
-    /* 하단 퀵메뉴 */
-    .bottom-quick-menu {
-        position: fixed; bottom: 0; left: 0; width: 100%;
-        height: 54px; background: var(--card-bg);
-        box-shadow: 0 -2px 8px rgba(0,0,0,0.07);
-        display: flex; justify-content: space-around; align-items: center;
-        z-index: 1000;
-    }
-    .bottom-quick-menu button {
-        background: var(--accent-dark); color: #fff;
-        border: none; border-radius: 20px;
-        padding: 10px 22px; font-size: 1em; font-weight: 500;
-        cursor: pointer; transition: background 0.18s;
-    }
-    .bottom-quick-menu button:hover { background: #d84315; }
     footer {
         background: #222;
         color: #fff;
@@ -391,8 +439,6 @@
         color: #aaa;
         margin: 0;
     }
-
-
 </style>
 
 <body>
@@ -445,22 +491,18 @@
     </div>
 </section>
 
-<!-- 입양 후기/스토리 -->
 <section class="adoption-stories">
     <h3>입양 후기 & 따뜻한 이야기</h3>
-
 </section>
-<!-- FAQ -->
-<
-<!-- 공지/이벤트/참여 -->
+
 <section class="notice-banner">
-    6월, 입양 캠페인 진행 중! <span style="color:#d84315;">입양 시 특별 선물 증정</span> &nbsp;|&nbsp; 봉사/후원 참여자 모집
+    6월, 입양 캠페인 진행 중! <span style="color:#d84315;">입양 시 특별 선물 증정</span>  |  봉사/후원 참여자 모집
 </section>
-<!-- 하단 퀵메뉴 -->
-
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card" id="modalCard"></div>
+</div>
 <footer th:fragment="site-footer" style="background:#222; color:#fff; padding:30px 0 10px 0; margin-top:60px;">
     <div style="max-width:1200px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:30px;">
-        <!-- 서비스 소개 -->
         <div>
             <h3 style="margin:0 0 10px 0; font-size:1.3em;">PetBridge</h3>
             <p style="margin:0; font-size:0.95em; color:#ccc;">
@@ -468,7 +510,6 @@
                 따뜻한 동물 커뮤니티 플랫폼입니다.
             </p>
         </div>
-        <!-- 주요 링크 -->
         <div>
             <ul style="list-style:none; padding:0; margin:0;">
                 <li style="color:#fff; text-decoration:underline;">이용약관</li>
@@ -476,62 +517,51 @@
                 <li style="color:#fff; text-decoration:underline;">문의하기</li>
             </ul>
         </div>
-        <!-- SNS 및 연락처 -->
-        <div>
-            <div style="margin-bottom:8px;">
-                <a href="https://www.instagram.com/petbridge" style="margin-right:8px; color:#fff;" target="_blank" title="Instagram">
-                    <img src="/static/img/instagram_icon.png" alt="Instagram" style="width:22px;vertical-align:middle;">
-                </a>
-                <a href="https://www.facebook.com/petbridge" style="margin-right:8px; color:#fff;" target="_blank" title="Facebook">
-                    <img src="/static/img/facebook_icon.png" alt="Facebook" style="width:22px;vertical-align:middle;">
-                </a>
-                <a href="mailto:help@petbridge.com" style="color:#fff;" title="Email">
-                    <img src="/static/img/email_icon.png" alt="Email" style="width:22px;vertical-align:middle;">
-                </a>
-            </div>
-            <span style="font-size:0.9em; color:#ccc;">문의: help@petbridge.com</span>
-        </div>
+
     </div>
     <hr style="border:none; border-top:1px solid #444; margin:24px 0 10px 0;">
     <p style="text-align:center; font-size:0.95em; color:#aaa; margin:0;">
-        &copy; [[${#dates.format(#dates.createNow(), 'yyyy')}]] PetBridge. All rights reserved.
+        © [[${#dates.format(#dates.createNow(), 'yyyy')}]] PetBridge. All rights reserved.
     </p>
 </footer>
 
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- DOM 요소 가져오기 ---
         const shelterContainer = document.getElementById('shelter-list-container');
         const shelterPaginationContainer = document.getElementById('shelter-pagination-container');
         const animalContainer = document.getElementById('animal-cards-container');
         const animalListTitle = document.getElementById('animal-list-title');
         const animalPaginationContainer = document.getElementById('animal-pagination-container');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalCard = document.getElementById('modalCard');
 
-        // --- 상태 변수 ---
         let allAnimals = [];
         let allShelters = [];
         let currentAnimalList = [];
+        let currentModalAnimal = null;
 
-        // --- 보호소 페이지네이션 상태 변수 ---
+        const pageRange = 5;
         let currentShelterPage = 1;
         const sheltersPerPage = 8;
-
-        // --- 동물 페이지네이션 상태 변수 ---
         let currentAnimalPage = 1;
         const animalsPerPage = 9;
 
-        // --- 데이터 로딩 ---
         Promise.all([
             fetch('/data/animals.json'),
-            fetch('/data/animals2.json')
+            //fetch('/data/animals2.json')
         ])
             .then(responses => Promise.all(responses.map(res => res.json())))
             .then(dataArray => {
-                const items1 = dataArray[0].response.body.items.item;
-                const items2 = dataArray[1].response.body.items.item;
-                allAnimals = [...items1, ...items2];
+                const items1 = dataArray[0].response.body.items.item.map(item => ({
+                    ...item,
+                    popfile: item.popfile || item.popfile1,
+                }));
+                // const items2 = dataArray[1].response.body.items.item.map(item => ({
+                //     ...item,
+                //     popfile: item.popfile || item.popfile1,
+                // }));
+                allAnimals = [...items1]; //...items2
+                console.log('Loaded animals:', allAnimals); // 데이터 확인용 로그
                 initializeApp();
             })
             .catch(error => {
@@ -587,32 +617,80 @@
 
         function setupShelterPagination() {
             shelterPaginationContainer.innerHTML = '';
-            const pageCount = Math.ceil(allShelters.length / sheltersPerPage);
-            if (pageCount <= 1) return;
+            const totalPages = Math.ceil(allShelters.length / sheltersPerPage);
 
-            for (let i = 1; i <= pageCount; i++) {
+            if (totalPages <= 1) return;
+
+            const currentGroup = Math.ceil(currentShelterPage / pageRange);
+            const startPage = (currentGroup - 1) * pageRange + 1;
+            const endPage = Math.min(startPage + pageRange - 1, totalPages);
+
+            if (currentGroup > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.innerText = '<<';
+                firstBtn.addEventListener('click', () => displayShelters(1));
+                shelterPaginationContainer.appendChild(firstBtn);
+            }
+
+            const prevGroupBtn = document.createElement('button');
+            prevGroupBtn.innerText = '이전';
+            prevGroupBtn.addEventListener('click', () => {
+                if (currentShelterPage - pageRange >= 1) {
+                    displayShelters(startPage - 1);
+                } else if (currentShelterPage > 1) {
+                    displayShelters(1);
+                }
+            });
+            prevGroupBtn.disabled = currentShelterPage <= pageRange;
+            shelterPaginationContainer.appendChild(prevGroupBtn);
+
+            for (let i = startPage; i <= endPage; i++) {
                 const btn = document.createElement('button');
                 btn.innerText = i;
                 btn.addEventListener('click', () => displayShelters(i));
                 shelterPaginationContainer.appendChild(btn);
+            }
+
+            const nextGroupBtn = document.createElement('button');
+            nextGroupBtn.innerText = '다음';
+            nextGroupBtn.addEventListener('click', () => {
+                if (currentShelterPage + pageRange <= totalPages) {
+                    displayShelters(endPage + 1);
+                } else if (currentShelterPage < totalPages) {
+                    displayShelters(totalPages);
+                }
+            });
+            nextGroupBtn.disabled = currentGroup * pageRange >= totalPages;
+            shelterPaginationContainer.appendChild(nextGroupBtn);
+
+            if (currentGroup * pageRange < totalPages) {
+                const lastBtn = document.createElement('button');
+                lastBtn.innerText = '>>';
+                lastBtn.addEventListener('click', () => displayShelters(totalPages));
+                shelterPaginationContainer.appendChild(lastBtn);
             }
         }
 
         function updateShelterPaginationButtons() {
             const buttons = shelterPaginationContainer.querySelectorAll('button');
             buttons.forEach(button => {
-                button.classList.toggle('active', parseInt(button.innerText) === currentShelterPage);
+                const pageNum = parseInt(button.innerText);
+                if (!isNaN(pageNum)) {
+                    button.classList.toggle('active', pageNum === currentShelterPage);
+                }
             });
+            setupShelterPagination();
         }
 
-        // --- 동물 카드 생성 함수 ---
-        // [수정] animal.popfile -> animal.popfile1, animal.kindCd -> animal.kindNm 로 변경
         function createAnimalCard(animal) {
             const sex = animal.sexCd === 'F' ? '암컷' : (animal.sexCd === 'M' ? '수컷' : '미상');
             const neuter = animal.neuterYn === 'Y' ? '완료' : (animal.neuterYn === 'N' ? '안됨' : '미상');
             const card = document.createElement('div');
             card.className = 'animal-card';
-            card.innerHTML = `<img src="${animal.popfile1}" alt="${animal.kindNm}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x220/f0f0f0/cccccc?text=Image+Not+Found';"><div class="info"><h4>${animal.kindNm} <span style="font-size:0.8em; color: #6d4c41;">(${sex})</span></h4><p><strong>나이:</strong> ${animal.age}<br><strong>체중:</strong> ${animal.weight}<br><strong>특징:</strong> ${animal.specialMark || '특이사항 없음'}<br><strong>중성화:</strong> ${neuter}</p><div class="tag">${animal.processState}</div></div>`;
+            const imageUrl = animal.popfile || 'https://via.placeholder.com/300x220/f0f0f0/cccccc?text=Image+Not+Found';
+            console.log('Animal card image URL:', imageUrl); // 이미지 URL 디버깅
+            card.innerHTML = `<img src="${imageUrl}" alt="${animal.kindNm}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x220/f0f0f0/cccccc?text=Image+Not+Found';"><div class="info"><h4>${animal.kindNm} <span style="font-size:0.8em; color: #6d4c41;">(${sex})</span></h4><p><strong>나이:</strong> ${animal.age}<br><strong>체중:</strong> ${animal.weight}<br><strong>특징:</strong> ${animal.specialMark || '특이사항 없음'}<br><strong>중성화:</strong> ${neuter}</p><div class="tag">${animal.processState}</div></div>`;
+            card.addEventListener('click', () => showModal(animal));
             return card;
         }
 
@@ -622,16 +700,73 @@
             const startIndex = (page - 1) * animalsPerPage;
             const endIndex = startIndex + animalsPerPage;
             const paginatedAnimals = currentAnimalList.slice(startIndex, endIndex);
+
+            if (paginatedAnimals.length === 1) {
+                animalContainer.classList.add('single-item');
+            } else {
+                animalContainer.classList.remove('single-item');
+            }
+
             paginatedAnimals.forEach(animal => animalContainer.appendChild(createAnimalCard(animal)));
             updateAnimalPaginationButtons();
         }
 
+        function showModal(animal) {
+            if (currentModalAnimal === animal) {
+                closeModal();
+                return;
+            }
+            currentModalAnimal = animal;
+            const sex = animal.sexCd === 'F' ? '암컷' : (animal.sexCd === 'M' ? '수컷' : '미상');
+            const neuter = animal.neuterYn === 'Y' ? '완료' : (animal.neuterYn === 'N' ? '안됨' : '미상');
+            const imageUrl = animal.popfile || 'https://via.placeholder.com/600x300/f0f0f0/cccccc?text=Image+Not+Found';
+            console.log('Modal image URL:', imageUrl); // 모달 이미지 URL 디버깅
+            modalCard.innerHTML = `<img src="${imageUrl}" alt="${animal.kindNm}" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x300/f0f0f0/cccccc?text=Image+Not+Found';"><div class="info"><h4>${animal.kindNm} <span style="font-size:0.8em; color: #6d4c41;">(${sex})</span></h4><p><strong>나이:</strong> ${animal.age}<br><strong>체중:</strong> ${animal.weight}<br><strong>특징:</strong> ${animal.specialMark || '특이사항 없음'}<br><strong>중성화:</strong> ${neuter}</p><div class="tag">${animal.processState}</div></div>`;
+            modalOverlay.classList.add('active');
+            modalCard.addEventListener('click', (e) => e.stopPropagation());
+            modalOverlay.addEventListener('click', closeModal);
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            currentModalAnimal = null;
+            modalOverlay.removeEventListener('click', closeModal);
+        }
+
         function setupAnimalPagination() {
             animalPaginationContainer.innerHTML = '';
-            const pageCount = Math.ceil(currentAnimalList.length / animalsPerPage);
-            if (pageCount <= 1) return;
+            const totalPages = Math.ceil(currentAnimalList.length / animalsPerPage);
 
-            for (let i = 1; i <= pageCount; i++) {
+            if (totalPages <= 1) return;
+
+            const currentGroup = Math.ceil(currentAnimalPage / pageRange);
+            const startPage = (currentGroup - 1) * pageRange + 1;
+            const endPage = Math.min(startPage + pageRange - 1, totalPages);
+
+            if (currentGroup > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.innerText = '<<';
+                firstBtn.addEventListener('click', () => {
+                    displayAnimals(1);
+                    document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                animalPaginationContainer.appendChild(firstBtn);
+            }
+
+            const prevGroupBtn = document.createElement('button');
+            prevGroupBtn.innerText = '이전';
+            prevGroupBtn.addEventListener('click', () => {
+                if (currentAnimalPage - pageRange >= 1) {
+                    displayAnimals(startPage - 1);
+                } else if (currentAnimalPage > 1) {
+                    displayAnimals(1);
+                }
+                document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            prevGroupBtn.disabled = currentAnimalPage <= pageRange;
+            animalPaginationContainer.appendChild(prevGroupBtn);
+
+            for (let i = startPage; i <= endPage; i++) {
                 const btn = document.createElement('button');
                 btn.innerText = i;
                 btn.addEventListener('click', () => {
@@ -640,25 +775,54 @@
                 });
                 animalPaginationContainer.appendChild(btn);
             }
+
+            const nextGroupBtn = document.createElement('button');
+            nextGroupBtn.innerText = '다음';
+            nextGroupBtn.addEventListener('click', () => {
+                if (currentAnimalPage + pageRange <= totalPages) {
+                    displayAnimals(endPage + 1);
+                } else if (currentAnimalPage < totalPages) {
+                    displayAnimals(totalPages);
+                }
+                document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            nextGroupBtn.disabled = currentGroup * pageRange >= totalPages;
+            animalPaginationContainer.appendChild(nextGroupBtn);
+
+            if (currentGroup * pageRange < totalPages) {
+                const lastBtn = document.createElement('button');
+                lastBtn.innerText = '>>';
+                lastBtn.addEventListener('click', () => {
+                    displayAnimals(totalPages);
+                    document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                animalPaginationContainer.appendChild(lastBtn);
+            }
         }
 
         function updateAnimalPaginationButtons() {
             const buttons = animalPaginationContainer.querySelectorAll('button');
             buttons.forEach(button => {
-                button.classList.toggle('active', parseInt(button.innerText) === currentAnimalPage);
+                const pageNum = parseInt(button.innerText);
+                if (!isNaN(pageNum)) {
+                    button.classList.toggle('active', pageNum === currentAnimalPage);
+                }
             });
+            setupAnimalPagination();
         }
 
         window.filterAnimalsByShelter = (shelterName) => {
             if (shelterName === 'all') {
                 currentAnimalList = [...allAnimals];
-                animalListTitle.textContent = '모든 보호 동물 보기';
+                animalListTitle.textContent = '모든 보호소 동물 보기';
             } else {
                 currentAnimalList = allAnimals.filter(animal => animal.careNm === shelterName);
                 animalListTitle.textContent = `"${shelterName}" 보호 동물 보기`;
             }
+            currentAnimalPage = 1;
             setupAnimalPagination();
             displayAnimals(1);
+            closeModal();
         }
 
         const slides = document.querySelectorAll('.slide');

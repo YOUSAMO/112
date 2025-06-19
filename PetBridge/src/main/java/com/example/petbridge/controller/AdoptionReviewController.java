@@ -27,11 +27,8 @@ public class AdoptionReviewController {
 
     private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
     private static final String LOGIN_PAGE_URL = "/login";
-    // ★★★ 수정 부분: ADOPTION_REVIEW_BOARD_TYPE 값을 "review"로 변경 ★★★
-    public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview"; // HTML의 currentBoardType과 일치
-    // ★★★ 수정 끝 ★★★
+    public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview";
 
-    // PageInfo 내부 클래스 - getSize() 메서드명 수정 완료
     public static class PageInfo {
         private final int totalPages;
         private final int currentPage;
@@ -51,7 +48,6 @@ public class AdoptionReviewController {
             return currentPage;
         }
 
-        // **** 수정된 부분: getter 메서드 이름을 getSize()로 변경 ****
         public int getSize() {
             return size;
         }
@@ -118,15 +114,13 @@ public class AdoptionReviewController {
         model.addAttribute("review", review);
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("likeStatus", likeStatus);
-        // ★★★ 추가적인 model attribute 필요하다면 여기에 추가 (예: defaultBoardType) ★★★
-        // model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE); // 이미 HTML에서 'review'로 고정되어 사용 중
         return "review/reviewView";
     }
 
     @GetMapping("/{arNo}/edit")
     public String showEditReviewForm(@PathVariable Long arNo, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
-        AdoptionReview review = reviewService.getReviewById(arNo); // 작성자 이름 포함하여 조회
+        AdoptionReview review = reviewService.getReviewById(arNo); // ★★★ 이 메서드가 attachments를 로드하도록 수정됨 ★★★
         if (loggedInUserUid == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
             return "redirect:" + LOGIN_PAGE_URL;
@@ -141,6 +135,8 @@ public class AdoptionReviewController {
         }
         model.addAttribute("review", review);
         model.addAttribute("isNew", false);
+        // HTML 템플릿에서 'adoptionReview' 타입이 필요하므로 추가 (만약 HTML에서 하드코딩되어 있다면 불필요)
+        model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE);
         return "review/reviewForm";
     }
 

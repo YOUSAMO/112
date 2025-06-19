@@ -89,7 +89,7 @@ public class AdoptionController {
             model.addAttribute("error", "입양 신청은 만 19세 이상만 가능합니다.");
             model.addAttribute("adoptionForm", adoption);
             model.addAttribute("animalId", animal_id);
-            return "adoption/adoptionForm";
+            return "adoption/ageDenied";
         }
 
 

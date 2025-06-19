@@ -53,8 +53,8 @@
                 <h3 class="text-xl font-semibold mb-4"><i class="fas fa-paperclip mr-2"></i>첨부된 파일</h3>
                 <div class="flex flex-wrap gap-4">
                     <div th:each="att : ${review.attachments}">
-                        <a th:href="@{${att.filePath}}" target="_blank">
-                            <img th:src="@{${att.filePath}}" class="attachment-image"/>
+                        <a th:href="@{'/uploads/' + ${att.filePath}}" target="_blank">
+                            <img th:src="@{'/uploads/' + ${att.filePath}}" class="attachment-image"/>
                         </a>
                     </div>
                 </div>

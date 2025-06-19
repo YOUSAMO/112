@@ -1,0 +1,67 @@
+<!-- templates/volunteer/ageDenied.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>봉사 신청 나이 제한 안내 | PetBridge</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', Arial, sans-serif;
+            background: #f8fafc  no-repeat center top;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 420px;
+            margin: 120px auto 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 36px 32px 28px 32px;
+            text-align: center;
+        }
+        .icon {
+            width: 72px;
+            margin-bottom: 18px;
+        }
+        h2 {
+            color: #3e4c5e;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #5a6b7b;
+            font-size: 1.1em;
+            margin-bottom: 32px;
+        }
+        .home-btn {
+            background: #ffb347;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 32px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .home-btn:hover {
+            background: #ffa500;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+
+    <h2>봉사 신청이 제한됩니다</h2>
+    <p>
+        PetBridge는<br>
+        <strong>만 14세 미만은 봉사 신청이 불가</strong>합니다.<br>
+        유기동물 친구들을 위한 마음에 진심으로 감사드리며,<br>
+        중학생이 된 뒤 다시 한 번 도전해 주세요!
+    </p>
+    <button class="home-btn" onclick="window.location.href='/'">메인으로 돌아가기</button>
+</div>
+</body>
+</html>

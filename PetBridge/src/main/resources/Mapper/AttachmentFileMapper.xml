@@ -41,4 +41,17 @@
         DELETE FROM attachment_file WHERE id = #{id}
     </delete>
 
+    <select id="findByBoardTypeAndBoardIdIn" resultMap="attachmentFileMap">
+        SELECT
+        id, board_type, board_id, file_name, file_path, file_type, file_size
+        FROM
+        attachment_file
+        WHERE
+        board_type = #{boardType}
+        AND board_id IN
+        <foreach collection="boardIds" item="boardId" open="(" separator="," close=")">
+            #{boardId}
+        </foreach>
+    </select>
+
 </mapper>

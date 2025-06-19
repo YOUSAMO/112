@@ -141,6 +141,7 @@ public class MainController {
         return "mypage/MyPage";
     }
 
+
     @GetMapping("/terms")
     public String termsPage() {
         return "term/terms";
@@ -172,6 +173,14 @@ public class MainController {
             return "find/newPassword";
         }
     }
+
+
+    @GetMapping("/mupdate")
+    public String showUpdatePage(Model model) {
+        model.addAttribute("member", new Member());
+        return "member/memberupdate";
+    }
+
 
 
 
