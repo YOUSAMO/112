@@ -5,22 +5,22 @@
 
     <select id="findAll" resultType="com.example.petbridge.entity.Animal">
         SELECT id, name, species, age, description, gender, vaccinated, neutered,
-               arrival_date AS arrivalDate, likes, dislikes
+               arrival_date AS arrivalDate, likes, dislikes,created_by
         FROM animal
     </select>
 
     <select id="findById" parameterType="long" resultType="com.example.petbridge.entity.Animal">
         SELECT id, name, species, age, description, gender, vaccinated, neutered,
-               arrival_date AS arrivalDate, likes, dislikes
+               arrival_date AS arrivalDate, likes, dislikes,created_by
         FROM animal
         WHERE id = #{id}
     </select>
 
     <insert id="insert" parameterType="com.example.petbridge.entity.Animal" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO animal (name, species, age, description, gender, vaccinated, neutered,
-                            arrival_date, likes, dislikes)
+                            arrival_date, likes, dislikes,created_by)
         VALUES (#{name}, #{species}, #{age}, #{description}, #{gender}, #{vaccinated}, #{neutered},
-                #{arrivalDate}, #{likes}, #{dislikes})
+                #{arrivalDate}, #{likes}, #{dislikes},#{created_by})
     </insert>
 
     <update id="update" parameterType="com.example.petbridge.entity.Animal">
@@ -34,7 +34,8 @@
             neutered = #{neutered},
             arrival_date = #{arrivalDate},
             likes = #{likes},
-            dislikes = #{dislikes}
+            dislikes = #{dislikes},
+            created_by = #{created_by}
         WHERE id = #{id}
     </update>
 
@@ -45,7 +46,7 @@
 
     <select id="findAllWithPaging" resultType="com.example.petbridge.entity.Animal" parameterType="map">
         SELECT id, name, species, age, description, gender, vaccinated, neutered,
-               arrival_date AS arrivalDate, likes, dislikes
+               arrival_date AS arrivalDate, likes, dislikes,created_by
         FROM animal
         ORDER BY id DESC
             LIMIT #{size} OFFSET #{offset}
