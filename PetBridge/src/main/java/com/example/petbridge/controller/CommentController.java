@@ -90,26 +90,7 @@ public class CommentController {
         }
     }
 
-    @PutMapping("/{cmNo}")
-    public ResponseEntity<Map<String, Object>> updateComment(@PathVariable Long cmNo, @RequestBody CommentRequestDTO commentDTO, HttpSession session) {
-        String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
-        if (loggedInUserUid == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("success", false, "message", "로그인이 필요합니다."));
-        }
 
-        try {
-            commentService.updateComment(cmNo, commentDTO.getCmContent(), loggedInUserUid);
-            return ResponseEntity.ok(Map.of("success", true, "message", "댓글이 성공적으로 수정되었습니다."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("success", false, "message", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "message", "댓글 수정 중 오류가 발생했습니다."));
-        }
-    }
 
     @DeleteMapping("/{cmNo}")
     public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable Long cmNo, HttpSession session) {

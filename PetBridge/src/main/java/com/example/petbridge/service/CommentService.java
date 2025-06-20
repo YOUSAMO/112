@@ -95,21 +95,6 @@ public class CommentService {
         return commentRepository.selectCommentsByPostId(postId, boardType);
     }
 
-    // 댓글 수정
-    @Transactional
-    public Comment updateComment(Long cmNo, String content, String loggedInUserUid) {
-        Comment existingComment = commentRepository.selectCommentById(cmNo);
-        if (existingComment == null) {
-            throw new RuntimeException("댓글을 찾을 수 없습니다.");
-        }
-        if (!loggedInUserUid.equals(existingComment.getAuthorUid())) {
-            throw new RuntimeException("댓글 수정 권한이 없습니다.");
-        }
-        existingComment.setCmContent(content);
-        existingComment.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-        commentRepository.updateComment(existingComment);
-        return existingComment;
-    }
 
     // 댓글 삭제
     @Transactional

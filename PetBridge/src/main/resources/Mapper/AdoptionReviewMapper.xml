@@ -66,12 +66,16 @@
             af.file_size AS attachment_file_size
         FROM
             adoption_review ar
+                JOIN (
+                SELECT ar_no FROM adoption_review
+                ORDER BY created_at DESC
+                    LIMIT #{size} OFFSET #{offset}
+            ) AS paged_reviews ON ar.ar_no = paged_reviews.ar_no
                 LEFT JOIN
             users u ON ar.author_uid = u.u_id
                 LEFT JOIN
             attachment_file af ON ar.ar_no = af.board_id AND af.board_type = 'adoptionReview'
-        ORDER BY ar.created_at DESC
-            LIMIT #{size} OFFSET #{offset}
+        ORDER BY ar.created_at DESC;
     </select>
 
     <select id="countReviews" resultType="int">
