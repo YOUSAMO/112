@@ -8,11 +8,11 @@
     <insert id="insert" parameterType="com.example.petbridge.entity.Adoption_application">
         INSERT INTO adoption_application
         ( animal_id,u_id,housing, housing_type, pet_allowed, family_info, motivation, pledge,
-         current_pets, experience, job, work_type, pet_care_plan, financial_status, animal_type, animal_detail,
+         current_pets, experience, job, work_type, pet_care_plan, financial_status,
          care_time, exercise_plan, travel_plan, agreement)
         VALUES
             ( #{animal_id},#{u_id},#{housing}, #{housing_type}, #{pet_allowed}, #{family_info}, #{motivation}, #{pledge},
-             #{current_pets}, #{experience}, #{job}, #{work_type}, #{pet_care_plan}, #{financial_status}, #{animal_type}, #{animal_detail},
+             #{current_pets}, #{experience}, #{job}, #{work_type}, #{pet_care_plan}, #{financial_status},
              #{care_time}, #{exercise_plan}, #{travel_plan}, #{agreement})
     </insert>
 
@@ -31,8 +31,6 @@
             work_type = #{work_type},
             pet_care = #{pet_care},
             financial = #{financial},
-            animal_type = #{animal_type},
-            animal_detail = #{animal_detail},
             care_time = #{care_time},
             exercise_plan = #{exercise_plan},
             travel_plan = #{travel_plan},
@@ -52,6 +50,21 @@
             WHERE u_id = #{u_id}
               AND animal_id = #{animal_id}
         </select>
+
+    <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Adoption_application">
+        SELECT
+            aa.*,
+            u.u_name,
+            u.u_email,
+            u.u_pnumber,
+            a.name AS animal_name
+                 FROM adoption_application aa
+                 JOIN users u ON aa.u_id = u.u_id
+                 JOIN animal a ON aa.animal_id = a.id
+        WHERE aa.u_id = #{u_id}
+        ORDER BY aa.created_at DESC
+    </select>
+
 
 
 

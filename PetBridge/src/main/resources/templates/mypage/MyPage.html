@@ -19,29 +19,29 @@
         }
         main.container {
             background-color: #fffefb;
-            max-width: 900px;
+            max-width: 1200px;
             width: 100%;
-            margin-top: 200px;
-            margin-bottom: 40px;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 120px;
+            margin-bottom: 60px;
+            padding: 40px 60px;
+            border-radius: 16px;
+            box-shadow: 0 0 32px rgba(0, 0, 0, 0.12);
             display: flex;
-            gap: 40px;
+            gap: 60px;
         }
         nav.sidebar {
-            flex: 0 0 220px;
+            flex: 0 0 320px;
             background-color: #f0ead9;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: inset 3px 3px 8px #d6cfc1, inset -3px -3px 8px #fff9e7;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: inset 3px 3px 12px #d6cfc1, inset -3px -3px 12px #fff9e7;
         }
         nav.sidebar h3 {
             margin-top: 0;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: 700;
             color: #6b5e47;
-            margin-bottom: 15px;
+            margin-bottom: 22px;
             text-align: center;
         }
         nav.sidebar ul {
@@ -49,16 +49,16 @@
             padding: 0;
         }
         nav.sidebar ul li {
-            margin-bottom: 15px;
+            margin-bottom: 22px;
             font-weight: 600;
         }
         nav.sidebar ul li a {
             text-decoration: none;
             color: #6b5e47;
-            font-size: 16px;
-            padding: 6px 12px;
+            font-size: 18px;
+            padding: 10px 16px;
             display: block;
-            border-radius: 6px;
+            border-radius: 8px;
             transition: background-color 0.3s, color 0.3s;
         }
         nav.sidebar ul li.active a,
@@ -68,33 +68,32 @@
         }
         section.main-content {
             flex: 1;
-            min-height: 450px;
+            min-height: 600px;
         }
         .profile {
             display: flex;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             border-bottom: 2px solid #d6cfc1;
-            padding-bottom: 20px;
+            padding-bottom: 28px;
         }
         .profile img {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            margin-right: 20px;
-            border: 3px solid #a69f8e;
+            margin-right: 32px;
+            border: 4px solid #a69f8e;
             object-fit: cover;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
         .profile-text {
             flex: 1;
         }
         .profile-text h2 {
             margin: 0;
-            font-size: 24px;
+            font-size: 32px;
             color: #6b5e47;
         }
-
         .content {
             display: none;
             animation: fadeIn 0.5s ease forwards;
@@ -103,24 +102,24 @@
             display: block;
         }
         .content h3 {
-            font-size: 20px;
+            font-size: 24px;
             color: #6b5e47;
             margin-top: 0;
-            margin-bottom: 15px;
+            margin-bottom: 22px;
             border-bottom: 2px solid #d6cfc1;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
         }
         .content p, .content ul {
-            font-size: 15px;
+            font-size: 18px;
             color: #555;
-            line-height: 1.5;
+            line-height: 1.7;
         }
         .content ul {
             list-style-type: disc;
-            padding-left: 20px;
+            padding-left: 28px;
         }
         .content ul li {
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
         .content a {
             color: #6b5e47;
@@ -131,8 +130,8 @@
             text-decoration: underline;
         }
         p.logout {
-            margin-top: 30px;
-            font-size: 14px;
+            margin-top: 40px;
+            font-size: 16px;
             color: #7a6f58;
             text-align: center;
         }
@@ -150,91 +149,191 @@
         }
         .edit-button {
             display: inline-block;
-            margin-top: 10px;
-            padding: 6px 12px;
+            margin-top: 14px;
+            padding: 10px 20px;
             background-color: #6b5e47;
             color: #ffffff;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 600;
+            font-size: 17px;
             text-decoration: none;
             transition: background-color 0.3s;
         }
-
-
+        /* 반응형 */
+        @media (max-width: 900px) {
+            main.container {
+                flex-direction: column;
+                max-width: 98vw;
+                padding: 16px;
+                gap: 0;
+            }
+            nav.sidebar {
+                flex: none;
+                width: 100%;
+                margin-bottom: 24px;
+                padding: 20px 10px;
+            }
+            section.main-content {
+                min-height: 400px;
+            }
+            .profile-text h2 {
+                font-size: 22px;
+            }
+            .content h3 {
+                font-size: 18px;
+            }
+            .content p, .content ul {
+                font-size: 15px;
+            }
+        }
     </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 <main class="container" th:if="${session.loginMember != null}">
-
     <nav class="sidebar">
         <h3>마이페이지 메뉴</h3>
         <ul>
             <li class="active"><a href="#" data-tab="adopted">입양한 동물 정보</a></li>
             <li><a href="#" data-tab="application">입양 신청 내역</a></li>
+            <li><a href="#" data-tab="volunteer">봉사신청 현황</a></li>
             <li><a href="#" data-tab="activity">나의 활동 기록</a></li>
             <li><a href="#" data-tab="profile">개인정보 관리</a></li>
         </ul>
     </nav>
-
     <section class="main-content">
         <div class="profile">
             <div class="profile-text">
                 <h2 th:text="${session.loginMember.u_name} + ' 님, 안녕하세요!'">회원명, 안녕하세요!</h2>
-
             </div>
         </div>
-        <article id="adopted-contentinfo" class="content active">
-            <h3>입양한 동물 정보</h3>
-            <p >입양한 동물이 없습니다.</p>
-            <ul>
-                <li>
-                    <strong>이름:</strong>
-                    <strong>종류:</strong>
-                    <strong>입양 날짜:</strong>
-                    <strong>건강 상태:</strong>
-                </li>
-                <li>
-
-                    접종 기록: <a href="#">확인하기</a>
-                </li>
-                <li>
-                    입양 후기: <a href ="#">작성하기</a> |
-                    작성된 후기: <a href="#">보기</a>
-                </li>
-            </ul>
-        </article>
-
-        <article id="adopted-contentconfirm" class="content active">
+        <article id="adopted-content" class="content active">
             <h3>입양한 동물 정보</h3>
             <ul>
-                <li><strong>이름:</strong> 뽀삐 | <strong>종류:</strong> 강아지 | <strong>입양 날짜:</strong> 2023-10-01 | <strong>건강 상태:</strong> 양호</li>
-                <li>접종 기록: <a href="#">확인하기</a></li>
-                <li>입양 후기: <a href="#">작성하기</a> | 작성된 후기: <a href="#">보기</a></li>
+                <li th:if="${#lists.isEmpty(adoptlist)}">
+                    입양한 동물이 없습니다.
+                </li>
+                <li th:each="adopted : ${adoptlist}" style="margin-bottom: 24px;">
+                    <strong>이름:</strong> <span th:text="${adopted.name}"></span><br>
+                    <strong>종류:</strong> <span th:text="${adopted.species}"></span><br>
+                    <strong>접종 유무:</strong>
+                    <span th:if="${adopted.vaccinated}" style="color:green;">✔ 예</span>
+                    <span th:unless="${adopted.vaccinated}" style="color:red;">✖ 아니오</span><br>
+                    <strong>중성화 유무:</strong>
+                    <span th:if="${adopted.neutered}" style="color:green;">✔ 예</span>
+                    <span th:unless="${adopted.neutered}" style="color:red;">✖ 아니오</span><br>
+                    <strong>센터 입소일:</strong> <span th:text="${#temporals.format(adopted.arrivalDate, 'yyyy-MM-dd')}"></span><br>
+                    <strong>좋아하는 것:</strong> <span th:text="${adopted.likes}"></span><br>
+                    <strong>싫어하는 것:</strong> <span th:text="${adopted.dislikes}"></span><br>
+                    <strong>특징:</strong> <span th:text="${adopted.description}"></span>
+                </li>
             </ul>
         </article>
 
         <article id="application-content" class="content">
             <h3>입양 신청 내역</h3>
             <ul>
-                <li><strong>동물:</strong> 나비 | <strong>종류:</strong> 고양이 | <strong>신청 날짜:</strong> 2023-09-15 | <strong>상태:</strong> 승인대기 | <strong>담당자 연락처:</strong> 010-1234-5678</li>
+                <li th:if="${#lists.isEmpty(adoptionList)}">
+                    신청하신 입양 내역이 없습니다.
+                </li>
+                <li th:each="adoption : ${adoptionList}" style="margin-bottom: 24px;">
+                    <strong>이름:</strong> <span th:text="${session.loginMember.u_name}">이호자</span><br>
+                    <strong>신청 날짜:</strong>
+                    <span th:text="${#temporals.format(adoption.createdAt, 'yyyy-MM-dd')}">2025-06-20</span><br>
+                    <strong>주거 형태:</strong> <span th:text="${adoption.housingType}"></span><br>
+                    <strong>반려동물 허용:</strong> <span th:text="${adoption.petAllowed}"></span><br>
+                    <strong>가족 정보:</strong> <span th:text="${adoption.familyInfo}"></span><br>
+                    <strong>현재 반려동물:</strong> <span th:text="${adoption.currentPets}"></span><br>
+                    <strong>양육 경험:</strong> <span th:text="${adoption.experience}"></span><br>
+                    <strong>직업:</strong> <span th:text="${adoption.job}"></span><br>
+                    <strong>근무 형태:</strong> <span th:text="${adoption.workType}"></span><br>
+                    <strong>경제적 여건:</strong> <span th:text="${adoption.financialStatus}"></span><br>
+                    <strong>돌봄 계획:</strong> <span th:text="${adoption.petCarePlan}"></span><br>
+                    <strong>평일 돌봄 시간:</strong> <span th:text="${adoption.careTime}"></span><br>
+                    <strong>산책/운동 계획:</strong> <span th:text="${adoption.exercisePlan}"></span><br>
+                    <strong>외출/여행 시 대처:</strong> <span th:text="${adoption.travelPlan}"></span><br>
+                    <strong>입양 동기:</strong> <span th:text="${adoption.motivation}"></span><br>
+                    <strong>동의여부:</strong>
+                    <span th:text="${adoption.agreement == 1 ? '동의' : '미동의'}"></span><br>
+                    <strong>서약:</strong>
+                    <span th:text="${adoption.pledge == 1 ? '서약함' : '미서약'}"></span>
+                </li>
             </ul>
         </article>
 
-
+        <article id="volunteer-content" class="content">
+            <h3>봉사신청 현황</h3>
+            <ul>
+                <li th:if="${#lists.isEmpty(volunteerList)}">
+                    신청하신 봉사 내역이 없습니다.
+                </li>
+                <li th:each="volunteer : ${volunteerList}">
+                    <strong>신청자:</strong> <span th:text="${session.loginMember.u_name}"></span><br>
+                    <strong>봉사단체:</strong> <span th:text="${volunteer.shelter}"></span><br>
+                    <strong>봉사일자:</strong> <span th:text="${volunteer.volunteerDate}"></span><br>
+                    <strong>봉사시간대:</strong> <span th:text="${volunteer.volunteerTime}"></span><br>
+                    <strong>봉사분야:</strong> <span th:text="${volunteer.volunteerArea}"></span><br>
+                    <strong>신청일:</strong> <span th:text="${volunteer.createdAt}"></span><br>
+                    <strong>동의여부:</strong> <span th:text="${volunteer.agreement == 1 ? '동의' : '미동의'}"></span>
+                </li>
+            </ul>
+            <p>
+                <a href="#">봉사신청 취소</a> |
+                <a href="#">확인서 출력</a>
+            </p>
+        </article>
         <article id="activity-content" class="content">
             <h3>나의 활동 기록</h3>
-            <p>입양 후기: <strong>2</strong>건 | 댓글: <strong>5</strong>건</p>
+            <p>
+                입양 후기: <span th:text="${#lists.size(myReviews)}"></span>건 |
+                댓글: <span th:text="${#lists.size(myComments)}"></span>건
+            </p>
+
+            <!-- 입양 후기 구분 -->
+            <h4 style="margin-top:20px;">내가 쓴 입양 후기</h4>
             <ul>
-                <li>귀여운 코코 이야기 - 2023-08-10</li>
-                <li>입양을 고민하는 분들께 - 2023-08-01</li>
+                <li th:each="review : ${myReviews}">
+                    <a th:href="@{/reviews/{ar_no}(ar_no=${review.arNo})}" th:text="${review.arTitle}"></a>
+                    - <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}"></span>
+                </li>
             </ul>
+
+            <!-- 입양 후기 댓글 구분 -->
+            <h4 style="margin-top:20px;">내가 쓴 댓글</h4>
+            <ul>
+                <li th:each="comment : ${myComments}">
+                    <!-- 게시판 종류를 p 태그로 표시 -->
+                    <span th:switch="${comment.boardType}">
+            <p th:case="'adoptionReview'" style="margin-bottom:4px; color:#888;">입양 후기 게시판</p>
+            <p th:case="'board'" style="margin-bottom:4px; color:#888;">자유 게시판</p>
+            <p th:case="'lostfound'" style="margin-bottom:4px; color:#888;">실종/보호 게시판</p>
+
+        </span>
+                    <!-- 게시판별 댓글 링크 -->
+                    <span th:switch="${comment.boardType}">
+            <a th:case="'adoptionReview'"
+               th:href="@{/reviews/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                <span th:text="${comment.cmContent}"></span>
+            </a>
+            <a th:case="'board'"
+               th:href="@{/boards/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                <span th:text="${comment.cmContent}"></span>
+            </a>
+            <a th:case="'lostfound'"
+               th:href="@{/lostfound/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                <span th:text="${comment.cmContent}"></span>
+            </a>
+
+        </span>
+                     <span th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd')}"></span>
+                </li>
+            </ul>
+
+
         </article>
 
 
-
-
-        <article id="profile-content" class="content active">
+        <article id="profile-content" class="content">
             <h3>개인정보 및 알림 설정</h3>
             <ul>
                 <li><strong>아이디:</strong> <span th:text="${session.loginMember.u_id}"></span></li>
@@ -244,23 +343,15 @@
                 <li><strong>성별:</strong> <span th:text="${session.loginMember.u_gender}"></span></li>
                 <li><strong>이메일:</strong> <span th:text="${session.loginMember.u_email}"></span></li>
                 <li><strong>생년월일:</strong> <span th:text="${session.loginMember.u_birthdate}"></span></li>
-
-
-
-
             </ul>
         </article>
-        <a th:href="@{/mupdate}">회원정보 수정</a>
+        <a class="edit-button" th:href="@{/mupdate}">회원정보 수정</a>
         <p class="logout">로그아웃 하시겠습니까? <a th:href="@{/logout}">로그아웃</a></p>
     </section>
 </main>
-
-
-
 <script>
     const links = document.querySelectorAll('.sidebar ul li a');
     const contents = document.querySelectorAll('.content');
-
     links.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();

@@ -1,6 +1,7 @@
 package com.example.petbridge.repository;
 
 import com.example.petbridge.entity.Comment;
+import com.example.petbridge.entity.Volunteer;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -14,4 +15,6 @@ public interface CommentRepository {
     List<Comment> selectCommentsByPostId(@Param("postId") Long postId, @Param("boardType") String boardType);
     // ★추가: 게시판 타입별 댓글 개수 조회 (필요하다면)
     int countCommentsByPostId(@Param("postId") Long postId, @Param("boardType") String boardType);
+
+    List<Comment> findByCommentUid(@Param("authorUid") String authorUid);
 }

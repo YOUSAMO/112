@@ -2,6 +2,7 @@ package com.example.petbridge.service;
 
 import com.example.petbridge.entity.Animal;
 import com.example.petbridge.entity.AnimalFile;
+import com.example.petbridge.entity.Volunteer;
 import com.example.petbridge.repository.AnimalFileRepository;
 import com.example.petbridge.repository.AnimalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,4 +139,9 @@ public class AnimalService {
     public int getTotalCountByCondition(String keyword, String species) {
         return animalRepository.getTotalCountByCondition(keyword, species);
     }
+
+    public List<Animal> findByUserId(String u_id) {
+        return animalRepository.findByUserId(u_id);
+    }
+
 }

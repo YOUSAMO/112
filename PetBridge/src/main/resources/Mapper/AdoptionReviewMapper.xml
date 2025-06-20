@@ -122,4 +122,14 @@
         WHERE ar_no = #{arNo}
     </select>
 
+    <select id="findByAuthorUid" parameterType="string" resultType="com.example.petbridge.entity.AdoptionReview">
+        SELECT *
+        FROM adoption_review
+        WHERE author_uid = #{authorUid}
+        ORDER BY created_at DESC
+    </select>
+
+
+
+
 </mapper>

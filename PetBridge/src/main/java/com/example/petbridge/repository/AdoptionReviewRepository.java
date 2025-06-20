@@ -1,6 +1,7 @@
 package com.example.petbridge.repository;
 
 import com.example.petbridge.entity.AdoptionReview;
+import com.example.petbridge.entity.Volunteer;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -34,4 +35,6 @@ public interface AdoptionReviewRepository {
     void incrementReviewLikeCount(Long arNo);
     void decrementReviewLikeCount(Long arNo);
     Integer getReviewLikeCount(Long arNo);
+
+    List<AdoptionReview> findByAuthorUid(@Param("authorUid") String authorUid);
 }

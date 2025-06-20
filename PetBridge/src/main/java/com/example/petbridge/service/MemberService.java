@@ -45,13 +45,12 @@ public class MemberService {
      * 회원 정보 수정
      */
 
-    public void updateMember(Member member) {
-
-
-        memberRepository.updateMember(member);
-
-
+    public boolean updateMemberInfo(Member member) {
+        // DB에 member의 u_id 기준으로 이름, 전화번호, 이메일, 비밀번호만 업데이트
+        // (u_gender, u_id 등은 변경하지 않음)
+        return memberRepository.updateMemberInfo(member) > 0;
     }
+
 
     /**
 

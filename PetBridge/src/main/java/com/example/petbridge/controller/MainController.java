@@ -2,22 +2,30 @@ package com.example.petbridge.controller;
 
 
 import com.example.petbridge.DTO.SessionMemberDTO;
-import com.example.petbridge.entity.Member;
-import com.example.petbridge.service.MemberService;
+import com.example.petbridge.entity.*;
+import com.example.petbridge.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class MainController {
 
     private final MemberService memberService;
+    private final VolunteerService volunteerService;
+    private final Adoption_applicationService adoption_applicationService;
+    private final AnimalService animalService;
+    private final AdoptionReviewService adoptionReviewService;
+    private final CommentService commentService;
 
     private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
     // *** 추가: 사용자 이름을 위한 세션 키 정의 ***
@@ -136,7 +144,19 @@ public class MainController {
             return "redirect:" + LOGIN_PAGE_URL;
         }
 
+        // 봉사신청 현황 조회 (예시 서비스)
+        List<Volunteer> volunteerList = volunteerService.findByUserId(loggedInUserId);
+        List<Adoption_application> adoptionList = adoption_applicationService.findByUserId(loggedInUserId);
+        List<Animal> adoptlist = animalService.findByUserId(loggedInUserId);
+        List<AdoptionReview> myReviews = adoptionReviewService.findByAuthorUid(loggedInUserId);
+        List<Comment> myComments = commentService.findByCommentUid(loggedInUserId);
+
+        model.addAttribute("adoptlist",adoptlist);
+        model.addAttribute("adoptionList", adoptionList);
+        model.addAttribute("myReviews", myReviews);
+        model.addAttribute("myComments", myComments);
         model.addAttribute("currentUserId", loggedInUserId);
+        model.addAttribute("volunteerList", volunteerList);
         System.out.println("MyPage 접근: 로그인된 사용자 ID - " + loggedInUserId);
         return "mypage/MyPage";
     }
@@ -175,11 +195,78 @@ public class MainController {
     }
 
 
+
     @GetMapping("/mupdate")
-    public String showUpdatePage(Model model) {
-        model.addAttribute("member", new Member());
+    public String showUpdatePage(HttpSession session, Model model) {
+        // 세션에서 로그인한 사용자 정보 가져오기 (예: SessionMemberDTO로 저장되어 있다고 가정)
+        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
+        if (loginMember == null) {
+            // 로그인 정보 없으면 로그인 페이지로 리다이렉트
+            return "redirect:/login";
+        }
+
+        // Member 엔티티에 세션 값 복사
+        Member member = new Member();
+        member.setU_id(loginMember.getU_id());
+        member.setU_name(loginMember.getU_name());
+        member.setU_pnumber(loginMember.getU_pnumber());
+        member.setU_email(loginMember.getU_email());
+        member.setU_gender(loginMember.getU_gender());
+        // 필요시 추가 필드 복사
+
+        model.addAttribute("member", member);
         return "member/memberupdate";
     }
+
+    @PostMapping("/mupdate")
+    public String updateMemberInfo(@ModelAttribute("member") Member member,
+                                   @RequestParam("u_pass") String newPassword,
+                                   @RequestParam("u_pass_check") String passwordCheck,
+                                   HttpSession session,
+                                   Model model,
+                                   RedirectAttributes redirectAttributes) {
+        // 세션에서 로그인한 사용자 정보 가져오기
+        SessionMemberDTO loginMember = (SessionMemberDTO) session.getAttribute("loginMember");
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        // 비밀번호 확인
+        if (!newPassword.equals(passwordCheck)) {
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            model.addAttribute("member", member);
+            return "member/memberupdate";
+        }
+
+        // 실제로 변경 가능한 정보만 갱신 (보안상 u_id, u_gender 등은 변경하지 않음)
+        member.setU_id(loginMember.getU_id());
+        member.setU_gender(loginMember.getU_gender());
+        // 비밀번호 암호화 등 추가 처리 필요
+        if (newPassword != null && !newPassword.isBlank()) {
+            // 예시: member.setU_pass(passwordEncoder.encode(newPassword));
+            member.setU_pass(newPassword);
+        }
+
+        // 서비스 계층에서 정보 업데이트
+        boolean success = memberService.updateMemberInfo(member);
+
+        if (success) {
+            // 세션 정보도 최신화 (이름, 전화번호, 이메일만)
+            loginMember.setU_name(member.getU_name());
+            loginMember.setU_pnumber(member.getU_pnumber());
+            loginMember.setU_email(member.getU_email());
+            session.setAttribute("loginMember", loginMember);
+
+            redirectAttributes.addFlashAttribute("message", "회원정보가 성공적으로 수정되었습니다.");
+            return "redirect:/";
+        } else {
+            model.addAttribute("error", "회원정보 수정에 실패했습니다. 다시 시도해 주세요.");
+            model.addAttribute("member", member);
+            return "member/memberupdate";
+        }
+    }
+
+
 
 
 

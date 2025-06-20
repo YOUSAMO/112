@@ -106,7 +106,6 @@ public class CommentService {
             throw new RuntimeException("댓글 수정 권한이 없습니다.");
         }
         existingComment.setCmContent(content);
-        existingComment.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         commentRepository.updateComment(existingComment);
         return existingComment;
     }
@@ -128,6 +127,11 @@ public class CommentService {
     @Transactional(readOnly = true)
     public Comment getCommentById(Long cmNo) {
         return commentRepository.selectCommentById(cmNo);
+    }
+
+
+    public List<Comment> findByCommentUid(String authorUid) {
+        return commentRepository.findByCommentUid(authorUid);
     }
 
 

@@ -108,6 +108,17 @@
         WHERE u_id = #{u_id}
     </update>
 
+    <update id="updateMemberInfo" parameterType="com.example.petbridge.entity.Member">
+        UPDATE users
+        SET
+            u_name = #{u_name},
+            u_pnumber = #{u_pnumber},
+            u_email = #{u_email},
+            u_pass = #{u_pass}
+        WHERE u_id = #{u_id}
+    </update>
+
+
 
 
 

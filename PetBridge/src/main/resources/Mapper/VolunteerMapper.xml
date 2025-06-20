@@ -24,6 +24,30 @@
     </insert>
 
 
+    <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Volunteer">
+        SELECT
+            va.id,
+            va.u_id,
+            u.u_name,
+            va.shelter,
+            va.volunteer_date,
+            va.volunteer_time,
+            va.volunteer_area,
+            va.motivation,
+            va.agreement,
+            va.guardianName,
+            va.created_at
+        FROM
+            volunteer_application va
+                JOIN
+            users u ON va.u_id = u.u_id
+        WHERE
+            va.u_id = #{u_id}
+        ORDER BY
+            va.created_at DESC
+    </select>
+
+
 
 
 

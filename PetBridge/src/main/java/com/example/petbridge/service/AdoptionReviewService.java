@@ -3,6 +3,7 @@ package com.example.petbridge.service;
 import com.example.petbridge.controller.AdoptionReviewController;
 import com.example.petbridge.entity.AdoptionReview;
 import com.example.petbridge.entity.AttachmentFile;
+import com.example.petbridge.entity.Volunteer;
 import com.example.petbridge.repository.AdoptionReviewRepository;
 import com.example.petbridge.repository.AttachmentFileRepository;
 import com.example.petbridge.repository.UserLikeRepository;
@@ -220,4 +221,12 @@ public class AdoptionReviewService {
 
         attachmentFileRepository.deleteById(attachmentId);
     }
+
+    public List<AdoptionReview> findByAuthorUid(String authorUid) {
+        return adoptionReviewRepository.findByAuthorUid(authorUid);
+    }
+
+
+
+
 }

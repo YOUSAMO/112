@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,25 +15,25 @@ public class Adoption_application {
     private int id;
     private String u_id;
     private String motivation;
-    private String housing;
-    private String housing_type;
-    private String pet_allowed;
-    private String family_info;
-    private String allergy_info;
-    private String current_pets;
+    private String housingType;
+    private String petAllowed;
+    private String familyInfo;
+    private String allergyInfo;
+    private String currentPets;
     private String experience;
     private String job;
-    private String work_type;
-    private String pet_care_plan;
-    private String financial_status;
-    private String animal_type;
-    private String animal_detail;
-    private String care_time;
-    private String exercise_plan;
-    private String travel_plan;
-    private int agreement;
-    private LocalDate created_at;
+    private String workType;
+    private String petCarePlan;
+    private String financialStatus;
+    private String animalType;
+    private String animalDetail;
+    private String careTime;
+    private String exercisePlan;
+    private String travelPlan;
+    private Integer agreement;
+    private LocalDateTime createdAt; // 또는 String createdAt;
     private Integer pledge;
+    private String housing;
     private Long animal_id;
 
 }

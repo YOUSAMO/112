@@ -149,10 +149,10 @@
         </select>
 
         <label>희망 봉사 일자 <span class="required">*</span></label>
-        <input type="date" th:field="*{volunteer_date}" id="volunteer_date" required>
+        <input type="date" th:field="*{volunteerDate}" id="volunteer_date" required>
 
         <label>희망 봉사 시간대 <span class="required">*</span></label>
-        <select th:field="*{volunteer_time}" required>
+        <select th:field="*{volunteerTime}" required>
             <option value="">선택</option>
             <option value="오전">오전 (09:00~12:00)</option>
             <option value="오후">오후 (13:00~17:00)</option>
@@ -160,7 +160,7 @@
         </select>
 
         <label>봉사 희망 분야 <span class="required">*</span></label>
-        <select th:field="*{volunteer_area}" required>
+        <select th:field="*{volunteerArea}" required>
             <option value="">선택</option>
             <option value="동물 돌봄">동물 돌봄</option>
             <option value="청소/환경 정비">청소/환경 정비</option>

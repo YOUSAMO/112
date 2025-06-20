@@ -2,9 +2,12 @@ package com.example.petbridge.service;
 
 
 import com.example.petbridge.entity.Adoption_application;
+import com.example.petbridge.entity.Volunteer;
 import com.example.petbridge.repository.Adoption_applicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,10 @@ public class Adoption_applicationService {
 
         return count > 0;
 
+    }
+
+    public List<Adoption_application> findByUserId(String u_id) {
+        return adoption_applicationRepository.findByUserId(u_id);
     }
 
 

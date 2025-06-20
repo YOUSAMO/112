@@ -1,5 +1,6 @@
 package com.example.petbridge.repository;
 import com.example.petbridge.entity.Animal;
+import com.example.petbridge.entity.Volunteer;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -29,4 +30,7 @@ public interface AnimalRepository {
     int getTotalCountByCondition(
             @Param("keyword") String keyword,
             @Param("species") String species);
+
+
+    List<Animal> findByUserId(@Param("u_id") String u_id);
 }

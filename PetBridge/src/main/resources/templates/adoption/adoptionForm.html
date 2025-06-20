@@ -96,7 +96,7 @@
             <option value="기타">기타</option>
         </select>
         <label>주거 형태 <span class="required">*</span></label>
-        <select th:field="*{housing_type}" required>
+        <select th:field="*{housingType}" required>
             <option value="">선택</option>
             <option value="아파트">아파트</option>
             <option value="주택">주택</option>
@@ -104,14 +104,14 @@
             <option value="기타">기타</option>
         </select>
         <label>임대 시 반려동물 허용 여부</label>
-        <select th:field="*{pet_allowed}">
+        <select th:field="*{petAllowed}">
             <option value="">선택</option>
             <option value="허용">허용</option>
             <option value="불허">불허</option>
             <option value="해당 없음">해당 없음</option>
         </select>
         <label>가족 구성 및 동거인(성인/아동/알레르기 여부 등)</label>
-        <textarea th:field="*{family_info}" id="family_info" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요."></textarea>
+        <textarea th:field="*{familyInfo}" id="family_info" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요."></textarea>
 
         <div class="section-title">입양 동기 및 책임 의사</div>
         <label>입양을 원하는 이유 <span class="required">*</span></label>
@@ -123,7 +123,7 @@
 
         <div class="section-title">기존 반려동물 유무 및 돌봄 경험</div>
         <label>현재 키우는 반려동물</label>
-        <input type="text" th:field="*{current_pets}" placeholder="예: 강아지 1마리(중성화/접종 완료)" pattern="^[가-힣\s0-9]+$" title="한글, 숫자, 공백만 입력하세요.">
+        <input type="text" th:field="*{currentPets}" placeholder="예: 강아지 1마리(중성화/접종 완료)" pattern="^[가-힣\s0-9]+$" title="한글, 숫자, 공백만 입력하세요.">
         <label>과거 반려동물 양육 경험</label>
         <textarea th:field="*{experience}" id="experience" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요."></textarea>
 
@@ -131,34 +131,23 @@
         <label>직업</label>
         <input type="text" th:field="*{job}" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요.">
         <label>근무 형태(재택/출근/교대 등)</label>
-        <input type="text" th:field="*{work_type}" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요.">
+        <input type="text" th:field="*{workType}" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요.">
         <label>외출 시 동물 돌봄 계획</label>
-        <textarea th:field="*{pet_care_plan}" id="pet_care_plan" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요."></textarea>
+        <textarea th:field="*{petCarePlan}" id="pet_care_plan" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요."></textarea>
         <label>입양 후 경제적 부담 감당 가능 여부 <span class="required">*</span></label>
-        <select th:field="*{financial_status}" required>
+        <select th:field="*{financialStatus}" required>
             <option value="">선택</option>
             <option value="가능">가능</option>
             <option value="불가능">불가능</option>
         </select>
 
-        <div class="section-title">입양 희망 동물 정보</div>
-        <label>종류 <span class="required">*</span></label>
-        <select th:field="*{animal_type}" required>
-            <option value="">선택</option>
-            <option value="강아지">강아지</option>
-            <option value="고양이">고양이</option>
-            <option value="기타">기타</option>
-        </select>
-        <label>나이/성별/성격 등</label>
-        <input type="text" th:field="*{animal_detail}" pattern="^[가-힣\s0-9]+$" title="한글, 숫자, 공백만 입력하세요.">
-
         <div class="section-title">동물 돌봄 계획</div>
         <label>하루 돌봄 시간</label>
-        <input type="text" th:field="*{care_time}" placeholder="예: 평일 4시간, 주말 8시간" pattern="^[가-힣\s0-9]+$" title="한글, 숫자, 공백만 입력하세요.">
+        <input type="text" th:field="*{careTime}" placeholder="예: 평일 4시간, 주말 8시간" pattern="^[가-힣\s0-9]+$" title="한글, 숫자, 공백만 입력하세요.">
         <label>산책·운동 계획</label>
-        <input type="text" th:field="*{exercise_plan}" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요.">
+        <input type="text" th:field="*{exercisePlan}" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요.">
         <label>외출/여행 시 대처 방안</label>
-        <textarea th:field="*{travel_plan}" id="travel_plan" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요."></textarea>
+        <textarea th:field="*{travelPlan}" id="travel_plan" pattern="^[가-힣\s]+$" title="한글과 공백만 입력하세요."></textarea>
 
         <div class="section-title">입양자 준수사항 동의</div>
         <label>
@@ -178,28 +167,26 @@
     <a th:href="@{/}"><button type="submit" style="margin-top: 20px">홈으로</button></a>
 </div>
 <script th:inline="javascript">
-  /*
-    document.getElementById('adoptionForm').addEventListener('submit', function(e) {
-        // 한글만 허용하는 필드 검증
-        function isKoreanOnly(str) {
-            return /^[가-힣\s]+$/.test(str);
-        }
-        // textarea 등 pattern이 적용되지 않는 필드 JS로 추가 검증
-        const motivation = document.getElementById('motivation').value;
-        if (motivation && !isKoreanOnly(motivation)) {
-            alert('입양 동기는 한글만 입력할 수 있습니다.');
-            e.preventDefault();
-        }
-        const familyInfo = document.getElementById('family_info').value;
-        if (familyInfo && !isKoreanOnly(familyInfo)) {
-            alert('가족 구성은 한글만 입력할 수 있습니다.');
-            e.preventDefault();
-        }
-        // 필요시 다른 textarea도 동일하게 추가
-    });
-    */
-
-
+    /*
+      document.getElementById('adoptionForm').addEventListener('submit', function(e) {
+          // 한글만 허용하는 필드 검증
+          function isKoreanOnly(str) {
+              return /^[가-힣\s]+$/.test(str);
+          }
+          // textarea 등 pattern이 적용되지 않는 필드 JS로 추가 검증
+          const motivation = document.getElementById('motivation').value;
+          if (motivation && !isKoreanOnly(motivation)) {
+              alert('입양 동기는 한글만 입력할 수 있습니다.');
+              e.preventDefault();
+          }
+          const familyInfo = document.getElementById('family_info').value;
+          if (familyInfo && !isKoreanOnly(familyInfo)) {
+              alert('가족 구성은 한글만 입력할 수 있습니다.');
+              e.preventDefault();
+          }
+          // 필요시 다른 textarea도 동일하게 추가
+      });
+      */
 </script>
 </body>
 </html>

@@ -28,6 +28,7 @@ public interface MemberRepository {
 
     int updatePassword(@Param("u_id") String u_id, @Param("u_pass") String u_pass);
 
+    int updateMemberInfo(Member member);
 
 
 }
