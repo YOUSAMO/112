@@ -319,10 +319,11 @@
                th:href="@{/boards/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
                 <span th:text="${comment.cmContent}"></span>
             </a>
-            <a th:case="'lostfound'"
-               th:href="@{/lostfound/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
-                <span th:text="${comment.cmContent}"></span>
-            </a>
+           <a th:case="'lostfound'"
+              th:href="@{/lostfound/detail/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+    <span th:text="${comment.cmContent}"></span>
+</a>
+
 
         </span>
                      <span th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd')}"></span>
@@ -349,6 +350,7 @@
         <p class="logout">로그아웃 하시겠습니까? <a th:href="@{/logout}">로그아웃</a></p>
     </section>
 </main>
+
 <script>
     const links = document.querySelectorAll('.sidebar ul li a');
     const contents = document.querySelectorAll('.content');

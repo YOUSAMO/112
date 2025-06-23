@@ -97,13 +97,6 @@ public class MemberController {
     }
     */
 
-
-
-
-
-
-
-
     // 아이디 중복 확인
     @GetMapping("/checkId")
     @ResponseBody

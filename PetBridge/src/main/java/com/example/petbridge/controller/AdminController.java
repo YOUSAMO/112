@@ -15,7 +15,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor // 자동 생성자 주입
@@ -48,14 +51,14 @@ public class AdminController {
 
     @GetMapping("/register/denied")
     public String registerDenied() {
-        return "admin/registerDenied"; // 안내용 뷰 페이지
+        return "admin/registerdenied"; // 안내용 뷰 페이지
     }
 
 
     // 관리자 로그인 폼
     @GetMapping("/login")
     public String adminLoginPage() {
-        return "login"; // templates/admin/login.html
+        return "login/login"; // templates/admin/login.html
     }
 
     // 로그인 처리
@@ -70,18 +73,18 @@ public class AdminController {
         if (adminEntity == null) {
             System.out.println("adminEntity is null: 로그인 실패 (ID=" + a_id + ")");
         } else {
-            System.out.println("adminEntity is NOT null: 로그인 성공 (ID=" + adminEntity.getA_id() + ")");
+            System.out.println("adminEntity is NOT null: 로그인 성공 (ID=" + adminEntity.getAId() + ")");
         }
 
         if (adminEntity != null) {
             SessionAdminDTO sessionAdminDto = new SessionAdminDTO();
-            sessionAdminDto.setA_id(adminEntity.getA_id());
-            sessionAdminDto.setA_name(adminEntity.getA_name());
+            sessionAdminDto.setAId(adminEntity.getAId());
+            sessionAdminDto.setAName(adminEntity.getAName());
             session.setAttribute("loginAdmin", sessionAdminDto);
             return "redirect:/admin/adminPage";
         } else {
             redirectAttributes.addFlashAttribute("adminError", "아이디 또는 비밀번호가 올바르지 않습니다.");
-            return "redirect:/login";
+            return "redirect:/admin/login";
         }
     }
 
@@ -95,10 +98,12 @@ public class AdminController {
         }
         List<Member> memberList = memberService.getAllMembers();
         List<Animal> animalList = animalService.getAllAnimals();
+        List<Admin> adminList = adminService.selectAllAdmins(); // 관리자 목록 조회 메서드 호출 필요
         System.out.println("memberList = " + memberList);
         System.out.println("animalList = " + animalList);
         model.addAttribute("animals",animalList);
         model.addAttribute("members", memberList);
+        model.addAttribute("admins", adminList);
         model.addAttribute("loginAdmin", loginAdmin);
         return "admin/adminPage"; // templates/admin/adminPage.html
     }
@@ -111,6 +116,9 @@ public class AdminController {
         System.out.println("로그아웃 되었습니다.");
         return "redirect:/"; // 로그아웃 후 메인 페이지로
     }
+
+
+
 
 
 

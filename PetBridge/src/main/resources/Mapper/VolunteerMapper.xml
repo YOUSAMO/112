@@ -5,9 +5,9 @@
     <resultMap id="volunteerResultMap" type="com.example.petbridge.entity.Volunteer">
 
         <result property="shelter" column="shelter"/>
-        <result property="volunteer_date" column="volunteer_date"/>
-        <result property="volunteer_area" column="volunteer_area"/>
-        <result property="volunteer_time" column="volunteer_time"/>
+        <result property="volunteerDate" column="volunteer_date"/>
+        <result property="volunteerArea" column="volunteer_area"/>
+        <result property="volunteerTime" column="volunteer_time"/>
         <result property="motivation" column="motivation"/>
         <result property="agreement" column="agreement"/>
 
@@ -15,11 +15,12 @@
     </resultMap>
 
     <insert id="insert" parameterType="com.example.petbridge.entity.Volunteer">
-        INSERT INTO volunteer_application
-        (u_id,shelter,volunteer_date,volunteer_time,volunteer_area,motivation,agreement,guardianName)
-        VALUES
-            (#{u_id},#{shelter},#{volunteer_date},#{volunteer_time},#{volunteer_area},#{motivation},
-             #{agreement},#{guardianName})
+        INSERT INTO volunteer_application (
+            u_id, shelter, volunteer_date, volunteer_time, volunteer_area, motivation, agreement, guardianName
+        ) VALUES (
+                     #{u_id}, #{shelter}, #{volunteerDate}, #{volunteerTime}, #{volunteerArea}, #{motivation}, #{agreement}, #{guardianName}
+                 )
+
 
     </insert>
 

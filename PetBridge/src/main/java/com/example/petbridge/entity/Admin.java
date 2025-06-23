@@ -12,9 +12,9 @@ public class Admin {
 
 
     private Long a_no;
-    private String a_id;
-    private String a_pass;
-    private String a_name;
+    private String aId;
+    private String aPass;
+    private String aName;
 
 
 }

@@ -229,6 +229,7 @@
       padding: 18px 40px;
       background: #E7DECF;
       border-radius: 8px 0 0 8px;
+      white-space: nowrap;
       font-size: 1.1em;
       cursor: pointer;
       font-weight: bold;
@@ -291,7 +292,7 @@
 <aside class="sidebar">
   <h2>유기동물<br>보호소 관리자</h2>
   <ul class="nav-menu">
-    <li class="active" data-section="animal">동물목록</li>
+
     <li data-section="adopt">입양 신청서 관리</li>
     <li data-section="member">회원 관리</li>
     <li class="dropdown">
@@ -310,7 +311,7 @@
       <ul class="dropdown-content">
         <li data-section="admin-list"><a href="#">관리자 목록</a></li>
         <li data-section="admin-register"><a href="#">관리자 등록</a></li>
-        <li data-section="admin-role"><a href="#">권한 설정</a></li>
+
       </ul>
     </li>
   </ul>
@@ -319,46 +320,14 @@
   <div class="header">
     유기동물 보호소 관리자 페이지
     <span class="admin-info">
-        관리자: <span th:text="${loginAdmin.a_name}">님 환영합니다</span> |
+        관리자: <span th:text="${loginAdmin.aName}">님 환영합니다</span> |
         <a th:href="@{/admin/logout}" style="color:#F5EEDD;">로그아웃</a>
       </span>
   </div>
   <!-- 동물목록 -->
-  <section class="section active" id="section-animal">
-    <h3>동물목록 관리</h3>
-    <table class="animal-table">
-      <thead>
-      <tr>
-        <th>번호</th>
-        <th>이름</th>
-        <th>종류</th>
-        <th>성별</th>
-        <th>나이</th>
-        <th>접종</th>
-        <td>입소일</td>
-        <th colspan="3">관리</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="animal,iterStat : ${animals}">
-        <td th:text="${iterStat.index + 1}"></td>
-        <td th:text="${animal.name}"></td>
-        <td th:text="${animal.species}"></td>
-        <td th:text="${animal.gender}"></td>
-        <td th:text="${animal.age}"></td>
-        <td th:text="${animal.vaccinated}"></td>
-        <td th:text="${animal.arrivalDate}"></td>
-        <td>
-          <button class="btn btn-detail" type="button">상세</button>
-          <button class="btn" type="button">삭제</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </section>
-  <!-- 입양글 관리 -->
+    <!-- 입양글 관리 -->
   <section class="section" id="section-adopt">
-    <h3>입양글 관리</h3>
+    <h3>입양신청서 관리</h3>
     <table class="adopt-table">
       <thead>
       <tr>
@@ -487,16 +456,15 @@
         <th>번호</th>
         <th>아이디</th>
         <th>이름</th>
-        <th>권한</th>
         <th>관리</th>
       </tr>
       </thead>
       <tbody>
-      <tr th:each="admin,iterStat : ${admins}">
+      <tr th:if="${admins != null and !#lists.isEmpty(admins)}"
+          th:each="admin,iterStat : ${admins}">
         <td th:text="${iterStat.index + 1}"></td>
-        <td th:text="${admin.a_id}"></td>
-        <td th:text="${admin.a_name}"></td>
-        <td th:text="${admin.role}"></td>
+        <td th:text="${admin.aId}"></td>
+        <td th:text="${admin.aName}"></td>
         <td>
           <button class="btn">수정</button>
           <button class="btn">삭제</button>
@@ -521,24 +489,13 @@
         <label for="a_name">이름</label>
         <input type="text" id="a_name" name="a_name" class="form-control" required>
       </div>
-      <div class="form-group">
-        <label for="role">권한</label>
-        <select id="role" name="role" class="form-control">
-          <option value="ADMIN">ADMIN</option>
-          <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-        </select>
-      </div>
+
       <div style="margin-top:18px; text-align:right;">
         <button class="btn" type="submit">등록</button>
       </div>
     </form>
   </section>
-  <!-- 권한 설정 -->
-  <section class="section" id="section-admin-role">
-    <h3>권한 설정</h3>
-    <p>관리자별 권한을 설정하는 기능 구현 영역입니다.</p>
-    <!-- 예시: 관리자별 권한 체크박스 등 -->
-  </section>
+
 </div>
 <!-- 동물 상세 모달 -->
 <div class="modal-bg" id="animalModalBg">
