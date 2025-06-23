@@ -94,10 +94,10 @@ public class AdminController {
             return "redirect:/login";
         }
         List<Member> memberList = memberService.getAllMembers();
-        List<Animal> animalList = animalService.getAllAnimals();
+        //List<Animal> animalList = animalService.getAllAnimals();
         System.out.println("memberList = " + memberList);
-        System.out.println("animalList = " + animalList);
-        model.addAttribute("animals",animalList);
+        //System.out.println("animalList = " + animalList);
+        //model.addAttribute("animals",animalList);
         model.addAttribute("members", memberList);
         model.addAttribute("loginAdmin", loginAdmin);
         return "admin/adminPage"; // templates/admin/adminPage.html

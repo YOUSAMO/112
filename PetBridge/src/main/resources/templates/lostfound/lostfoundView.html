@@ -120,7 +120,13 @@
     </div>
     <hr>
     <div class="details-grid">
-        <p><b>동물 종류:</b> <span th:text="${animal.animalType}"></span></p>
+        <p><b>동물 종류:</b>
+            <span th:switch="${animal.animalType}">
+                <span th:case="'dog'">강아지</span>
+                <span th:case="'cat'">고양이</span>
+                <span th:case="*" th:text="${animal.animalType}"></span>
+            </span>
+        </p>
         <p><b>성별:</b> <span th:text="${animal.gender}"></span></p>
         <p><b>나이:</b> <span th:text="${animal.age}"></span></p>
         <p><b>위치:</b> <span th:text="${animal.location}"></span></p>

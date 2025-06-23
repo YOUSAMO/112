@@ -555,7 +555,7 @@
 
         const pageRange = 5;
         let currentShelterPage = 1;
-        const sheltersPerPage = 8;
+        const sheltersPerPage = 9;
         let currentAnimalPage = 1;
         const animalsPerPage = 9;
 
@@ -607,18 +607,18 @@
             return shelterCard;
         }
 
-        function createAllShelterCard() {
-            const allShelterCard = document.createElement('div');
-            allShelterCard.className = 'shelter-card';
-            allShelterCard.innerHTML = `<div class="name">전체 보기</div><div class="desc">모든 보호소의 동물을 봅니다.</div>`;
-            allShelterCard.onclick = () => filterAnimalsByShelter('all');
-            return allShelterCard;
-        }
+        // function createAllShelterCard() {
+        //     const allShelterCard = document.createElement('div');
+        //     allShelterCard.className = 'shelter-card';
+        //     allShelterCard.innerHTML = `<div class="name">전체 보기</div><div class="desc">모든 보호소의 동물을 봅니다.</div>`;
+        //     allShelterCard.onclick = () => filterAnimalsByShelter('all');
+        //     return allShelterCard;
+        // }
 
         function displayShelters(page) {
             currentShelterPage = page;
             shelterContainer.innerHTML = '';
-            shelterContainer.appendChild(createAllShelterCard());
+            //shelterContainer.appendChild(createAllShelterCard());
 
             const startIndex = (page - 1) * sheltersPerPage;
             const endIndex = startIndex + sheltersPerPage;

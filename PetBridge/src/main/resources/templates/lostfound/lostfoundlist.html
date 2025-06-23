@@ -91,7 +91,13 @@
             <a th:href="@{|/lostfound/detail/${animal.id}|}" th:text="${animal.title}" class="text-indigo-600 hover:text-indigo-800 font-medium"></a>
           </td>
           <td class="px-4 py-3" th:text="${animal.authorName}"></td>
-          <td class="px-4 py-3" th:text="${animal.animalType}"></td>
+          <td class="px-4 py-3">
+            <span th:switch="${animal.animalType}">
+              <span th:case="'dog'">강아지</span>
+              <span th:case="'cat'">고양이</span>
+              <span th:case="*" th:text="${animal.animalType}"></span>
+            </span>
+          </td>
           <td class="px-4 py-3" th:text="${animal.location}"></td>
           <td class="px-4 py-3" th:text="${#temporals.format(animal.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
           <td class="px-4 py-3" th:text="${animal.viewCount}"></td>
