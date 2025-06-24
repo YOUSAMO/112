@@ -6,34 +6,77 @@
 <mapper namespace="com.example.petbridge.repository.Adoption_applicationRepository">
 
     <insert id="insert" parameterType="com.example.petbridge.entity.Adoption_application">
-        INSERT INTO adoption_application
-        ( animal_id,u_id,housing, housing_type, pet_allowed, family_info, motivation, pledge,
-         current_pets, experience, job, work_type, pet_care_plan, financial_status,
-         care_time, exercise_plan, travel_plan, agreement)
-        VALUES
-            ( #{animal_id},#{u_id},#{housing}, #{housing_type}, #{pet_allowed}, #{family_info}, #{motivation}, #{pledge},
-             #{current_pets}, #{experience}, #{job}, #{work_type}, #{pet_care_plan}, #{financial_status},
-             #{care_time}, #{exercise_plan}, #{travel_plan}, #{agreement})
+        INSERT INTO adoption_application (
+            animal_id,
+            animal_name,
+            u_id,
+            housing,
+            housing_type,
+            pet_allowed,
+            family_info,
+            allergy_info,
+            motivation,
+            pledge,
+            current_pets,
+            experience,
+            job,
+            work_type,
+            pet_care_plan,
+            financial_status,
+            animal_type,
+            animal_detail,
+            care_time,
+            exercise_plan,
+            travel_plan,
+            agreement
+        ) VALUES (
+                     #{animal_id},
+                     #{animalName},
+                     #{u_id},
+                     #{housing},
+                     #{housingType},
+                     #{petAllowed},
+                     #{familyInfo},
+                     #{allergyInfo},
+                     #{motivation},
+                     #{pledge},
+                     #{currentPets},
+                     #{experience},
+                     #{job},
+                     #{workType},
+                     #{petCarePlan},
+                     #{financialStatus},
+                     #{animalType},
+                     #{animalDetail},
+                     #{careTime},
+                     #{exercisePlan},
+                     #{travelPlan},
+                     #{agreement}
+                 )
     </insert>
 
     <update id="update" parameterType="com.example.petbridge.entity.Adoption_application">
         UPDATE adoption_application
         SET
+            animal_name = #{animalName},
             housing = #{housing},
-            housing_type = #{housing_type},
-            pet_allowed = #{pet_allowed},
-            family_info = #{family_info},
+            housing_type = #{housingType},
+            pet_allowed = #{petAllowed},
+            family_info = #{familyInfo},
+            allergy_info = #{allergyInfo},
             motivation = #{motivation},
             pledge = #{pledge},
-            current_pets = #{current_pets},
+            current_pets = #{currentPets},
             experience = #{experience},
             job = #{job},
-            work_type = #{work_type},
-            pet_care = #{pet_care},
-            financial = #{financial},
-            care_time = #{care_time},
-            exercise_plan = #{exercise_plan},
-            travel_plan = #{travel_plan},
+            work_type = #{workType},
+            pet_care_plan = #{petCarePlan},
+            financial_status = #{financialStatus},
+            animal_type = #{animalType},
+            animal_detail = #{animalDetail},
+            care_time = #{careTime},
+            exercise_plan = #{exercisePlan},
+            travel_plan = #{travelPlan},
             agreement = #{agreement}
         WHERE id = #{id}
     </update>
@@ -42,30 +85,15 @@
         DELETE FROM adoption_application WHERE id = #{id}
     </delete>
 
-    <!-- adoptionApplicationMapper.xml -->
-
-        <select id="countByUserIdAndAnimalId" resultType="int">
-            SELECT COUNT(*)
-            FROM adoption_application
-            WHERE u_id = #{u_id}
-              AND animal_id = #{animal_id}
-        </select>
-
-    <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Adoption_application">
-        SELECT
-            aa.*,
-            u.u_name,
-            u.u_email,
-            u.u_pnumber,
-            a.name AS animal_name
-                 FROM adoption_application aa
-                 JOIN users u ON aa.u_id = u.u_id
-                 JOIN animal a ON aa.animal_id = a.id
-        WHERE aa.u_id = #{u_id}
-        ORDER BY aa.created_at DESC
+    <select id="countByUserIdAndAnimalId" resultType="int">
+        SELECT COUNT(*)
+        FROM adoption_application
+        WHERE u_id = #{u_id}
+          AND animal_id = #{animal_id}
     </select>
 
-
-
+    <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Adoption_application">
+        SELECT * FROM adoption_application WHERE u_id = #{userId}
+    </select>
 
 </mapper>

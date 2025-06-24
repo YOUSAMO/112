@@ -449,7 +449,7 @@
 <section class="hero">
     <h1>새로운 가족을 만나는 따뜻한 연결</h1>
     <p>유기동물에게 두 번째 기회를, 당신에게 특별한 인연을.<br>
-        AdoptBridge에서 소중한 가족을 만나보세요.</p>
+        PetBridge에서 소중한 가족을 만나보세요.</p>
     <button class="cta-btn" onclick="document.getElementById('shelter-info-section').scrollIntoView({ behavior: 'smooth' });">입양 동물 둘러보기</button>
 </section>
 <section class="slider" id="slider">
@@ -517,7 +517,20 @@
                 <li style="color:#fff; text-decoration:underline;">문의하기</li>
             </ul>
         </div>
-
+        <div>
+            <div style="margin-bottom:8px;">
+                <a href="https://www.instagram.com/petbridge" style="margin-right:8px; color:#fff;" target="_blank" title="Instagram">
+                    <img src="/static/img/instagram_icon.png" alt="Instagram" style="width:22px;vertical-align:middle;">
+                </a>
+                <a href="https://www.facebook.com/petbridge" style="margin-right:8px; color:#fff;" target="_blank" title="Facebook">
+                    <img src="/static/img/facebook_icon.png" alt="Facebook" style="width:22px;vertical-align:middle;">
+                </a>
+                <a href="mailto:help@petbridge.com" style="color:#fff;" title="Email">
+                    <img src="/static/img/email_icon.png" alt="Email" style="width:22px;vertical-align:middle;">
+                </a>
+            </div>
+            <span style="font-size:0.9em; color:#ccc;">문의: help@petbridge.com</span>
+        </div>
     </div>
     <hr style="border:none; border-top:1px solid #444; margin:24px 0 10px 0;">
     <p style="text-align:center; font-size:0.95em; color:#aaa; margin:0;">
@@ -542,7 +555,7 @@
 
         const pageRange = 5;
         let currentShelterPage = 1;
-        const sheltersPerPage = 8;
+        const sheltersPerPage = 9;
         let currentAnimalPage = 1;
         const animalsPerPage = 9;
 
@@ -594,18 +607,18 @@
             return shelterCard;
         }
 
-        function createAllShelterCard() {
-            const allShelterCard = document.createElement('div');
-            allShelterCard.className = 'shelter-card';
-            allShelterCard.innerHTML = `<div class="name">전체 보기</div><div class="desc">모든 보호소의 동물을 봅니다.</div>`;
-            allShelterCard.onclick = () => filterAnimalsByShelter('all');
-            return allShelterCard;
-        }
+        // function createAllShelterCard() {
+        //     const allShelterCard = document.createElement('div');
+        //     allShelterCard.className = 'shelter-card';
+        //     allShelterCard.innerHTML = `<div class="name">전체 보기</div><div class="desc">모든 보호소의 동물을 봅니다.</div>`;
+        //     allShelterCard.onclick = () => filterAnimalsByShelter('all');
+        //     return allShelterCard;
+        // }
 
         function displayShelters(page) {
             currentShelterPage = page;
             shelterContainer.innerHTML = '';
-            shelterContainer.appendChild(createAllShelterCard());
+            //shelterContainer.appendChild(createAllShelterCard());
 
             const startIndex = (page - 1) * sheltersPerPage;
             const endIndex = startIndex + sheltersPerPage;

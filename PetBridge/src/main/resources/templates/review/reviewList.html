@@ -42,85 +42,90 @@
 </head>
 <body class="bg-gray-100">
 <div th:replace="~{fragments/header :: commonHeader}"></div>
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">입양 후기 목록</h1>
-        <div>
-            <a th:if="${currentUserId != null}" th:href="@{/reviews/new}" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">새 후기 작성</a>
-            <a th:unless="${currentUserId != null}" th:href="@{/login}" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">로그인 후 작성</a>
+
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-40 mb-12">
+
+    <div class="bg-white shadow-xl rounded-lg overflow-hidden">
+
+        <div class="px-6 py-5 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">입양 후기 목록</h1>
+                <div>
+                    <a th:if="${currentUserId != null}" th:href="@{/reviews/new}" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">새 후기 작성</a>
+                    <a th:unless="${currentUserId != null}" th:href="@{/login}" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">로그인 후 작성</a>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
-        <table class="min-w-full text-sm text-center">
-            <thead class="bg-gray-50">
-            <tr>
-                <th class="px-4 py-3 font-semibold text-gray-600">번호</th>
-                <th class="px-4 py-3 font-semibold text-gray-600">사진</th>
-                <th class="px-4 py-3 font-semibold text-gray-600 text-left">제목</th>
-                <th class="px-4 py-3 font-semibold text-gray-600">작성자</th>
-                <th class="px-4 py-3 font-semibold text-gray-600">작성일</th>
-                <th class="px-4 py-3 font-semibold text-gray-600">조회수</th>
-                <th class="px-4 py-3 font-semibold text-gray-600">기능</th>
-            </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-            <tr th:each="review, stat : ${reviews}" class="hover:bg-gray-50">
-                <td class="px-4 py-3" th:text="${totalCount - ((pageInfo.currentPage - 1) * pageInfo.size) - stat.index}"></td>
-                <td class="px-4 py-3">
-                    <div th:if="${!review.attachments.isEmpty()}" class="flex justify-center">
-                        <img th:src="@{'/uploads/' + ${review.attachments[0].filePath}}" alt="대표사진" class="thumbnail-image" />
-                    </div>
-                </td>
-                <td class="px-4 py-3 text-left">
-                    <a th:href="@{/reviews/{arNo}(arNo=${review.arNo})}" th:text="${review.arTitle}" class="text-indigo-600 hover:text-indigo-800 font-medium"></a>
-                </td>
-                <td class="px-4 py-3" th:text="${review.authorName}"></td>
-                <td class="px-4 py-3" th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}"></td>
-                <td class="px-4 py-3" th:text="${review.viewCount}"></td>
-                <td class="px-4 py-3">
-                    <div th:if="${currentUserId != null && review.authorUid == currentUserId}" class="flex justify-center space-x-2">
-                        <a th:href="@{/reviews/{arNo}/edit(arNo=${review.arNo})}" class="action-btn edit-btn">수정</a>
-                        <form th:action="@{/reviews/{arNo}/delete(arNo=${review.arNo})}" method="post" class="inline" onsubmit="return confirm('삭제하시겠습니까?');">
-                            <button type="submit" class="action-btn delete-btn">삭제</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            <tr th:if="${reviews.isEmpty()}">
-                <td colspan="8" class="px-6 py-4 text-center text-gray-500">등록된 후기가 없습니다.</td>
-            </tr>
-            </tbody>
-        </table>
 
-        <div class="flex justify-center py-4 space-x-1">
-            <a th:href="@{/reviews(page=${pageInfo.currentPage - 1}, size=${pageInfo.size})}"
-               th:classappend="${pageInfo.currentPage <= 1} ? 'disabled pointer-events-none' : ''"
-               class="pagination-link rounded-l-lg">
-                <span class="sr-only">Previous</span>
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-            </a>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-center">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 font-semibold text-gray-600">번호</th>
+                    <th class="px-4 py-3 font-semibold text-gray-600">사진</th>
+                    <th class="px-4 py-3 font-semibold text-gray-600 text-left">제목</th>
+                    <th class="px-4 py-3 font-semibold text-gray-600">작성자</th>
+                    <th class="px-4 py-3 font-semibold text-gray-600">작성일</th>
+                    <th class="px-4 py-3 font-semibold text-gray-600">조회수</th>
+                    <th class="px-4 py-3 font-semibold text-gray-600">기능</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                <tr th:each="review, stat : ${reviews}" class="hover:bg-gray-50">
+                    <td class="px-4 py-3" th:text="${totalCount - ((pageInfo.currentPage - 1) * pageInfo.size) - stat.index}"></td>
+                    <td class="px-4 py-3">
+                        <div th:if="${!review.attachments.isEmpty()}" class="flex justify-center">
+                            <img th:src="@{'/uploads/' + ${review.attachments[0].filePath}}" alt="대표사진" class="thumbnail-image" />
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-left">
+                        <a th:href="@{/reviews/{arNo}(arNo=${review.arNo})}" th:text="${review.arTitle}" class="text-indigo-600 hover:text-indigo-800 font-medium"></a>
+                    </td>
+                    <td class="px-4 py-3" th:text="${review.authorName}"></td>
+                    <td class="px-4 py-3" th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}"></td>
+                    <td class="px-4 py-3" th:text="${review.viewCount}"></td>
+                    <td class="px-4 py-3">
+                        <div th:if="${currentUserId != null && review.authorUid == currentUserId}" class="flex justify-center space-x-2">
+                            <a th:href="@{/reviews/{arNo}/edit(arNo=${review.arNo})}" class="action-btn edit-btn">수정</a>
+                            <form th:action="@{/reviews/{arNo}/delete(arNo=${review.arNo})}" method="post" class="inline" onsubmit="return confirm('삭제하시겠습니까?');">
+                                <button type="submit" class="action-btn delete-btn">삭제</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${reviews.isEmpty()}">
+                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">등록된 후기가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-            <div th:each="i : ${#numbers.sequence(1, pageInfo.totalPages)}">
-                <a th:href="@{/reviews(page=${i}, size=${pageInfo.size})}"
-                   th:text="${i}"
-                   th:classappend="${i == pageInfo.currentPage} ? 'active' : ''"
-                   class="pagination-link">
+        <div class="flex justify-center p-4 border-t border-gray-200">
+            <div class="flex space-x-1">
+                <a th:href="@{/reviews(page=${pageInfo.currentPage - 1}, size=${pageInfo.size})}"
+                   th:classappend="${pageInfo.currentPage <= 1} ? 'disabled pointer-events-none' : ''"
+                   class="pagination-link rounded-l-lg">
+                    <span class="sr-only">Previous</span>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                </a>
+                <div th:each="i : ${#numbers.sequence(1, pageInfo.totalPages)}">
+                    <a th:href="@{/reviews(page=${i}, size=${pageInfo.size})}"
+                       th:text="${i}"
+                       th:classappend="${i == pageInfo.currentPage} ? 'active' : ''"
+                       class="pagination-link">
+                    </a>
+                </div>
+                <a th:href="@{/reviews(page=${pageInfo.currentPage + 1}, size=${pageInfo.size})}"
+                   th:classappend="${pageInfo.currentPage >= pageInfo.totalPages} ? 'disabled pointer-events-none' : ''"
+                   class="pagination-link rounded-r-lg">
+                    <span class="sr-only">Next</span>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
                 </a>
             </div>
-
-            <a th:href="@{/reviews(page=${pageInfo.currentPage + 1}, size=${pageInfo.size})}"
-               th:classappend="${pageInfo.currentPage >= pageInfo.totalPages} ? 'disabled pointer-events-none' : ''"
-               class="pagination-link rounded-r-lg">
-                <span class="sr-only">Next</span>
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                </svg>
-            </a>
         </div>
     </div>
-</div>
+</main>
+
 <script th:inline="javascript">
     /*<![CDATA[*/
     document.querySelectorAll('.like-btn').forEach(button => {

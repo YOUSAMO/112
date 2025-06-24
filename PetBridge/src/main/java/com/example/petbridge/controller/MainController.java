@@ -147,11 +147,11 @@ public class MainController {
         // 봉사신청 현황 조회 (예시 서비스)
         List<Volunteer> volunteerList = volunteerService.findByUserId(loggedInUserId);
         List<Adoption_application> adoptionList = adoption_applicationService.findByUserId(loggedInUserId);
-        List<Animal> adoptlist = animalService.findByUserId(loggedInUserId);
+
         List<AdoptionReview> myReviews = adoptionReviewService.findByAuthorUid(loggedInUserId);
         List<Comment> myComments = commentService.findByCommentUid(loggedInUserId);
 
-        model.addAttribute("adoptlist",adoptlist);
+
         model.addAttribute("adoptionList", adoptionList);
         model.addAttribute("myReviews", myReviews);
         model.addAttribute("myComments", myComments);

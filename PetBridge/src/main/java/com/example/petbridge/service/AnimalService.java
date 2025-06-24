@@ -1,147 +1,122 @@
 package com.example.petbridge.service;
 
+import com.example.petbridge.DTO.AnimalApiDTO;
 import com.example.petbridge.entity.Animal;
-import com.example.petbridge.entity.AnimalFile;
-import com.example.petbridge.entity.Volunteer;
-import com.example.petbridge.repository.AnimalFileRepository;
 import com.example.petbridge.repository.AnimalRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class AnimalService {
 
-    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList(
-            "image/jpeg", "image/png", "image/gif"
-    );
-
     private final AnimalRepository animalRepository;
-    private final AnimalFileRepository animalFileRepository;
-
-    // ★★★★★ 바로 이 부분입니다! 점(.)을 대시(-)로 수정했습니다. ★★★★★
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final ObjectMapper objectMapper;
+    private final ResourceLoader resourceLoader;
 
     @Autowired
-    public AnimalService(AnimalRepository animalRepository, AnimalFileRepository animalFileRepository) {
+    public AnimalService(AnimalRepository animalRepository, ObjectMapper objectMapper, ResourceLoader resourceLoader) {
         this.animalRepository = animalRepository;
-        this.animalFileRepository = animalFileRepository;
+        this.objectMapper = objectMapper;
+        this.resourceLoader = resourceLoader;
     }
 
-    // (이하 모든 메소드는 이전 답변의 최종본과 동일합니다)
+    public List<Animal> findAndConvertFromPublicData() throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:static/data/animals.json");
+        InputStream inputStream = resource.getInputStream();
+        String jsonResponse = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-    public List<Animal> getAllAnimals() {
-        return animalRepository.findAll();
+        Map<String, Object> fullResponse = objectMapper.readValue(jsonResponse, Map.class);
+        Map<String, Object> responseBody = (Map<String, Object>) fullResponse.get("response");
+        Map<String, Object> bodyMap = (Map<String, Object>) responseBody.get("body");
+
+        if (bodyMap == null || bodyMap.get("items") == null) {
+            return Collections.emptyList();
+        }
+
+        Map<String, Object> itemsMap = (Map<String, Object>) bodyMap.get("items");
+        Object itemObject = itemsMap.get("item");
+
+        List<AnimalApiDTO> dtoList = new ArrayList<>();
+        if (itemObject instanceof List) {
+            ((List<LinkedHashMap<String, Object>>) itemObject).forEach(item -> dtoList.add(objectMapper.convertValue(item, AnimalApiDTO.class)));
+        } else if (itemObject instanceof Map) {
+            dtoList.add(objectMapper.convertValue((LinkedHashMap<String, Object>) itemObject, AnimalApiDTO.class));
+        }
+
+        return dtoList.stream()
+                .map(this::convertSingleDtoToEntity)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Animal> findAnimalFromJsonFile(Long animalId) throws IOException {
+        return findAndConvertFromPublicData().stream()
+                .filter(animal -> animalId.equals(animal.getId()))
+                .findFirst();
+    }
+
+    private Animal convertSingleDtoToEntity(AnimalApiDTO dto) {
+        if (dto == null || dto.getDesertionNo() == null || dto.getDesertionNo().trim().isEmpty()) {
+            return null;
+        }
+        Animal animal = new Animal();
+        try {
+            animal.setId(Long.parseLong(dto.getDesertionNo()));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        animal.setName(dto.getKindName());
+        if (dto.getKindName() != null && dto.getKindName().startsWith("[개]")) animal.setSpecies("강아지");
+        else if (dto.getKindName() != null && dto.getKindName().startsWith("[고양이]")) animal.setSpecies("고양이");
+        else animal.setSpecies("기타");
+
+        try {
+            int birthYear = Integer.parseInt(dto.getAge().substring(0, 4));
+            animal.setAge(Math.max(1, LocalDate.now().getYear() - birthYear + 1));
+        } catch (Exception e) {
+            animal.setAge(1);
+        }
+
+        if ("M".equalsIgnoreCase(dto.getSexCd())) animal.setGender("수컷");
+        else if ("F".equalsIgnoreCase(dto.getSexCd())) animal.setGender("암컷");
+        else animal.setGender("미상");
+
+        animal.setNeutered("Y".equalsIgnoreCase(dto.getNeuterYn()));
+        animal.setVaccinated(false);
+        animal.setDescription(dto.getSpecialMark());
+
+        try {
+            animal.setArrivalDate(LocalDate.parse(dto.getHappenDt(), DateTimeFormatter.ofPattern("yyyyMMdd")));
+        } catch (Exception e) {
+            animal.setArrivalDate(LocalDate.now());
+        }
+
+        String imageUrl = dto.getPopfile1() != null ? dto.getPopfile1() : dto.getPopfile();
+        animal.setLikes(imageUrl);
+        return animal;
     }
 
     public Optional<Animal> getAnimalById(Long id) {
         return animalRepository.findById(id);
     }
 
-    public List<AnimalFile> getFilesByAnimalId(Long animalId) {
-        return animalFileRepository.findByAnimalId(animalId);
-    }
-
-    public void addAnimal(Animal animal, MultipartFile[] files) throws IOException {
+    // --- [최종 수정된 부분] ---
+    @Transactional
+    public Animal saveAnimalToDb(Animal animal) { // 1. 반환 타입을 void -> Animal 로 변경
         animalRepository.insert(animal);
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    validateFile(file);
-                    String savedFilePath = storeFile(file, animal.getId());
-                    AnimalFile animalFile = new AnimalFile();
-                    animalFile.setAnimalId(animal.getId());
-                    animalFile.setFileName(file.getOriginalFilename());
-                    animalFile.setFilePath(savedFilePath);
-                    animalFile.setFileType(file.getContentType());
-                    animalFileRepository.insert(animalFile);
-                }
-            }
-        }
+        return animal; // 2. MyBatis가 id를 채워준 animal 객체를 그대로 반환
     }
-
-    public void updateAnimal(Animal animal, MultipartFile[] files) throws IOException {
-        animalRepository.update(animal);
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    validateFile(file);
-                    String savedFilePath = storeFile(file, animal.getId());
-                    AnimalFile animalFile = new AnimalFile();
-                    animalFile.setAnimalId(animal.getId());
-                    animalFile.setFileName(file.getOriginalFilename());
-                    animalFile.setFilePath(savedFilePath);
-                    animalFile.setFileType(file.getContentType());
-                    animalFileRepository.insert(animalFile);
-                }
-            }
-        }
-    }
-
-    public void deleteAnimal(Long id) throws IOException {
-        animalFileRepository.deleteByAnimalId(id);
-        Path dirPath = Paths.get(uploadDir, "animal", "animal-" + id);
-        if (Files.exists(dirPath)) {
-            Files.walk(dirPath)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-        animalRepository.deleteById(id);
-    }
-
-    private String storeFile(MultipartFile file, Long animalId) throws IOException {
-        String originalFilename = file.getOriginalFilename();
-        String uuid = UUID.randomUUID().toString();
-        String fileName = uuid + "_" + originalFilename;
-
-        Path directoryPath = Paths.get(uploadDir, "animal", "animal-" + animalId);
-        Files.createDirectories(directoryPath);
-        Path filePath = directoryPath.resolve(fileName);
-        file.transferTo(filePath);
-
-        return "/uploads/animal/animal-" + animalId + "/" + fileName;
-    }
-
-    private void validateFile(MultipartFile file) {
-        if (file.getSize() > 10 * 1024 * 1024) { // 10MB
-            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
-        }
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (jpeg, png, gif만 가능)");
-        }
-    }
-
-    public List<Animal> getAnimalsWithPaging(int offset, int size) {
-        return animalRepository.findAllWithPaging(offset, size);
-    }
-
-    public int getTotalAnimalCount() {
-        return animalRepository.countAll();
-    }
-
-    public List<Animal> getAnimalsByCondition(int offset, int size, String keyword, String species) {
-        return animalRepository.getAnimalsByCondition(offset, size, keyword, species);
-    }
-
-    public int getTotalCountByCondition(String keyword, String species) {
-        return animalRepository.getTotalCountByCondition(keyword, species);
-    }
-
-    public List<Animal> findByUserId(String u_id) {
-        return animalRepository.findByUserId(u_id);
-    }
-
 }

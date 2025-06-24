@@ -332,6 +332,7 @@
     <table class="adopt-table">
       <thead>
       <tr>
+        <th>번호</th>
         <th>제목</th>
         <th>작성자</th>
         <th>등록일</th>
@@ -340,17 +341,29 @@
       </tr>
       </thead>
       <tbody>
-      <tr>
-        <td>제목</td>
-        <td>작성자</td>
-        <td>등록일</td>
-        <td>상태</td>
+      <tr th:each="app : ${applications}">
+        <td th:text="${app.id}"></td>
+        <td th:text="${app.title}"></td>
+        <td th:text="${app.author}"></td>
+        <td th:text="${app.createDate}"></td>
         <td>
-          <button class="btn" type="button">상세</button>
-          <button class="btn" type="button">삭제</button>
+          <form th:action="@{/admin/adoption/status/update}" method="post">
+            <input type="hidden" name="id" th:value="${app.id}">
+            <select name="status">
+              <option th:value="승인대기" th:selected="${app.status == '승인대기'}">승인대기</option>
+              <option th:value="승인불허" th:selected="${app.status == '승인불허'}">승인불허</option>
+              <option th:value="승인완료" th:selected="${app.status == '승인완료'}">승인완료</option>
+            </select>
+            <button type="submit">변경</button>
+          </form>
+        </td>
+        <td>
+          <button>상세</button>
+          <button>삭제</button>
         </td>
       </tr>
       </tbody>
+
     </table>
     <button class="btn" style="margin-top:16px;">신규 입양글 등록</button>
   </section>
@@ -521,8 +534,9 @@
         <td th:text="${admin.aId}"></td>
         <td th:text="${admin.aName}"></td>
         <td>
-          <button class="btn">수정</button>
-          <button class="btn">삭제</button>
+          <!-- [적용] 로그인한 관리자 ID와 현재 목록의 관리자 ID가 같을 때만 버튼이 보임 -->
+          <button class="btn" th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">수정</button>
+          <button class="btn" th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">삭제</button>
         </td>
       </tr>
       </tbody>

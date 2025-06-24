@@ -97,11 +97,10 @@ public class AdminController {
             return "redirect:/login";
         }
         List<Member> memberList = memberService.getAllMembers();
-        List<Animal> animalList = animalService.getAllAnimals();
+
         List<Admin> adminList = adminService.selectAllAdmins(); // 관리자 목록 조회 메서드 호출 필요
         System.out.println("memberList = " + memberList);
-        System.out.println("animalList = " + animalList);
-        model.addAttribute("animals",animalList);
+
         model.addAttribute("members", memberList);
         model.addAttribute("admins", adminList);
         model.addAttribute("loginAdmin", loginAdmin);
@@ -116,17 +115,6 @@ public class AdminController {
         System.out.println("로그아웃 되었습니다.");
         return "redirect:/"; // 로그아웃 후 메인 페이지로
     }
-
-
-
-
-
-
-
-
-
-
-
 
 }
 

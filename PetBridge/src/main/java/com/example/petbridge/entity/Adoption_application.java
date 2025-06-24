@@ -2,17 +2,16 @@ package com.example.petbridge.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-
-
+@ToString
 public class Adoption_application {
 
-    private int id;
+    private Long id;
     private String u_id;
     private String motivation;
     private String housingType;
@@ -30,10 +29,17 @@ public class Adoption_application {
     private String careTime;
     private String exercisePlan;
     private String travelPlan;
-    private Integer agreement;
-    private LocalDateTime createdAt; // 또는 String createdAt;
-    private Integer pledge;
+
+    // --- [최종 수정] Integer에서 Boolean으로 변경 ---
+    private Boolean agreement;
+
+    private LocalDateTime createdAt;
+
+    // --- [최종 수정] Integer에서 Boolean으로 변경 ---
+    private Boolean pledge;
+
     private String housing;
     private Long animal_id;
+    private String animalName;
 
 }

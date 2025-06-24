@@ -15,6 +15,6 @@ public interface Adoption_applicationRepository {
  void update(Adoption_application adoption_application);
  void delete(Adoption_application adoption_application);
  int countByUserIdAndAnimalId(@Param("u_id") String u_id, @Param("animal_id") long animal_id);
- List<Adoption_application> findByUserId(@Param("u_id") String u_id);
+ List<Adoption_application> findByUserId(@Param("userId") String userId);
 
 }

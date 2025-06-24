@@ -1,349 +1,261 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>동물 목록</title>
+    <title>동물 목록 (JSON 전체 데이터 방식)</title>
     <meta charset="UTF-8">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: ghostwhite;
-            margin: 0;
-            padding-top: 80px;
-            color: dimgray;
-        }
-
-        h1 {
-            text-align: center;
-            margin-top: 30px;
-            margin-bottom: 30px;
-            color: darkslategray;
-        }
-
-        .message, .error {
-            text-align: center;
-            margin: 10px 0;
-            font-weight: bold;
-        }
-
-        .message {
-            color: mediumseagreen;
-        }
-
-        .error {
-            color: tomato;
-        }
-
-        .search-form {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .search-form input,
-        .search-form select,
-        .search-form button {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid lightgray;
-            font-size: 14px;
-        }
-
-        .search-form button {
-            background-color: steelblue;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .search-form button:hover {
-            background-color: royalblue;
-        }
-
-        table {
-            width: 95%;
-            margin: 0 auto;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-            table-layout: fixed;
-        }
-
-        th {
-            background-color: darkslategray;
-            color: white;
-            padding: 12px;
-            text-align: center;
-        }
-
-        th:last-child, td:last-child {
-            width: 160px;
-            white-space: nowrap;
-        }
-
-        td {
-            background-color: white;
-            border: 1px solid lightgray;
-            padding: 12px;
-            vertical-align: middle;
-            text-align: center;
-            overflow-wrap: break-word;
-        }
-
-        td.files-cell {
-            max-width: 300px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-
-        tr:hover td {
-            background-color: whitesmoke;
-        }
-
-        img {
-            max-width: 80px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        a.file-link {
-            color: royalblue;
-            text-decoration: none;
-            margin-right: 10px;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        a.file-link:hover {
-            text-decoration: underline;
-        }
-
-        a.action-link {
-            margin-right: 8px;
-            text-decoration: none;
-            color: darkslategray;
-            white-space: nowrap;
-        }
-
-        a.action-link:hover {
-            text-decoration: underline;
-        }
-
-        ul {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 20px 0;
-            list-style: none;
-        }
-
-        ul li a {
-            padding: 6px 10px;
-            border: 1px solid lightgray;
-            border-radius: 6px;
-            color: darkslategray;
-        }
-
-        ul li.active a {
-            background-color: darkslategray;
-            color: white;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        ul li a:hover {
-            background-color: lightgray;
-        }
-
-        .footer-actions {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .footer-actions a {
-            background-color: mediumseagreen;
-            padding: 10px 16px;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.2s ease;
-        }
-
-        .footer-actions a:hover {
-            background-color: seagreen;
-        }
-
-        @media (max-width: 768px) {
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-
-            thead {
-                display: none;
-            }
-
-            tr {
-                margin-bottom: 10px;
-                border: 1px solid lightgray;
-                border-radius: 8px;
-                background-color: white;
-                padding: 10px;
-            }
-
-            td {
-                text-align: left;
-                padding-left: 40%;
-                position: relative;
-                overflow-wrap: break-word;
-                white-space: normal;
-                max-width: 100%;
-            }
-
-            td::before {
-                position: absolute;
-                left: 10px;
-                top: 10px;
-                width: 35%;
-                white-space: nowrap;
-                font-weight: bold;
-                color: gray;
-            }
-
-            td:nth-of-type(1)::before { content: "Post No"; }
-            td:nth-of-type(2)::before { content: "Name"; }
-            td:nth-of-type(3)::before { content: "Type"; }
-            td:nth-of-type(4)::before { content: "Age"; }
-            td:nth-of-type(5)::before { content: "Gender"; }
-            td:nth-of-type(6)::before { content: "Vaccinated"; }
-            td:nth-of-type(7)::before { content: "Neutered"; }
-            td:nth-of-type(8)::before { content: "Admission Date"; }
-            td:nth-of-type(9)::before { content: "Likes"; }
-            td:nth-of-type(10)::before { content: "Dislikes"; }
-            td:nth-of-type(11)::before { content: "Description"; }
-            td:nth-of-type(12)::before { content: "Files"; }
-            td:nth-of-type(13)::before { content: "Actions"; }
-
-            td:last-child {
-                white-space: normal;
-                padding-left: 10px;
-            }
-
-            a.action-link {
-                display: inline-block;
-                margin-right: 6px;
-                margin-bottom: 4px;
-            }
-        }
+        /* CSS 스타일은 변경사항 없습니다. */
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        main.container { max-width: 1280px; margin: 10rem auto 3rem auto; padding: 0 1.5rem; }
+        .content-wrapper { background-color: #ffffff; border-radius: 0.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; }
+        .search-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+        .search-title { font-size: 1.875rem; font-weight: 700; text-align: center; margin-bottom: 1rem; }
+        #search-form { display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
+        #search-form input[type="text"],
+        #search-form select { padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; transition: box-shadow 0.2s; }
+        #search-form input[type="text"] { width: 100%; max-width: 280px; }
+        #search-form input[type="text"]:focus,
+        #search-form select:focus { outline: none; box-shadow: 0 0 0 2px #3b82f6; }
+        #search-form button { padding: 0.5rem 1rem; background-color: #4b5563; color: white; border: none; border-radius: 0.375rem; cursor: pointer; transition: background-color 0.2s; }
+        #search-form button:hover { background-color: #374151; }
+        .table-wrapper { overflow-x: auto; }
+        .animal-table { width: 100%; min-width: 800px; border-collapse: collapse; font-size: 0.875rem; text-align: center; }
+        .animal-table thead { background-color: #f9fafb; }
+        .animal-table th { padding: 0.75rem 1rem; font-weight: 600; color: #4b5563; }
+        .animal-table tbody tr { border-bottom: 1px solid #e5e7eb; transition: background-color 0.2s; }
+        .animal-table tbody tr:last-child { border-bottom: none; }
+        .animal-table tbody tr:hover { background-color: #f9fafb; }
+        .animal-table td { padding: 0.75rem 1rem; vertical-align: middle; }
+        .thumbnail-image { width: 48px; height: 48px; object-fit: cover; border-radius: 0.25rem; margin: 0 auto; }
+        .no-image { display: flex; justify-content: center; align-items: center; width: 48px; height: 48px; background-color: #f3f4f6; border-radius: 0.25rem; font-size: 0.75rem; color: #9ca3af; margin: 0 auto; }
+        .description-cell { max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .action-btn { font-size: 0.8rem; padding: 0.3rem 0.6rem; border-radius: 0.2rem; color: white; text-decoration: none; border: none; cursor: pointer; background-color: #3b82f6; }
+        .pagination-wrapper { display: flex; flex-direction: column; align-items: center; padding: 1rem; border-top: 1px solid #e5e7eb; }
+        #pagination-info { font-size: 0.875rem; color: #4b5563; margin-bottom: 0.5rem; }
+        #pagination-info .font-semibold { font-weight: 600; }
+        #pagination-links { display: flex; gap: 0.25rem; }
+        .pagination-link { display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; color: #4b5563; text-decoration: none; transition: all 0.2s ease-in-out; border-radius: 0.375rem; }
+        .pagination-link:hover { background-color: #e5e7eb; color: #1f2937; }
+        .pagination-link.active { background-color: #3b82f6; color: white; border-color: #3b82f6; font-weight: 600; }
+        .pagination-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     </style>
-
 </head>
 <body>
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
-<h1>동물 목록</h1>
+<main class="container">
+    <div class="content-wrapper">
+        <div class="search-header">
+            <h1 class="search-title">유기동물 목록</h1>
+            <form id="search-form" onsubmit="return false;">
+                <input type="text" name="keyword" placeholder="특징, 품종 등 키워드 검색" />
+                <select name="species">
+                    <option value="">-- 전체 --</option>
+                    <option value="개">개</option>
+                    <option value="고양이">고양이</option>
+                    <option value="기타">기타</option>
+                </select>
+                <button type="submit">검색</button>
+            </form>
+        </div>
 
-<div class="message" th:if="${message}" th:text="${message}"></div>
-<div class="error" th:if="${error}" th:text="${error}"></div>
+        <div class="table-wrapper">
+            <table class="animal-table">
+                <thead>
+                <tr>
+                    <th>사진</th>
+                    <th>품종</th>
+                    <th>나이</th>
+                    <th>성별</th>
+                    <th>중성화</th>
+                    <th>발견일</th>
+                    <th>특징</th>
+                    <th>정보</th>
+                </tr>
+                </thead>
+                <tbody id="animal-table-body">
+                <tr><td colspan="8" style="padding: 2rem; text-align: center; color: #6b7280;">데이터를 불러오는 중입니다...</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-<form th:action="@{/animals}" method="get" class="search-form">
-    <input type="text" name="keyword" placeholder="검색어를 입력하세요"
-           th:value="${keyword}" />
+        <div class="pagination-wrapper">
+            <div id="pagination-info"></div>
+            <div id="pagination-links"></div>
+        </div>
+    </div>
+</main>
 
-    <select name="species">
-        <option value="" th:selected="${species == null or species == ''}">-- 종류 선택 --</option>
-        <option value="강아지" th:selected="${species == '강아지'}">강아지</option>
-        <option value="고양이" th:selected="${species == '고양이'}">고양이</option>
-        <option value="기타" th:selected="${species == '기타'}">기타</option>
-    </select>
+<script>
+    const searchForm = document.getElementById('search-form');
+    const tableBody = document.getElementById('animal-table-body');
+    const paginationInfo = document.getElementById('pagination-info');
+    const paginationLinks = document.getElementById('pagination-links');
 
-    <button type="submit">검색</button>
-</form>
+    let allAnimals = [];
+    let filteredAnimals = [];
 
-<table>
-    <thead>
-    <tr>
-        <th>게시글 번호</th>
-        <th>이름</th>
-        <th>종류</th>
-        <th>나이</th>
-        <th>성별</th>
-        <th>접종</th>
-        <th>중성화</th>
-        <th>입소일</th>
-        <th>좋아함</th>
-        <th>싫어함</th>
-        <th>설명</th>
-        <th>파일</th>
-        <th>작업</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="animal, stat : ${animals}">
-        <td th:text="${totalCount - ((currentPage - 1) * pageSize + stat.index)}"></td>
-        <td th:text="${animal.name}"></td>
-        <td th:text="${animal.species}"></td>
-        <td th:text="${animal.age}"></td>
-        <td th:text="${animal.gender}"></td>
-        <td th:text="${animal.vaccinated ? '예' : '아니오'}"></td>
-        <td th:text="${animal.neutered ? '예' : '아니오'}"></td>
-        <td th:text="${animal.arrivalDate}"></td>
-        <td th:text="${animal.likes}"></td>
-        <td th:text="${animal.dislikes}"></td>
-        <td th:text="${animal.description}"></td>
+    const ITEMS_PER_PAGE = 10;
 
-        <td class="files-cell">
-            <div th:if="${animalFiles != null and animalFiles[animal.id] != null and !animalFiles[animal.id].isEmpty()}">
-                <span th:each="file : ${animalFiles[animal.id]}" style="margin-right: 10px; display: inline-block;">
-                    <img th:if="${file.fileType != null and file.fileType.startsWith('image/')}"
-                         th:src="@{${file.filePath}}"
-                         th:alt="${file.fileName != null ? file.fileName : '동물 이미지'}" />
+    // --- [ 여기가 수정된 부분입니다 ] ---
 
-                    <a class="file-link"
-                       target="_blank"
-                       th:href="@{${file.filePath}}"
-                       th:if="${file.fileType != null and file.fileType == 'application/pdf'}"
-                       th:text="${file.fileName}"></a>
-                </span>
-            </div>
-            <span th:if="${animalFiles == null or animalFiles[animal.id] == null or animalFiles[animal.id].isEmpty()}">파일 없음</span>
-        </td>
+    /**
+     * 출생년도 문자열을 받아 현재 나이를 계산하는 함수
+     * @param {string} ageString - 예: "2023(년생)"
+     * @returns {string} - 예: "2살" 또는 "나이 미상"
+     */
+    function calculateAge(ageString) {
+        if (!ageString) {
+            return '나이 미상';
+        }
+        // 정규표현식으로 문자열에서 4자리 숫자(년도)를 찾습니다.
+        const birthYearMatch = ageString.match(/\d{4}/);
+        if (!birthYearMatch) {
+            return '나이 미상';
+        }
 
-        <td>
-            <a class="action-link" th:href="@{animals/{id}(id=${animal.id})}">상세보기</a>
-            <span th:if="${loggedInUserId != null and animal.created_by == loggedInUserId}">
-            <a class="action-link" th:href="@{animals/edit/{id}(id=${animal.id})}">수정</a>
-            <a class="action-link" onclick="return confirm('정말 삭제하시겠습니까?');"
-               th:href="@{animals/delete/{id}(id=${animal.id})}">삭제</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
-<div>
-    <span>총 동물 수: <span th:text="${totalCount}"></span></span> |
-    <span>페이지: <span th:text="${currentPage}"></span> / <span th:text="${totalPages}"></span></span>
-</div>
+        const birthYear = parseInt(birthYearMatch[0], 10);
+        const currentYear = new Date().getFullYear();
 
-<div>
-    <ul style="list-style:none; padding:0; display:flex; gap:5px;">
-        <li th:if="${currentPage > 1}">
-            <a th:href="@{animals(page=${currentPage - 1}, keyword=${keyword}, species=${species})}">이전</a>
-        </li>
+        // 한국식 나이 계산 (현재연도 - 출생연도 + 1)
+        const age = currentYear - birthYear + 1;
 
-        <li th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
-            th:classappend="${pageNum == currentPage} ? 'active' : ''">
-            <a th:href="@{animals(page=${pageNum}, keyword=${keyword}, species=${species})}"
-               th:text="${pageNum}"></a>
-        </li>
+        // 계산된 나이가 0 이하거나 숫자가 아니면 "1살 미만" 등으로 표시
+        return age > 0 ? `${age}살` : '1살 미만';
+    }
 
-        <li th:if="${currentPage < totalPages}">
-            <a th:href="@{animals(page=${currentPage + 1}, keyword=${keyword}, species=${species})}">다음</a>
-        </li>
-    </ul>
-</div>
 
-<br/>
-<a th:href="@{animals/add}">새로운 동물 추가</a>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch('/data/animals.json');
+
+            if (!response.ok) {
+                throw new Error('전체 동물 데이터를 불러오는데 실패했습니다. (서버 응답 오류)');
+            }
+
+            const jsonData = await response.json();
+            const items = jsonData.response.body.items;
+
+            if (items && items.item) {
+                allAnimals = Array.isArray(items.item) ? items.item : [items.item];
+            } else {
+                allAnimals = [];
+            }
+
+            searchForm.addEventListener('submit', () => renderPage(1));
+            searchForm.species.addEventListener('change', () => renderPage(1));
+
+            renderPage(1);
+
+        } catch (error) {
+            console.error(error);
+            tableBody.innerHTML = `<tr><td colspan="8" style="padding: 1rem; text-align: center; color: #ef4444;">${error.message}</td></tr>`;
+        }
+    });
+
+    function renderPage(page = 1) {
+        const keyword = searchForm.keyword.value.toLowerCase();
+        const species = searchForm.species.value;
+
+        filteredAnimals = allAnimals.filter(animal => {
+            const speciesMatch = !species || animal.upKindNm === species;
+            const keywordMatch = !keyword ||
+                (animal.kindNm && String(animal.kindNm).toLowerCase().includes(keyword)) ||
+                (animal.specialMark && String(animal.specialMark).toLowerCase().includes(keyword));
+            return speciesMatch && keywordMatch;
+        });
+
+        const totalCount = filteredAnimals.length;
+        const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+        const currentPage = Math.min(Math.max(page, 1), totalPages || 1);
+
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const itemsForCurrentPage = filteredAnimals.slice(startIndex, endIndex);
+
+        updateTable(itemsForCurrentPage);
+        updatePagination({ totalCount, totalPages, currentPage });
+    }
+
+    function updateTable(animals) {
+        tableBody.innerHTML = '';
+
+        if (!animals || animals.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="8" style="padding: 1rem; text-align: center; color: #6b7280;">조건에 맞는 동물이 없습니다.</td></tr>';
+            return;
+        }
+
+        animals.forEach(animal => {
+            const sex = animal.sexCd === 'F' ? '암컷' : (animal.sexCd === 'M' ? '수컷' : '미상');
+            const isNeutered = animal.neuterYn === 'Y' ? 'O' : (animal.neuterYn === 'N' ? 'X' : '미상');
+            const imageUrl = animal.popfile1 ? `<img src="${animal.popfile1}" alt="대표사진" class="thumbnail-image" />` : `<div class="no-image">No Img</div>`;
+
+            // [수정] 나이 표시 부분을 calculateAge 함수 호출 결과로 변경
+            const displayAge = calculateAge(animal.age);
+
+            const row = `
+                <tr>
+                    <td>${imageUrl}</td>
+                    <td>${animal.kindNm || ''}</td>
+                    <td>${displayAge}</td>
+                    <td>${sex}</td>
+                    <td>${isNeutered}</td>
+                    <td>${animal.happenDt || ''}</td>
+                    <td class="description-cell">${animal.specialMark || ''}</td>
+                    <td><a class="action-btn" href="/animals/${animal.desertionNo}">상세</a></td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    function updatePagination({ totalCount, totalPages, currentPage }) {
+        if (totalCount === 0 && !searchForm.keyword.value && !searchForm.species.value) {
+            paginationInfo.innerHTML = '';
+            paginationLinks.innerHTML = '';
+            return;
+        }
+
+        paginationInfo.innerHTML = `
+            <span class="font-semibold">총 ${totalCount} 마리</span> |
+            <span>페이지: <span class="font-semibold">${currentPage}</span> / ${totalPages || 1}</span>
+        `;
+
+        paginationLinks.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const createPageLink = (page, text, isDisabled = false, isActive = false) => {
+            const disabledClass = isDisabled ? 'disabled' : '';
+            const activeClass = isActive ? 'active' : '';
+            return `
+                <a href="#" onclick="event.preventDefault(); if(!this.classList.contains('disabled')) renderPage(${page});"
+                   class="pagination-link ${disabledClass} ${activeClass}">
+                    <span>${text}</span>
+                </a>`;
+        };
+
+        paginationLinks.innerHTML += createPageLink(currentPage - 1, '이전', currentPage <= 1);
+
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+
+        if (startPage > 1) {
+            paginationLinks.innerHTML += createPageLink(1, '1') + '<span style="padding: 0 0.5rem; display: flex; align-items: center;">...</span>';
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            paginationLinks.innerHTML += createPageLink(i, i, false, i === currentPage);
+        }
+
+        if (endPage < totalPages) {
+            paginationLinks.innerHTML += '<span style="padding: 0 0.5rem; display: flex; align-items: center;">...</span>' + createPageLink(totalPages, totalPages);
+        }
+
+        paginationLinks.innerHTML += createPageLink(currentPage + 1, '다음', currentPage >= totalPages);
+    }
+</script>
 
 </body>
 </html>
+message.txt
+13KB
