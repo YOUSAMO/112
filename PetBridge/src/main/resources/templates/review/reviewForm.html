@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <title th:text="${isNew ? '입양 후기 작성' : '입양 후기 수정'}"></title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="_csrf" th:content="${_csrf?.token}"/>
-  <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
   <style>
     .btn { padding: 0.625rem 1.25rem; border-radius: 0.375rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: background-color 0.2s; }
     .btn-primary { background-color: #3b82f6; color: white; }

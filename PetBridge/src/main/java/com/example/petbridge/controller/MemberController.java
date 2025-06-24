@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -96,9 +97,6 @@ public class MemberController {
     }
     */
 
-
-
-
     // 아이디 중복 확인
     @GetMapping("/checkId")
     @ResponseBody
@@ -121,6 +119,9 @@ public class MemberController {
         // 탈퇴 후 메인 페이지 등으로 리다이렉트
         return "redirect:/";
     }
+
+
+
 
 
 

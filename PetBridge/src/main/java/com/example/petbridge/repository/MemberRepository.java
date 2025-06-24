@@ -22,10 +22,13 @@ public interface MemberRepository {
 
     }
 
-    int countByUserInfo(@Param("u_id") String u_id,
-                                       @Param("name") String u_name,
-                                       @Param("email") String u_email);
+    int countUserByInfo(@Param("u_id") String u_id,
+                        @Param("u_name") String u_name,
+                        @Param("u_email") String u_email);
 
+    int updatePassword(@Param("u_id") String u_id, @Param("u_pass") String u_pass);
+
+    int updateMemberInfo(Member member);
 
 
 }

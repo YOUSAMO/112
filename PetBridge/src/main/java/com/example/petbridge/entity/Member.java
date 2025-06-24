@@ -4,6 +4,8 @@ package com.example.petbridge.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 
@@ -17,6 +19,7 @@ public class Member {
     private String u_pnumber;
     private String u_email;
     private String u_gender;
+    private LocalDate u_birthdate;
 
 
 }

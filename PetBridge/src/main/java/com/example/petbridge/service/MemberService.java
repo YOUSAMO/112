@@ -34,6 +34,7 @@ public class MemberService {
         member.setU_pnumber(memberDTO.getFullPnumber());
         member.setU_email(memberDTO.getFullEmail());
         member.setU_gender(memberDTO.getU_gender());
+        member.setU_birthdate(memberDTO.getU_birthdate());
 
         System.out.println("▶ 저장할 회원 정보: " + member);
 
@@ -44,13 +45,12 @@ public class MemberService {
      * 회원 정보 수정
      */
 
-    public void updateMember(Member member) {
-
-
-        memberRepository.updateMember(member);
-
-
+    public boolean updateMemberInfo(Member member) {
+        // DB에 member의 u_id 기준으로 이름, 전화번호, 이메일, 비밀번호만 업데이트
+        // (u_gender, u_id 등은 변경하지 않음)
+        return memberRepository.updateMemberInfo(member) > 0;
     }
+
 
     /**
 
@@ -140,7 +140,15 @@ public class MemberService {
     }
 
 
-    public boolean checkUserExists(String u_id, String u_name, String u_email) {
-        return memberRepository.countByUserInfo(u_id, u_name, u_email) > 0;
+    public boolean validateUserInfo(String u_id, String u_name, String u_email) {
+        // DB에서 해당 정보가 모두 일치하는 사용자가 있는지 확인
+        return memberRepository.countUserByInfo(u_id, u_name, u_email) > 0;
+    }
+
+
+
+    public boolean updatePassword(String u_id, String u_pass) {
+        int result = memberRepository.updatePassword(u_id, u_pass);
+        return result > 0;
     }
 }

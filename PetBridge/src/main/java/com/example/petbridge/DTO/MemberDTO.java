@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @ToString
@@ -15,6 +17,7 @@ public class MemberDTO {
     private String u_pnumber;
     private String u_email;
     private String u_gender;
+    private LocalDate u_birthdate;
 
 
     // 전화번호 3개 필드

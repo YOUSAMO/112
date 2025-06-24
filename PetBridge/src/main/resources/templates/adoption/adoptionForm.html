@@ -23,7 +23,6 @@
             color: #3a5a40;
             margin-bottom: 24px;
         }
-        /* [수정사항] 신청 대상 동물 정보 박스 스타일 추가 */
         .animal-info-box {
             margin-bottom: 20px;
             padding: 15px;
@@ -197,20 +196,6 @@
             <option value="불가능">불가능</option>
         </select>
         <div class="error-message" th:if="${#fields.hasErrors('financialStatus')}" th:errors="*{financialStatus}"></div>
-
-        <div class="section-title">입양 희망 동물 정보</div>
-        <label>종류 <span class="required">*</span></label>
-        <select th:field="*{animalType}" required>
-            <option value="">선택</option>
-            <option value="강아지">강아지</option>
-            <option value="고양이">고양이</option>
-            <option value="기타">기타</option>
-        </select>
-        <div class="error-message" th:if="${#fields.hasErrors('animalType')}" th:errors="*{animalType}"></div>
-
-        <label>나이/성별/성격 등</label>
-        <input type="text" th:field="*{animalDetail}">
-        <div class="error-message" th:if="${#fields.hasErrors('animalDetail')}" th:errors="*{animalDetail}"></div>
 
         <div class="section-title">동물 돌봄 계획</div>
         <label>하루 돌봄 시간</label>

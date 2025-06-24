@@ -23,6 +23,7 @@
     <update id="updateComment" parameterType="com.example.petbridge.entity.Comment">
         UPDATE comment
         SET cm_content = #{cmContent},
+            updated_at = CURRENT_TIMESTAMP
         WHERE cm_no = #{cmNo}
           AND author_uid = #{authorUid}
     </update>
@@ -67,5 +68,16 @@
                                                          FROM comment
                                                          WHERE post_id = #{postId}
                                                            AND board_type = #{boardType} </select>
+
+
+    <select id="findByCommentUid" parameterType="string" resultType="com.example.petbridge.entity.Comment">
+        SELECT *
+        FROM comment
+        WHERE author_uid = #{authorUid}
+        ORDER BY created_at DESC
+    </select>
+
+
+
 
 </mapper>

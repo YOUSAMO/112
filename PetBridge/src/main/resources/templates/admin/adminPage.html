@@ -229,6 +229,7 @@
       padding: 18px 40px;
       background: #E7DECF;
       border-radius: 8px 0 0 8px;
+      white-space: nowrap;
       font-size: 1.1em;
       cursor: pointer;
       font-weight: bold;
@@ -291,15 +292,15 @@
 <aside class="sidebar">
   <h2>유기동물<br>보호소 관리자</h2>
   <ul class="nav-menu">
-    <li class="active" data-section="animal">동물목록</li>
+
     <li data-section="adopt">입양 신청서 관리</li>
     <li data-section="member">회원 관리</li>
     <li class="dropdown">
       <span class="dropbtn">게시판 관리</span>
       <ul class="dropdown-content">
-        <li><a href="#">자유 게시판</a></li>
-        <li><a href="#">입양후기 게시판</a></li>
-        <li><a href="#">유기동물/실종 보호 게시판</a></li>
+        <li><a href="#" data-board="free">자유 게시판</a></li>
+        <li><a href="#" data-board="review">입양후기 게시판</a></li>
+        <li><a href="#" data-board="missing">유기동물/실종 보호 게시판</a></li>
       </ul>
     </li>
     <li data-section="comment">댓글/후기 관리</li>
@@ -310,55 +311,24 @@
       <ul class="dropdown-content">
         <li data-section="admin-list"><a href="#">관리자 목록</a></li>
         <li data-section="admin-register"><a href="#">관리자 등록</a></li>
-        <li data-section="admin-role"><a href="#">권한 설정</a></li>
+
       </ul>
     </li>
   </ul>
 </aside>
+
 <div class="main">
   <div class="header">
     유기동물 보호소 관리자 페이지
     <span class="admin-info">
-        관리자: <span th:text="${loginAdmin.a_name}">님 환영합니다</span> |
+        관리자: <span th:text="${loginAdmin.aName}">님 환영합니다</span> |
         <a th:href="@{/admin/logout}" style="color:#F5EEDD;">로그아웃</a>
       </span>
   </div>
   <!-- 동물목록 -->
-  <section class="section active" id="section-animal">
-    <h3>동물목록 관리</h3>
-    <table class="animal-table">
-      <thead>
-      <tr>
-        <th>번호</th>
-        <th>이름</th>
-        <th>종류</th>
-        <th>성별</th>
-        <th>나이</th>
-        <th>접종</th>
-        <td>입소일</td>
-        <th colspan="3">관리</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="animal,iterStat : ${animals}">
-        <td th:text="${iterStat.index + 1}"></td>
-        <td th:text="${animal.name}"></td>
-        <td th:text="${animal.species}"></td>
-        <td th:text="${animal.gender}"></td>
-        <td th:text="${animal.age}"></td>
-        <td th:text="${animal.vaccinated}"></td>
-        <td th:text="${animal.arrivalDate}"></td>
-        <td>
-          <button class="btn btn-detail" type="button">상세</button>
-          <button class="btn" type="button">삭제</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </section>
   <!-- 입양글 관리 -->
   <section class="section" id="section-adopt">
-    <h3>입양글 관리</h3>
+    <h3>입양신청서 관리</h3>
     <table class="adopt-table">
       <thead>
       <tr>
@@ -414,36 +384,90 @@
     <button class="btn" style="margin-top:16px;">신규 회원 등록</button>
   </section>
   <!-- 게시판 관리 -->
-  <section class="section" id="section-board">
-    <h3>게시판 관리</h3>
-    <table class="member-table">
-      <thead>
-      <tr>
-        <th>번호</th>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>등록일</th>
-        <th>조회수</th>
-        <th>관리</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <td>1</td>
-        <td>보호소 환경 개선 문의</td>
-        <td>홍길동</td>
-        <td>2025-06-11</td>
-        <td>23</td>
-        <td>
-          <button class="btn" type="button">상세</button>
-          <button class="btn" type="button">수정</button>
-          <button class="btn" type="button">삭제</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-    <button class="btn" style="margin-top:16px;">신규 게시글 등록</button>
-  </section>
+  <!-- 자유 게시판 -->
+  <table class="member-table" id="board-free" style="display:none;">
+    <thead>
+    <tr>
+      <th>번호</th>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>내용</th>
+      <th>조회수</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>1</td>
+      <td>보호소 환경 개선 문의</td>
+      <td>홍길동</td>
+      <td>보호소 환경 개선을 위한 의견을 남깁니다.</td>
+      <td>23</td>
+      <td>
+        <button class="btn" onclick="showDetail('보호소 환경 개선 문의', '홍길동', '2025-06-11', '23', '보호소 환경 개선을 위한 의견을 남깁니다.')">상세</button>
+        <button class="btn">수정</button>
+        <button class="btn">삭제</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- 입양후기 게시판 -->
+  <table class="member-table" id="board-review" style="display:none;">
+    <thead>
+    <tr>
+      <th>번호</th>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>내용</th>
+      <th>조회수</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>1</td>
+      <td>입양 후기: 토리</td>
+      <td>박영희</td>
+      <td>토리를 입양하고 너무 행복합니다.</td>
+      <td>12</td>
+      <td>
+        <button class="btn" onclick="showDetail('입양 후기: 토리', '박영희', '2025-06-05', '12', '토리를 입양하고 너무 행복합니다.')">상세</button>
+        <button class="btn">수정</button>
+        <button class="btn">삭제</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- 유기동물/실종 보호 게시판 -->
+  <table class="member-table" id="board-missing" style="display:none;">
+    <thead>
+    <tr>
+      <th>번호</th>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>내용</th>
+      <th>조회수</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>1</td>
+      <td>유기동물 보호 신고</td>
+      <td>최동수</td>
+      <td>길에서 유기동물을 발견했습니다.</td>
+      <td>56</td>
+      <td>
+        <button class="btn" onclick="showDetail('유기동물 보호 신고', '최동수', '2025-06-10', '56', '길에서 유기동물을 발견했습니다.')">상세</button>
+        <button class="btn">수정</button>
+        <button class="btn">삭제</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
   <!-- 댓글/후기 관리 -->
   <section class="section" id="section-comment">
     <h3>댓글/후기 관리</h3>
@@ -487,16 +511,15 @@
         <th>번호</th>
         <th>아이디</th>
         <th>이름</th>
-        <th>권한</th>
         <th>관리</th>
       </tr>
       </thead>
       <tbody>
-      <tr th:each="admin,iterStat : ${admins}">
+      <tr th:if="${admins != null and !#lists.isEmpty(admins)}"
+          th:each="admin,iterStat : ${admins}">
         <td th:text="${iterStat.index + 1}"></td>
-        <td th:text="${admin.a_id}"></td>
-        <td th:text="${admin.a_name}"></td>
-        <td th:text="${admin.role}"></td>
+        <td th:text="${admin.aId}"></td>
+        <td th:text="${admin.aName}"></td>
         <td>
           <button class="btn">수정</button>
           <button class="btn">삭제</button>
@@ -521,75 +544,67 @@
         <label for="a_name">이름</label>
         <input type="text" id="a_name" name="a_name" class="form-control" required>
       </div>
-      <div class="form-group">
-        <label for="role">권한</label>
-        <select id="role" name="role" class="form-control">
-          <option value="ADMIN">ADMIN</option>
-          <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-        </select>
-      </div>
+
       <div style="margin-top:18px; text-align:right;">
         <button class="btn" type="submit">등록</button>
       </div>
     </form>
   </section>
-  <!-- 권한 설정 -->
-  <section class="section" id="section-admin-role">
-    <h3>권한 설정</h3>
-    <p>관리자별 권한을 설정하는 기능 구현 영역입니다.</p>
-    <!-- 예시: 관리자별 권한 체크박스 등 -->
-  </section>
+
 </div>
-<!-- 동물 상세 모달 -->
-<div class="modal-bg" id="animalModalBg">
-  <div class="modal" id="animalModal">
-    <span class="modal-close" id="modalCloseBtn">&times;</span>
-    <h4 id="modalAnimalName">동물 상세 정보</h4>
-    <img id="modalAnimalImg" src="/images/sample_animal.jpg" alt="동물 상세">
-    <p><strong>종류:</strong> <span id="modalAnimalSpecies"></span></p>
-    <p><strong>성별:</strong> <span id="modalAnimalGender"></span></p>
-    <p><strong>나이:</strong> <span id="modalAnimalAge"></span></p>
-    <p><strong>상태:</strong> <span id="modalAnimalStatus"></span></p>
-    <p><strong>소개:</strong> <span id="modalAnimalDesc"></span></p>
-  </div>
-</div>
+
 <script>
-  // 메뉴 탭 전환 (드롭다운 포함)
-  document.querySelectorAll('.nav-menu li[data-section], .dropdown-content li[data-section]').forEach(function(tab) {
-    tab.addEventListener('click', function() {
+  // 메뉴 탭(일반 메뉴, 드롭다운 메뉴) 클릭 이벤트 통합
+  document.querySelectorAll('.nav-menu li[data-section], .dropdown-content li[data-section], .dropdown-content a[data-board]').forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      if (this.tagName === 'A') e.preventDefault(); // a 태그일 때만 preventDefault
+
+      // 모든 메뉴 active 제거
       document.querySelectorAll('.nav-menu li, .dropdown-content li').forEach(function(li) {
         li.classList.remove('active');
       });
-      this.classList.add('active');
-      var section = this.getAttribute('data-section');
-      document.querySelectorAll('.section').forEach(function(sec) {
-        sec.classList.remove('active');
+      this.classList.add('active'); // 클릭한 메뉴만 active
+
+      // 모든 섹션 숨기기 (관리/통계/게시판 등)
+      const sectionsToHide = [
+        'section-stat',            // 통계
+        'section-adopt',           // 입양 신청서 관리
+        'section-member',          // 회원 관리
+        'section-comment',         // 댓글/후기 관리
+        'section-admin',           // 관리자 관리
+        'section-admin-list',      // 관리자 목록
+        'section-admin-register',  // 관리자 등록
+        'board-view'               // 게시판 뷰
+      ];
+      sectionsToHide.forEach(function(id) {
+        var el = document.getElementById(id);
+        if(el) el.style.display = 'none';
       });
-      if(section) {
-        document.getElementById('section-' + section).classList.add('active');
+      // 게시판 숨기기
+      document.getElementById('board-free').style.display = 'none';
+      document.getElementById('board-review').style.display = 'none';
+      document.getElementById('board-missing').style.display = 'none';
+
+      // 클릭한 것이 게시판 메뉴인 경우
+      if (this.hasAttribute('data-board')) {
+        var boardType = this.getAttribute('data-board');
+        // board-view에 선택한 게시판 표시
+        document.getElementById('board-view').style.display = 'block';
+        var board = document.getElementById('board-' + boardType).cloneNode(true);
+        board.style.display = 'table';
+        document.getElementById('board-view').appendChild(board);
+      }
+      // 클릭한 것이 메뉴 탭(일반 메뉴, 드롭다운 메뉴)인 경우
+      else if (this.hasAttribute('data-section')) {
+        var section = this.getAttribute('data-section');
+        // 해당 섹션만 보이기
+        var sectionEl = document.getElementById('section-' + section);
+        if (sectionEl) sectionEl.style.display = 'block';
       }
     });
   });
 
-  // 동물 상세 모달 (데이터 없음, 예시용)
-  document.querySelectorAll('.btn-detail').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.getElementById('modalAnimalName').textContent = "동물 상세 정보";
-      document.getElementById('modalAnimalImg').src = "/images/sample_animal.jpg";
-      document.getElementById('modalAnimalSpecies').textContent = "";
-      document.getElementById('modalAnimalGender').textContent = "";
-      document.getElementById('modalAnimalAge').textContent = "";
-      document.getElementById('modalAnimalStatus').textContent = "";
-      document.getElementById('modalAnimalDesc').textContent = "";
-      document.getElementById('animalModalBg').classList.add('active');
-    });
-  });
-  document.getElementById('modalCloseBtn').onclick = function() {
-    document.getElementById('animalModalBg').classList.remove('active');
-  };
-  document.getElementById('animalModalBg').onclick = function(e) {
-    if (e.target === this) this.classList.remove('active');
-  };
+
 </script>
 </body>
 </html>

@@ -8,23 +8,57 @@
     <insert id="insert" parameterType="com.example.petbridge.entity.Adoption_application">
         INSERT INTO adoption_application (
             animal_id,
-            animal_name, -- [수정] animal_name 컬럼 추가
-            u_id, housing, housing_type, pet_allowed, family_info, allergy_info,
-            motivation, pledge, current_pets, experience, job, work_type, pet_care_plan,
-            financial_status, animal_type, animal_detail, care_time, exercise_plan, travel_plan, agreement
+            animal_name,
+            u_id,
+            housing,
+            housing_type,
+            pet_allowed,
+            family_info,
+            allergy_info,
+            motivation,
+            pledge,
+            current_pets,
+            experience,
+            job,
+            work_type,
+            pet_care_plan,
+            financial_status,
+            animal_type,
+            animal_detail,
+            care_time,
+            exercise_plan,
+            travel_plan,
+            agreement
         ) VALUES (
                      #{animal_id},
-                     #{animalName}, -- [수정] #{animalName} 파라미터 추가
-                     #{u_id}, #{housing}, #{housingType}, #{petAllowed}, #{familyInfo}, #{allergyInfo},
-                     #{motivation}, #{pledge}, #{currentPets}, #{experience}, #{job}, #{workType}, #{petCarePlan},
-                     #{financialStatus}, #{animalType}, #{animalDetail}, #{careTime}, #{exercisePlan}, #{travelPlan}, #{agreement}
+                     #{animalName},
+                     #{u_id},
+                     #{housing},
+                     #{housingType},
+                     #{petAllowed},
+                     #{familyInfo},
+                     #{allergyInfo},
+                     #{motivation},
+                     #{pledge},
+                     #{currentPets},
+                     #{experience},
+                     #{job},
+                     #{workType},
+                     #{petCarePlan},
+                     #{financialStatus},
+                     #{animalType},
+                     #{animalDetail},
+                     #{careTime},
+                     #{exercisePlan},
+                     #{travelPlan},
+                     #{agreement}
                  )
     </insert>
 
     <update id="update" parameterType="com.example.petbridge.entity.Adoption_application">
         UPDATE adoption_application
         SET
-            animal_name = #{animalName}, -- [수정] animal_name 업데이트 추가
+            animal_name = #{animalName},
             housing = #{housing},
             housing_type = #{housingType},
             pet_allowed = #{petAllowed},
@@ -56,6 +90,10 @@
         FROM adoption_application
         WHERE u_id = #{u_id}
           AND animal_id = #{animal_id}
+    </select>
+
+    <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Adoption_application">
+        SELECT * FROM adoption_application WHERE u_id = #{userId}
     </select>
 
 </mapper>

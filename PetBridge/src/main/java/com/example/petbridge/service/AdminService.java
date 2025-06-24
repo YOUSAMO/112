@@ -37,9 +37,9 @@ public class AdminService {
         }
 
         Admin admin = new Admin();
-        admin.setA_id(adminDTO.getA_id());
-        admin.setA_pass(adminDTO.getA_pass());
-        admin.setA_name(adminDTO.getA_name());
+        admin.setAId(adminDTO.getAId());
+        admin.setAPass(adminDTO.getAPass());
+        admin.setAName(adminDTO.getAName());
 
         adminRepository.insert(admin);
         return true;
@@ -54,9 +54,9 @@ public class AdminService {
 
         for (Admin admin : admins) {
             SessionAdminDTO dto = new SessionAdminDTO();
-            dto.setA_id(admin.getA_id());
-            dto.setA_name(admin.getA_name());
-            dto.setA_pass(admin.getA_pass());
+            dto.setAId(admin.getAId());
+            dto.setAName(admin.getAName());
+            dto.setAPass(admin.getAPass());
 
             adminDTOList.add(dto);
         }
@@ -78,6 +78,9 @@ public class AdminService {
 
 
 
+    public List<Admin> selectAllAdmins() {
+        return adminRepository.selectAllAdmins();
+    }
 
 
 

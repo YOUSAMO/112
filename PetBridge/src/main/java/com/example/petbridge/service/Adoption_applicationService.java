@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,5 +45,9 @@ public class Adoption_applicationService {
 
     public boolean existsApplication(String u_id, Long animal_id) {
         return adoptionApplicationRepository.countByUserIdAndAnimalId(u_id, animal_id) > 0;
+    }
+
+    public List<Adoption_application> findByUserId(String userId) {
+        return adoptionApplicationRepository.findByUserId(userId);
     }
 }

@@ -14,8 +14,8 @@ import lombok.ToString;
 public class SessionAdminDTO {
 
 
-    private String a_id;//관리자 아이디
-    private String a_pass;//관리자 비밀번호
-    private String a_name;//관리자 이름
+    private String aId;//관리자 아이디
+    private String aPass;//관리자 비밀번호
+    private String aName;//관리자 이름
 
 }

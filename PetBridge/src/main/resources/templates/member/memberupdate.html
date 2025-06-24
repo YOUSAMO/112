@@ -15,7 +15,6 @@
             margin: 0;
             margin-top: 100px
         }
-
         .container {
             background-color: white;
             padding: 40px;
@@ -24,20 +23,17 @@
             width: 100%;
             max-width: 450px;
         }
-
         h2 {
             text-align: center;
             color: #f57c00;
             margin-bottom: 32px;
         }
-
         label {
             display: block;
             margin-bottom: 6px;
             font-weight: 600;
             color: #333;
         }
-
         input, select {
             width: 100%;
             padding: 10px 12px;
@@ -47,8 +43,7 @@
             box-sizing: border-box;
             font-size: 14px;
         }
-
-        button[type="submit"], button[type="reset"] {
+        button[type="submit"], button[type="reset"], button[type="button"] {
             width: 100%;
             background-color: #f57c00;
             color: white;
@@ -61,17 +56,49 @@
             transition: background-color 0.3s;
             margin-top: 14px;
         }
-
-        button[type="submit"]:hover, button[type="reset"]:hover {
+        button[type="submit"]:hover, button[type="reset"]:hover, button[type="button"]:hover {
             background-color: #e65100;
+        }
+        /* 모달 스타일 */
+        #deleteModal {
+            display: none;
+            position: fixed;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.25);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        #deleteModal .modal-content {
+            background: white;
+            padding: 32px 28px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+            max-width: 320px;
+            margin: auto;
+            text-align: center;
+        }
+        #deleteModal h3 {
+            color: #d32f2f;
+            margin-bottom: 18px;
+        }
+        #deleteModal button {
+            width: auto;
+            min-width: 80px;
+            margin: 0 8px;
+            padding: 10px 24px;
+        }
+        #deleteModal .cancel-btn {
+            background: #aaa;
+        }
+        #deleteModal .delete-btn {
+            background: #d32f2f;
         }
     </style>
 </head>
 <body>
-
-<!-- 공통 헤더 삽입 -->
 <div th:replace="~{fragments/header :: commonHeader}"></div>
-
 <div class="container">
     <h2>회원정보 수정</h2>
     <form th:action="@{/mupdate}" th:object="${member}" method="post">
@@ -79,13 +106,13 @@
         <input type="text" id="u_id" th:field="*{u_id}" readonly>
 
         <label for="u_name">이름</label>
-        <input type="text" id="u_name" th:field="*{u_name}" readonly>
+        <input type="text" id="u_name" th:field="*{u_name}">
 
         <label for="u_pnumber">전화번호</label>
-        <input type="tel" id="u_pnumber" th:field="*{u_pnumber}" readonly>
+        <input type="tel" id="u_pnumber" th:field="*{u_pnumber}">
 
         <label for="u_email">이메일</label>
-        <input type="email" id="u_email" th:field="*{u_email}" readonly>
+        <input type="email" id="u_email" th:field="*{u_email}">
 
         <label for="u_gender">성별</label>
         <select id="u_gender" th:field="*{u_gender}" disabled>
@@ -100,45 +127,33 @@
         <label for="u_pass_check">비밀번호 확인</label>
         <input type="password" id="u_pass_check" name="u_pass_check" required>
 
-        <button type="submit">비밀번호 변경</button>
+        <button type="submit">정보 수정</button>
         <button type="reset">초기화</button>
-        <button type="reset">탈퇴</button>
+        <button type="button" id="deleteBtn">탈퇴</button>
     </form>
-    <!-- 탈퇴 확인 폼(모달) - 기존 form 바깥, body 맨 아래 추가 -->
-    <div id="deleteModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:9999; justify-content:center; align-items:center;">
-        <div style="background:white; padding:32px 28px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.18); max-width:320px; margin:auto; text-align:center;">
-            <h3 style="color:#d32f2f; margin-bottom:18px;">정말 탈퇴하시겠습니까?</h3>
-            <p style="margin-bottom:24px; color:#444;">탈퇴 후에는 복구가 불가능합니다.<br>계속 진행하시겠습니까?</p>
-            <form th:action="@{/member/delete}" method="post">
-                <button type="submit" style="background:#d32f2f; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:1rem; font-weight:bold; margin-right:8px;">탈퇴</button>
-                <button type="button" onclick="closeDeleteModal()" style="background:#aaa; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:1rem; font-weight:bold;">취소</button>
-            </form>
-        </div>
-    </div>
-
-
-
 </div>
 
-
-</body>
-</html>
+<!-- 탈퇴 확인 모달 -->
+<div id="deleteModal">
+    <div class="modal-content">
+        <h3>정말 탈퇴하시겠습니까?</h3>
+        <p style="margin-bottom:24px; color:#444;">
+            탈퇴 후에는 복구가 불가능합니다.<br>계속 진행하시겠습니까?
+        </p>
+        <form th:action="@{/member/delete}" method="post">
+            <button type="submit" class="delete-btn">탈퇴</button>
+            <button type="button" class="cancel-btn" onclick="closeDeleteModal()">취소</button>
+        </form>
+    </div>
+</div>
 
 <script>
-    // 기존 form의 탈퇴 버튼에 이벤트 연결
-    document.addEventListener('DOMContentLoaded', function() {
-        // "탈퇴" 버튼 찾기 (type="reset"이므로 두 번째 reset 버튼)
-        const form = document.querySelector('.container form');
-        const buttons = form.querySelectorAll('button[type="reset"]');
-        if (buttons.length > 1) {
-            buttons[1].addEventListener('click', function(e) {
-                e.preventDefault(); // 폼 리셋 막기
-                document.getElementById('deleteModal').style.display = 'flex';
-            });
-        }
+    // 탈퇴 버튼 클릭 시 모달 띄우기
+    document.getElementById('deleteBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('deleteModal').style.display = 'flex';
     });
 
-    // 모달 닫기 함수
     function closeDeleteModal() {
         document.getElementById('deleteModal').style.display = 'none';
     }
@@ -146,14 +161,11 @@
     document.querySelector("form").addEventListener("submit", function(e) {
         const pw = document.getElementById("u_pass").value;
         const pwCheck = document.getElementById("u_pass_check").value;
-
         if (pw !== pwCheck) {
             alert("비밀번호가 일치하지 않습니다.");
             e.preventDefault();
-        } else {
-            alert("비밀번호 성공적으로 변경했습니다");
         }
     });
 </script>
-
-
+</body>
+</html>
