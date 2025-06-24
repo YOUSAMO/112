@@ -3,9 +3,11 @@ package com.example.petbridge.controller;
 
 import com.example.petbridge.DTO.SessionAdminDTO;
 import com.example.petbridge.entity.Admin;
+import com.example.petbridge.entity.Adoption_application;
 import com.example.petbridge.entity.Animal;
 import com.example.petbridge.entity.Member;
 import com.example.petbridge.service.AdminService;
+import com.example.petbridge.service.Adoption_applicationService;
 import com.example.petbridge.service.AnimalService;
 import com.example.petbridge.service.MemberService;
 import jakarta.servlet.http.HttpSession;
@@ -27,7 +29,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final MemberService memberService;
-    private final AnimalService animalService;
+    private final Adoption_applicationService adoptionApplicationService;
 
 
     @GetMapping("/register")
@@ -97,10 +99,11 @@ public class AdminController {
             return "redirect:/login";
         }
         List<Member> memberList = memberService.getAllMembers();
-
+        List<Adoption_application> applications = adoptionApplicationService.getAllApplications();
         List<Admin> adminList = adminService.selectAllAdmins(); // 관리자 목록 조회 메서드 호출 필요
         System.out.println("memberList = " + memberList);
 
+        model.addAttribute("applications", applications);
         model.addAttribute("members", memberList);
         model.addAttribute("admins", adminList);
         model.addAttribute("loginAdmin", loginAdmin);
@@ -114,6 +117,18 @@ public class AdminController {
         session.invalidate();
         System.out.println("로그아웃 되었습니다.");
         return "redirect:/"; // 로그아웃 후 메인 페이지로
+    }
+
+
+
+    @PostMapping("/update")
+    public String updateAdmin(@RequestParam String aId,
+                              @RequestParam String aName,
+                              @RequestParam String aPass,
+                              RedirectAttributes redirectAttributes) {
+        adminService.updateAdmin(aId, aName, aPass);
+        redirectAttributes.addFlashAttribute("successMessage", "관리자 정보가 수정되었습니다.");
+        return "redirect:/admin/adminPage";
     }
 
 }

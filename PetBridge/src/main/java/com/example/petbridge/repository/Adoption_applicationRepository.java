@@ -14,7 +14,12 @@ public interface Adoption_applicationRepository {
  void insert(Adoption_application adoption_application);
  void update(Adoption_application adoption_application);
  void delete(Adoption_application adoption_application);
- int countByUserIdAndAnimalId(@Param("u_id") String u_id, @Param("animal_id") long animal_id);
- List<Adoption_application> findByUserId(@Param("userId") String userId);
+ int countByUserIdAndAnimalId(@Param("uId") String uId, @Param("animal_id") long animal_id);
+ List<Adoption_application> findByUserId(@Param("uId") String uId);
+
+ List<Adoption_application> findAll();
+ Adoption_application findById(Long id);
+ void updateStatus(@Param("id") Long id, @Param("status") String status);
+ void deleteById(@Param("id") Long id);
 
 }

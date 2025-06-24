@@ -286,6 +286,71 @@
       background: #ede5d8;
       color: #222;
     }
+    .modal-bg { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.2); z-index:1000; justify-content:center; align-items:center; }
+    .modal-bg.active { display:flex; }
+    .admin-edit-form-wrap {
+      background: #FFF8E7;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px #eee;
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 36px 32px 28px 32px;
+    }
+    .adminEditModal h3 {
+      color: #8C7B6B;
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-size: 1.25em;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .adminEditModal .form-group {
+      margin-bottom: 18px;
+    }
+    .adminEditModal label {
+      display: block;
+      font-weight: 600;
+      color: #8C7B6B;
+      margin-bottom: 7px;
+      font-size: 1.05em;
+    }
+    .adminEditModal .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0d6c6;
+      border-radius: 8px;
+      font-size: 1em;
+      background: #F5EEDD;
+      color: #4d3e2b;
+      transition: border 0.18s;
+      box-sizing: border-box;
+    }
+    .adminEditModal .form-control:focus {
+      border-color: #BFAE99;
+      outline: none;
+      background: #fff;
+    }
+    .btn {
+      padding: 9px 26px;
+      border: none;
+      border-radius: 8px;
+      background: #BFAE99;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #8C7B6B;
+    }
+    .btn-delete {
+      background: #f44336;
+    }
+    .btn-delete:hover {
+      background: #da190b;
+    }
+
   </style>
 </head>
 <body>
@@ -333,39 +398,41 @@
       <thead>
       <tr>
         <th>번호</th>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>등록일</th>
+        <th>아이디</th>
+        <th>직업</th>
+        <th>알레르기 정보</th>
         <th>상태</th>
         <th>관리</th>
       </tr>
       </thead>
       <tbody>
-      <tr th:each="app : ${applications}">
-        <td th:text="${app.id}"></td>
-        <td th:text="${app.title}"></td>
-        <td th:text="${app.author}"></td>
-        <td th:text="${app.createDate}"></td>
+      <tr th:each="app, iterStat : ${applications}">
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${app.uId}"></td>
+        <td th:text="${app.job}"></td>
+        <td th:text="${app.allergyInfo}"></td>
         <td>
           <form th:action="@{/admin/adoption/status/update}" method="post">
             <input type="hidden" name="id" th:value="${app.id}">
-            <select name="status">
+            <select name="status" onchange="this.form.submit()">
               <option th:value="승인대기" th:selected="${app.status == '승인대기'}">승인대기</option>
               <option th:value="승인불허" th:selected="${app.status == '승인불허'}">승인불허</option>
               <option th:value="승인완료" th:selected="${app.status == '승인완료'}">승인완료</option>
             </select>
-            <button type="submit">변경</button>
           </form>
         </td>
         <td>
-          <button>상세</button>
-          <button>삭제</button>
+          <form th:action="@{'/admin/adoption/delete/' + ${app.id}}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-delete" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+          </form>
         </td>
       </tr>
       </tbody>
 
+
+
     </table>
-    <button class="btn" style="margin-top:16px;">신규 입양글 등록</button>
+
   </section>
   <!-- 회원 관리 -->
   <section class="section" id="section-member">
@@ -389,12 +456,12 @@
         <td th:text="${member.u_email}"></td>
         <td th:text="${member.u_pnumber}"></td>
         <td>
-          <button class="btn btn-danger">삭제</button>
+          <button class="btn btn-delete">삭제</button>
         </td>
       </tr>
       </tbody>
     </table>
-    <button class="btn" style="margin-top:16px;">신규 회원 등록</button>
+
   </section>
   <!-- 게시판 관리 -->
   <!-- 자유 게시판 -->
@@ -419,7 +486,7 @@
       <td>
         <button class="btn" onclick="showDetail('보호소 환경 개선 문의', '홍길동', '2025-06-11', '23', '보호소 환경 개선을 위한 의견을 남깁니다.')">상세</button>
         <button class="btn">수정</button>
-        <button class="btn">삭제</button>
+        <button class="btn btn-delete">삭제</button>
       </td>
     </tr>
     </tbody>
@@ -447,7 +514,7 @@
       <td>
         <button class="btn" onclick="showDetail('입양 후기: 토리', '박영희', '2025-06-05', '12', '토리를 입양하고 너무 행복합니다.')">상세</button>
         <button class="btn">수정</button>
-        <button class="btn">삭제</button>
+        <button class="btn btn-delete">삭제</button>
       </td>
     </tr>
     </tbody>
@@ -475,7 +542,7 @@
       <td>
         <button class="btn" onclick="showDetail('유기동물 보호 신고', '최동수', '2025-06-10', '56', '길에서 유기동물을 발견했습니다.')">상세</button>
         <button class="btn">수정</button>
-        <button class="btn">삭제</button>
+        <button class="btn btn-delete">삭제</button>
       </td>
     </tr>
     </tbody>
@@ -503,7 +570,7 @@
         <td>정말 좋은 정보 감사합니다!</td>
         <td>2025-06-11</td>
         <td>
-          <button class="btn" type="button">삭제</button>
+          <button class="btn btn-delete" type="button">삭제</button>
         </td>
       </tr>
       </tbody>
@@ -534,21 +601,28 @@
         <td th:text="${admin.aId}"></td>
         <td th:text="${admin.aName}"></td>
         <td>
-          <!-- [적용] 로그인한 관리자 ID와 현재 목록의 관리자 ID가 같을 때만 버튼이 보임 -->
-          <button class="btn" th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">수정</button>
-          <button class="btn" th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">삭제</button>
+          <button class="btn" type="button"
+                  th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}"
+                  onclick="openAdminEditModal()">수정</button>
+          <form th:action="@{'/admin/delete/' + ${admin.aId}}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-delete"th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">삭제</button>
+          </form>
         </td>
       </tr>
       </tbody>
     </table>
   </section>
   <!-- 관리자 등록 -->
-  <section class="section" id="section-admin-register">
+    <section class="section" id="section-admin-register">
     <h3>관리자 등록</h3>
     <form th:action="@{/admin/register}" method="post" class="admin-register-form">
       <div class="form-group">
         <label for="a_id">아이디</label>
-        <input type="text" id="a_id" name="a_id" class="form-control" required>
+        <select id="a_id" name="a_id" class="form-control" required>
+          <option value="" selected disabled>아이디 선택</option>
+          <option value="admin1">admin1</option>
+          <option value="admin2">admin2</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="a_pass">비밀번호</label>
@@ -558,13 +632,39 @@
         <label for="a_name">이름</label>
         <input type="text" id="a_name" name="a_name" class="form-control" required>
       </div>
-
       <div style="margin-top:18px; text-align:right;">
         <button class="btn" type="submit">등록</button>
       </div>
     </form>
   </section>
 
+
+</div>
+
+<!-- 관리자 정보 수정 모달 -->
+<div id="adminEditModal" class="modal-bg">
+  <div class="modal" style="min-width:320px;max-width:95vw;">
+    <span class="modal-close" onclick="closeAdminEditModal()">&times;</span>
+    <h4>관리자 정보 수정</h4>
+    <form id="adminEditForm" th:action="@{/admin/update}" method="post">
+      <div style="margin-bottom:10px;">
+        <label>아이디</label>
+        <input type="text" id="editAdminId" name="aId" class="form-control" required>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label>이름</label>
+        <input type="text" id="editAdminName" name="aName" class="form-control" required>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label>비밀번호</label>
+        <input type="password" id="editAdminPass" name="aPass" class="form-control" required>
+      </div>
+      <div style="text-align:right; margin-top:18px;">
+        <button type="submit" class="btn">저장</button>
+        <button type="button" class="btn btn-delete" onclick="closeAdminEditModal()">취소</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -617,6 +717,16 @@
       }
     });
   });
+
+  function openAdminEditModal() {
+    document.getElementById('editAdminId').value = '';
+    document.getElementById('editAdminName').value = '';
+    document.getElementById('editAdminPass').value = '';
+    document.getElementById('adminEditModal').classList.add('active');
+  }
+  function closeAdminEditModal() {
+    document.getElementById('adminEditModal').classList.remove('active');
+  }
 
 
 </script>

@@ -32,7 +32,7 @@
         ) VALUES (
                      #{animal_id},
                      #{animalName},
-                     #{u_id},
+                     #{uId},
                      #{housing},
                      #{housingType},
                      #{petAllowed},
@@ -88,12 +88,39 @@
     <select id="countByUserIdAndAnimalId" resultType="int">
         SELECT COUNT(*)
         FROM adoption_application
-        WHERE u_id = #{u_id}
+        WHERE u_id = #{uId}
           AND animal_id = #{animal_id}
     </select>
 
     <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Adoption_application">
-        SELECT * FROM adoption_application WHERE u_id = #{userId}
+        SELECT * FROM adoption_application WHERE u_id = #{uId}
     </select>
+
+
+    <!-- 전체 입양신청서 조회 -->
+    <select id="findAll" resultType="com.example.petbridge.entity.Adoption_application">
+        SELECT *
+        FROM adoption_application
+    </select>
+
+    <!-- 입양신청서 상세 조회 -->
+    <select id="findById" resultType="com.example.petbridge.entity.Adoption_application">
+        SELECT *
+        FROM adoption_application
+        WHERE id = #{id}
+    </select>
+
+    <!-- 입양신청서 상태 변경 -->
+    <update id="updateStatus">
+        UPDATE adoption_application
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 입양신청서 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM adoption_application
+        WHERE id = #{id}
+    </delete>
 
 </mapper>

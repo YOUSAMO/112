@@ -83,6 +83,13 @@ public class AdminService {
     }
 
 
+    public void updateAdmin(String aId, String aName, String aPass) {
+        // 비밀번호 암호화 필요시 여기서 처리
+        adminRepository.updateAdmin(aId, aName, aPass);
+    }
+
+
+
 
 
 

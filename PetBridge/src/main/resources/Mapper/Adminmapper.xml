@@ -41,6 +41,15 @@
 
     </select>
 
+    <update id="updateAdmin">
+        UPDATE admin
+        SET
+            a_name = #{aName},
+            a_pass = #{aPass}
+        WHERE
+            a_id = #{aId}
+    </update>
+
 
 
 

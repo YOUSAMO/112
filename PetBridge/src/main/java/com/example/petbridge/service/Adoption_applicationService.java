@@ -28,7 +28,7 @@ public class Adoption_applicationService {
             Animal animalFromJson = animalService.findAnimalFromJsonFile(originalAnimalId)
                     .orElseThrow(() -> new IllegalStateException("신청하려는 동물 정보를 찾을 수 없습니다. ID: " + originalAnimalId));
 
-            animalFromJson.setCreated_by(application.getU_id());
+            animalFromJson.setCreated_by(application.getUId());
             savedAnimal = animalService.saveAnimalToDb(animalFromJson);
         } else {
             savedAnimal = existingAnimal.get();
@@ -43,11 +43,27 @@ public class Adoption_applicationService {
         adoptionApplicationRepository.insert(application);
     }
 
-    public boolean existsApplication(String u_id, Long animal_id) {
-        return adoptionApplicationRepository.countByUserIdAndAnimalId(u_id, animal_id) > 0;
+    public boolean existsApplication(String uId, Long animal_id) {
+        return adoptionApplicationRepository.countByUserIdAndAnimalId(uId, animal_id) > 0;
     }
 
     public List<Adoption_application> findByUserId(String userId) {
         return adoptionApplicationRepository.findByUserId(userId);
     }
+
+    public List<Adoption_application> getAllApplications() {
+        return adoptionApplicationRepository.findAll();
+    }
+
+    public void updateStatus(Long id, String status) {
+        adoptionApplicationRepository.updateStatus(id, status);
+    }
+
+    public void deleteApplication(Long id) {
+        adoptionApplicationRepository.deleteById(id);
+    }
+
+
+
+
 }

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException; // IOException import 추가
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Optional; // Optional import 추가
 
 @Controller
@@ -38,6 +40,16 @@ public class AdoptionController {
             return "redirect:/login";
         }
 
+        // 생년월일 조회 (loginMember.getU_birthdate()는 LocalDate 타입)
+        LocalDate birthDate = loginMember.getU_birthdate();
+        int age = Period.between(birthDate, LocalDate.now()).getYears();
+
+        if (age <= 19) {
+            return "adoption/ageDenied";
+            // 또는
+            // return "redirect:/animals?error=19세 이상은 입양 신청이 불가합니다";
+        }
+
         try {
             // 1. animalId로 동물 정보를 조회합니다.
             Optional<Animal> animalOptional = animalService.findAnimalFromJsonFile(animalId);
@@ -49,7 +61,7 @@ public class AdoptionController {
 
             // 2. 폼 객체를 생성합니다.
             Adoption_application adoptionForm = new Adoption_application();
-            adoptionForm.setU_id(loginMember.getU_id());
+            adoptionForm.setUId(loginMember.getU_id());
             adoptionForm.setAnimal_id(animalId);
 
             // 3. [핵심] 조회한 동물 정보로 폼 객체의 일부 필드를 미리 채웁니다.
@@ -89,7 +101,7 @@ public class AdoptionController {
         }
 
         adoption.setAnimal_id(animalId);
-        adoption.setU_id(loginMember.getU_id());
+        adoption.setUId(loginMember.getU_id());
 
         // Spring의 @Validated 어노테이션을 사용한 유효성 검사
         if (result.hasErrors()) {
@@ -129,4 +141,7 @@ public class AdoptionController {
     public String showAdoptionComplete() {
         return "adoption/adoptionComplete";
     }
+
+
+
 }

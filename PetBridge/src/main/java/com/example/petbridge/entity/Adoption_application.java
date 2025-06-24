@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class Adoption_application {
 
     private Long id;
-    private String u_id;
+    private String uId;
     private String motivation;
     private String housingType;
     private String petAllowed;
@@ -41,5 +41,6 @@ public class Adoption_application {
     private String housing;
     private Long animal_id;
     private String animalName;
+    private String status;
 
 }
