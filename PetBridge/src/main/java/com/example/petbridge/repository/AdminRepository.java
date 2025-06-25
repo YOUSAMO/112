@@ -21,7 +21,7 @@ public interface AdminRepository {
     Admin findByLoginIdAndPass(@Param("a_id") String a_id, @Param("a_pass") String a_pass);
     List<Admin> selectAllAdmins();
     void updateAdmin(@Param("aId") String aId, @Param("aName") String aName, @Param("aPass") String aPass);
-
+    void deleteAdminByAId(@Param("aId") String aId);
 
 
 }

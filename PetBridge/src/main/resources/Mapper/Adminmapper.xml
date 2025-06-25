@@ -20,7 +20,7 @@
 
     <insert id="insert" parameterType="com.example.petbridge.entity.Admin">
         INSERT INTO admin (a_id, a_pass, a_name)
-        VALUES (#{a_id}, #{a_pass}, #{a_name})
+        VALUES (#{aId}, #{aPass}, #{aName})
     </insert>
 
     <select id="countAdmins" resultType="int">
@@ -49,6 +49,10 @@
         WHERE
             a_id = #{aId}
     </update>
+
+    <delete id="deleteAdminByAId" parameterType="string">
+        DELETE FROM admin WHERE a_id = #{aId}
+    </delete>
 
 
 

@@ -63,6 +63,11 @@ public class Adoption_applicationService {
         adoptionApplicationRepository.deleteById(id);
     }
 
+    public Adoption_application findById(Long id) {
+        return adoptionApplicationRepository.findById(id);
+    }
+
+
 
 
 

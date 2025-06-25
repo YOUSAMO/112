@@ -22,4 +22,7 @@ public interface Adoption_applicationRepository {
  void updateStatus(@Param("id") Long id, @Param("status") String status);
  void deleteById(@Param("id") Long id);
 
+
+
+
 }

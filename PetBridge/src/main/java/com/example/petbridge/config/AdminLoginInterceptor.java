@@ -13,6 +13,7 @@ public class AdminLoginInterceptor implements HandlerInterceptor {
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public AdminLoginInterceptor(AdminService adminService) {
+
         this.adminService = adminService;
     }
 

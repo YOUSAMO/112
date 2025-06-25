@@ -350,6 +350,57 @@
     .btn-delete:hover {
       background: #da190b;
     }
+    .modal {
+      display: none; position: fixed; z-index: 1000;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 32px 40px;
+      border-radius: 12px;
+      width: 90vw;           /* 브라우저 너비의 90%까지 */
+      max-width: 1400px;     /* 최대 1400px까지 */
+      min-width: 500px;
+      height: 650px;/* 최소 500px */
+      position: relative;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+      overflow-x: auto;      /* 내용이 넘치면 가로 스크롤 */
+      /* 중앙 정렬 추가 */
+
+    }
+
+    .close {
+      position: absolute; right: 18px; top: 12px;
+      font-size: 28px; font-weight: bold; color: #444; cursor: pointer;
+    }
+    .adopt-detail {
+      display: flex;
+      flex-direction: row;   /* 가로로 나열 */
+      gap: 24px;             /* 항목 사이 간격 */
+      margin-top: 20px;
+      flex-wrap: wrap;       /* 넘치면 다음 줄로 */
+      overflow-x: auto;      /* 가로 스크롤 필요시 */
+      max-width: 90vw;       /* 뷰포트 기준 최대 너비 */
+    }
+    .detail-row {
+      display: flex;
+      flex-direction: column; /* 라벨-값을 위아래로 */
+      min-width: 140px;      /* 각 항목 최소 너비 */
+      margin-bottom: 10px;
+      border: none;          /* 가로 레이아웃에선 보더 제거 */
+    }
+    .detail-row .label {
+      font-weight: bold;
+      color: #444;
+      margin-bottom: 4px;
+    }
+    .detail-row .value {
+      color: #222;
+      word-break: break-all;
+    }
+
 
   </style>
 </head>
@@ -394,13 +445,15 @@
   <!-- 입양글 관리 -->
   <section class="section" id="section-adopt">
     <h3>입양신청서 관리</h3>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
     <table class="adopt-table">
       <thead>
       <tr>
         <th>번호</th>
         <th>아이디</th>
         <th>직업</th>
-        <th>알레르기 정보</th>
+        <th>유기동물 이름</th>
         <th>상태</th>
         <th>관리</th>
       </tr>
@@ -410,9 +463,9 @@
         <td th:text="${iterStat.index + 1}"></td>
         <td th:text="${app.uId}"></td>
         <td th:text="${app.job}"></td>
-        <td th:text="${app.allergyInfo}"></td>
+        <td th:text="${app.animalName}"></td>
         <td>
-          <form th:action="@{/admin/adoption/status/update}" method="post">
+          <form th:action="@{/admin/status/update}" method="post">
             <input type="hidden" name="id" th:value="${app.id}">
             <select name="status" onchange="this.form.submit()">
               <option th:value="승인대기" th:selected="${app.status == '승인대기'}">승인대기</option>
@@ -422,9 +475,44 @@
           </form>
         </td>
         <td>
-          <form th:action="@{'/admin/adoption/delete/' + ${app.id}}" method="post" style="display:inline;">
+          <form th:action="@{'/admin/delete/' + ${app.id}}" method="post" style="display:inline;">
             <button type="submit" class="btn btn-delete" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
           </form>
+          <button type="button" class="btn btn-detail"
+                  th:attr="onclick=|openModal('${app.id}')|">상세</button>
+
+          <!-- 여기서부터 모달! -->
+          <div th:id="|modal-${app.id}|" class="modal" style="display:none;">
+            <div class="modal-content">
+              <span class="close" th:attr="onclick=|closeModal('${app.id}')|">&times;</span>
+              <h3>입양 신청서 상세</h3>
+              <div class="adopt-detail">
+
+                <div class="detail-row"><span class="label">동물 이름</span><span class="value" th:text="${app.animalName}"></span></div>
+                <div class="detail-row"><span class="label">주거 형태</span><span class="value" th:text="${app.housing}"></span></div>
+                <div class="detail-row"><span class="label">주거 유형</span><span class="value" th:text="${app.housingType}"></span></div>
+                <div class="detail-row"><span class="label">반려동물 허용 여부</span><span class="value" th:text="${app.petAllowed}"></span></div>
+                <div class="detail-row"><span class="label">가족 정보</span><span class="value" th:text="${app.familyInfo}"></span></div>
+                <div class="detail-row"><span class="label">알레르기 정보</span><span class="value" th:text="${app.allergyInfo}"></span></div>
+                <div class="detail-row"><span class="label">입양 동기</span><span class="value" th:text="${app.motivation}"></span></div>
+                <div class="detail-row"><span class="label">서약</span><span class="value" th:text="${app.pledge}"></span></div>
+                <div class="detail-row"><span class="label">현재 반려동물</span><span class="value" th:text="${app.currentPets}"></span></div>
+                <div class="detail-row"><span class="label">반려동물 양육 경험</span><span class="value" th:text="${app.experience}"></span></div>
+                <div class="detail-row"><span class="label">직업</span><span class="value" th:text="${app.job}"></span></div>
+                <div class="detail-row"><span class="label">근무 형태</span><span class="value" th:text="${app.workType}"></span></div>
+                <div class="detail-row"><span class="label">반려동물 돌봄 계획</span><span class="value" th:text="${app.petCarePlan}"></span></div>
+                <div class="detail-row"><span class="label">경제적 상태</span><span class="value" th:text="${app.financialStatus}"></span></div>
+                <div class="detail-row"><span class="label">동물 종류</span><span class="value" th:text="${app.animalType}"></span></div>
+                <div class="detail-row"><span class="label">동물 상세</span><span class="value" th:text="${app.animalDetail}"></span></div>
+                <div class="detail-row"><span class="label">돌봄 가능 시간</span><span class="value" th:text="${app.careTime}"></span></div>
+                <div class="detail-row"><span class="label">운동 계획</span><span class="value" th:text="${app.exercisePlan}"></span></div>
+                <div class="detail-row"><span class="label">여행 계획</span><span class="value" th:text="${app.travelPlan}"></span></div>
+                <div class="detail-row"><span class="label">개인정보 동의</span><span class="value" th:text="${app.agreement}"></span></div>
+                <div class="detail-row"><span class="label">신청 상태</span><span class="value" th:text="${app.status}"></span></div>
+              </div>
+            </div>
+          </div>
+
         </td>
       </tr>
       </tbody>
@@ -604,7 +692,7 @@
           <button class="btn" type="button"
                   th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}"
                   onclick="openAdminEditModal()">수정</button>
-          <form th:action="@{'/admin/delete/' + ${admin.aId}}" method="post" style="display:inline;">
+          <form th:action="@{'/admin/delete/admin/' + ${admin.aId}}" method="post" style="display:inline;">
             <button type="submit" class="btn btn-delete"th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">삭제</button>
           </form>
         </td>
@@ -618,7 +706,7 @@
     <form th:action="@{/admin/register}" method="post" class="admin-register-form">
       <div class="form-group">
         <label for="a_id">아이디</label>
-        <select id="a_id" name="a_id" class="form-control" required>
+        <select id="a_id" name="aId" class="form-control" required>
           <option value="" selected disabled>아이디 선택</option>
           <option value="admin1">admin1</option>
           <option value="admin2">admin2</option>
@@ -626,11 +714,11 @@
       </div>
       <div class="form-group">
         <label for="a_pass">비밀번호</label>
-        <input type="password" id="a_pass" name="a_pass" class="form-control" required>
+        <input type="password" id="a_pass" name="aPass" class="form-control" required>
       </div>
       <div class="form-group">
         <label for="a_name">이름</label>
-        <input type="text" id="a_name" name="a_name" class="form-control" required>
+        <input type="text" id="a_name" name="aName" class="form-control" required>
       </div>
       <div style="margin-top:18px; text-align:right;">
         <button class="btn" type="submit">등록</button>
@@ -666,6 +754,10 @@
     </form>
   </div>
 </div>
+
+<
+
+
 
 <script>
   // 메뉴 탭(일반 메뉴, 드롭다운 메뉴) 클릭 이벤트 통합
@@ -726,6 +818,13 @@
   }
   function closeAdminEditModal() {
     document.getElementById('adminEditModal').classList.remove('active');
+  }
+
+  function openModal(id) {
+    document.getElementById('modal-' + id).style.display = 'block';
+  }
+  function closeModal(id) {
+    document.getElementById('modal-' + id).style.display = 'none';
   }
 
 

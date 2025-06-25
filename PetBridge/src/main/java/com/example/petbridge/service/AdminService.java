@@ -88,6 +88,10 @@ public class AdminService {
         adminRepository.updateAdmin(aId, aName, aPass);
     }
 
+    public void deleteAdmin(String aId) {
+        adminRepository.deleteAdminByAId(aId);
+    }
+
 
 
 
