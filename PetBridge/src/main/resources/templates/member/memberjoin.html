@@ -9,12 +9,14 @@
     body {
       background-color: #fefcf9;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      padding-top: 150px;
+      display: flex; /* 현재 flexbox로 설정되어 있음 */
+      justify-content: center; /* 현재 flexbox로 설정되어 있음 */
+      align-items: center;     /* 현재 flexbox로 설정되어 있음 */
+      min-height: 100vh;         /* height: 100vh; 에서 min-height로 변경하여 내용이 길어질 때 스크롤 가능하게 함 */
+      padding-top: 170px; /* <--- 이 부분을 추가하거나 값 변경 */
       margin: 0;
+      box-sizing: border-box; /* 패딩이 전체 너비/높이에 포함되도록 설정 */
+      flex-direction: column; /* flex로 되어 있으므로 콘텐츠가 세로로 쌓이도록 변경 */
     }
     .container {
       background-color: white;

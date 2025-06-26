@@ -95,6 +95,7 @@
             <span th:switch="${animal.animalType}">
               <span th:case="'dog'">강아지</span>
               <span th:case="'cat'">고양이</span>
+              <span th:case="'other'">기타</span>
               <span th:case="*" th:text="${animal.animalType}"></span>
             </span>
           </td>

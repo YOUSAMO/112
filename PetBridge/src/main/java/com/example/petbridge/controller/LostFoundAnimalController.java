@@ -33,7 +33,7 @@ public class LostFoundAnimalController {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    private static final String CONTROLLER_BOARD_TYPE = "lostfound";
+    private static final String CONTROLLER_BOARD_TYPE = "lostfound"; // 이 값은 댓글 API에서 기대하는 고정된 값입니다.
     private static final String CONTROLLER_FOLDER_PREFIX = "LostFound_";
 
 
@@ -85,7 +85,6 @@ public class LostFoundAnimalController {
     public String registerForm(Model model) {
         model.addAttribute("animal", new LostFoundAnimal());
         model.addAttribute("isNew", true);
-        // ★★★ formActionUrl 추가 ★★★
         model.addAttribute("formActionUrl", "/lostfound/register");
         return "lostfound/lostfoundForm";
     }
@@ -100,6 +99,10 @@ public class LostFoundAnimalController {
         if (userId == null) {
             return "redirect:/login";
         }
+
+        // 게시글 등록 시 boardType이 '실종', '발견', '보호' 중 하나로 제대로 설정되어 저장되어야 합니다.
+        // 이 부분은 서비스 레이어에서 처리될 것으로 예상합니다.
+        // animal.setBoardType(CONTROLLER_BOARD_TYPE); // 이 코드는 다시 주석 처리하거나 제거해야 합니다.
 
         animalService.register(animal, files, userId);
         redirectAttributes.addFlashAttribute("message", "게시글이 성공적으로 등록되었습니다.");
@@ -116,7 +119,11 @@ public class LostFoundAnimalController {
         }
         animalService.increaseViewCount(id);
 
-        animal.setBoardType(CONTROLLER_BOARD_TYPE);
+        // 게시글의 실제 boardType (실종, 발견, 보호 등)은 그대로 유지합니다.
+        // animal.setBoardType(CONTROLLER_BOARD_TYPE); // 이 코드를 제거하거나 주석 처리하여 원래 값을 유지합니다.
+
+        // 댓글 API에 전달할 고정된 boardType 값을 별도의 속성으로 추가합니다.
+        model.addAttribute("commentApiBoardType", CONTROLLER_BOARD_TYPE);
 
         model.addAttribute("animal", animal);
         model.addAttribute("currentUserId", userId);
@@ -131,7 +138,6 @@ public class LostFoundAnimalController {
         }
         model.addAttribute("animal", animal);
         model.addAttribute("isNew", false);
-        // ★★★ formActionUrl 추가 ★★★
         model.addAttribute("formActionUrl", "/lostfound/modify");
         return "lostfound/lostfoundForm";
     }
@@ -187,10 +193,8 @@ public class LostFoundAnimalController {
                                               @PathVariable String folderName,
                                               @PathVariable String fileName) {
         try {
-            if (!folderName.startsWith(CONTROLLER_FOLDER_PREFIX)) {
-                return ResponseEntity.badRequest().build();
-            }
-
+            // 이 경로는 CONTROLLER_BOARD_TYPE을 사용하여 고정하는 것이 더 안전합니다.
+            // (즉, 'uploads/lostfound/LostFound_xyz/image.png'와 같이 되도록)
             Path fileSystemPath = Paths.get(uploadDir, CONTROLLER_BOARD_TYPE, folderName, fileName).normalize();
 
             System.out.println("Serving file from path: " + fileSystemPath.toAbsolutePath().toString());

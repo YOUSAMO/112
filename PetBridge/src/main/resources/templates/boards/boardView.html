@@ -6,6 +6,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    body {
+      background-color: #f3f4f6; /* Tailwind: bg-gray-100 */
+      color: #1f2937;           /* Tailwind: text-gray-800 */
+      margin: 0;
+      /* 중요: 이 padding-top을 추가하여 헤더 높이만큼 본문을 밀어냅니다. */
+      /* 헤더가 대략 60px 높이이므로, 그 이상으로 설정합니다. */
+      padding-top: 80px; /* sm:pt-24 (96px)와 겹치지 않게 주의 */
+    }
     /* 액션 링크 (수정, 삭제, 좋아요, 목록) 스타일 */
     .action-links a, .action-links button { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; padding: 0.625rem 1.25rem; border-radius: 0.375rem; border: none; cursor: pointer; text-decoration: none; text-align: center; transition: background-color 0.2s, transform 0.1s; color: white; }
     .action-links a { background-color: cornflowerblue; }

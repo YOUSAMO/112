@@ -49,7 +49,7 @@ public class AdoptionController {
 
             // 2. 폼 객체를 생성합니다.
             Adoption_application adoptionForm = new Adoption_application();
-            adoptionForm.setU_id(loginMember.getU_id());
+            adoptionForm.setUId(loginMember.getU_id());
             adoptionForm.setAnimal_id(animalId);
 
             // 3. [핵심] 조회한 동물 정보로 폼 객체의 일부 필드를 미리 채웁니다.
@@ -89,7 +89,7 @@ public class AdoptionController {
         }
 
         adoption.setAnimal_id(animalId);
-        adoption.setU_id(loginMember.getU_id());
+        adoption.setUId(loginMember.getU_id());
 
         // Spring의 @Validated 어노테이션을 사용한 유효성 검사
         if (result.hasErrors()) {

@@ -28,7 +28,7 @@ public class Adoption_applicationService {
             Animal animalFromJson = animalService.findAnimalFromJsonFile(originalAnimalId)
                     .orElseThrow(() -> new IllegalStateException("신청하려는 동물 정보를 찾을 수 없습니다. ID: " + originalAnimalId));
 
-            animalFromJson.setCreated_by(application.getU_id());
+            animalFromJson.setCreated_by(application.getUId());
             savedAnimal = animalService.saveAnimalToDb(animalFromJson);
         } else {
             savedAnimal = existingAnimal.get();

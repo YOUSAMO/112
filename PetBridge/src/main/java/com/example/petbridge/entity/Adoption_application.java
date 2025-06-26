@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class Adoption_application {
 
     private Long id;
-    private String u_id;
+    private String uId;
     private String motivation;
     private String housingType;
     private String petAllowed;
@@ -30,6 +30,7 @@ public class Adoption_application {
     private String exercisePlan;
     private String travelPlan;
 
+
     // --- [최종 수정] Integer에서 Boolean으로 변경 ---
     private Boolean agreement;
 
@@ -41,5 +42,6 @@ public class Adoption_application {
     private String housing;
     private Long animal_id;
     private String animalName;
+    private String status;
 
 }

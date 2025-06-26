@@ -40,7 +40,7 @@
     <input th:if="${!isNew}" type="hidden" id="id" th:field="*{id}" />
 
     <div class="form-group" th:if="${!isNew}"><label for="authorName">작성자:</label><input type="text" id="authorName" th:field="*{authorName}" readonly class="form-control-plaintext"/></div>
-    <div class="form-group"><label for="boardType">게시판 유형 Board Type:</label><select id="boardType" th:field="*{boardType}" required><option value="lostfound">Lost Found 분실/발견(기본)</option><option value="실종">실종 찾기</option><option value="보호">임시 보호</option></select><span th:if="${#fields.hasErrors('boardType')}" th:errors="*{boardType}" class="error"></span></div>
+    <div class="form-group"><label for="boardType">게시판 유형 Board Type:</label><select id="boardType" th:field="*{boardType}" required><option value="발견">발견</option><option value="실종">실종</option><option value="보호">보호</option></select><span th:if="${#fields.hasErrors('boardType')}" th:errors="*{boardType}" class="error"></span></div>
     <div class="form-group"><label for="title">제목 Title:</label><input type="text" id="title" th:field="*{title}" required /><span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error"></span></div>
     <div class="form-group"><label for="animalType">동물 종류 Animal Type:</label><select id="animalType" th:field="*{animalType}" required><option value="dog">강아지</option><option value="cat">고양이</option><option value="other">기타</option></select><span th:if="${#fields.hasErrors('animalType')}" th:errors="*{animalType}" class="error"></span></div>
     <div class="form-group"><label for="gender">성별 Gender:</label><select id="gender" th:field="*{gender}" required><option value="male">남성</option><option value="female">여성</option><option value="unknown">모름</option></select><span th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}" class="error"></span></div>
@@ -90,7 +90,6 @@
 <script th:inline="javascript">
   /* <![CDATA[*/
 
-  // ★★★ [삭제] CSRF 관련 변수 선언부를 삭제합니다. ★★★
 
   // Image Upload Preview
   function previewImages(event) {
@@ -138,7 +137,6 @@
 
           if (confirm('이 첨부파일을 정말 삭제하시겠습니까? 파일은 즉시 삭제되며 복구할 수 없습니다. Are you sure you want to delete this file? It cannot be recovered.')) {
 
-            // ★★★ [수정] CSRF 헤더를 설정하는 모든 로직을 삭제하고, 헤더 없이 fetch 요청을 보냅니다. ★★★
             fetch(deleteUrl, {
               method: 'DELETE'
             })

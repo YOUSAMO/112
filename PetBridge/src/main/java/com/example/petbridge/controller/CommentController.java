@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections; // Collections 임포트 추가
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -25,41 +25,40 @@ public class CommentController {
 
     @GetMapping
     public ResponseEntity<List<Comment>> getComments(
-            // 일반 게시글 ID를 위한 postId (선택 사항)
             @RequestParam(value = "postId", required = false) Long postId,
-            // 입양 후기 게시글 ID를 위한 arNo (선택 사항)
             @RequestParam(value = "arNo", required = false) Long arNo,
-            // 게시판 타입을 구분하기 위한 boardType (필수지만, 직접 접근 시를 위해 required=false)
             @RequestParam(value = "boardType", required = false) String boardType) {
 
-        // boardType이 null 또는 비어 있으면 Bad Request 반환
         if (boardType == null || boardType.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Collections.emptyList()); // 빈 리스트 반환
+            return ResponseEntity.badRequest().body(Collections.emptyList());
         }
 
-        Long targetPostId; // CommentService로 전달할 실제 게시글 ID
+        Long targetPostId;
 
-        // boardType에 따라 어떤 ID를 사용할지 결정합니다.
         if ("board".equals(boardType)) {
             if (postId == null) {
-                return ResponseEntity.badRequest().body(Collections.emptyList()); // postId가 없으면 오류
+                return ResponseEntity.badRequest().body(Collections.emptyList());
             }
             targetPostId = postId;
         } else if ("review".equals(boardType) || "adoptionReview".equals(boardType)) {
             if (arNo == null) {
-                return ResponseEntity.badRequest().body(Collections.emptyList()); // arNo가 없으면 오류
+                return ResponseEntity.badRequest().body(Collections.emptyList());
             }
             targetPostId = arNo;
-        } else if ("lostfound".equals(boardType) || "missing".equals(boardType)) { // ★★★ 추가된 부분 ★★★
-            // "lostfound"나 "missing" 타입의 게시글 ID는 postId로 넘어올 것이라고 가정
+        }
+        // ★★★★★★★★★★★★★★★★★★★ 수정된 최종 코드 ★★★★★★★★★★★★★★★★★★★
+        // "lostfound" 또는 한글 타입("발견", "실종", "보호")을 모두 처리하도록 조건을 확장합니다.
+        else if ("lostfound".equals(boardType) || "발견".equals(boardType) || "실종".equals(boardType) || "보호".equals(boardType)) {
+            // 이 게시판 타입의 ID는 postId로 넘어옵니다.
             if (postId == null) {
-                return ResponseEntity.badRequest().body(Collections.emptyList()); // postId가 없으면 오류
+                return ResponseEntity.badRequest().body(Collections.emptyList());
             }
             targetPostId = postId;
         }
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
         else {
             // 지원하지 않는 boardType
-            return ResponseEntity.badRequest().body(Collections.emptyList()); // 빈 리스트 반환
+            return ResponseEntity.badRequest().body(Collections.emptyList());
         }
 
         List<Comment> comments = commentService.getCommentsByPostId(targetPostId, boardType);
