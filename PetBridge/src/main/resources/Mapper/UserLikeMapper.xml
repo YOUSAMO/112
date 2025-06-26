@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.petbridge.repository.UserLikeRepository">
+
+    <resultMap id="userLikeResultMap" type="com.example.petbridge.entity.UserLike">
+        <id property="likeId" column="like_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="boardId" column="board_id"/>
+        <result property="boardType" column="board_type"/>
+        <result property="likedAt" column="liked_at"/>
+    </resultMap>
+
+    <select id="findLike" resultMap="userLikeResultMap">
+        SELECT like_id, user_id, board_id, board_type, liked_at
+        FROM users_like
+        WHERE user_id = #{userId} AND board_id = #{boardId} AND board_type = #{boardType}
+    </select>
+
+    <insert id="insertLike" parameterType="com.example.petbridge.entity.UserLike">
+        INSERT INTO users_like (user_id, board_id, board_type, liked_at)
+        VALUES (#{userId}, #{boardId}, #{boardType}, NOW())
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM users_like
+        WHERE user_id = #{userId} AND board_id = #{boardId} AND board_type = #{boardType}
+    </delete>
+
+    <delete id="deleteLikesByContent">
+        DELETE FROM users_like
+        WHERE board_id = #{boardId} AND board_type = #{boardType}
+    </delete>
+
+</mapper>

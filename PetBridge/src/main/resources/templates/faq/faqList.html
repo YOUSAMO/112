@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>FAQ 목록</title>
+  <style>
+    body {
+      background-color: honeydew;
+      margin: 2rem 1rem;
+      color: midnightblue;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      font-size: 2rem;
+      color: steelblue;
+    }
+    a.new-faq {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 1rem;
+      background-color: darkorange;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+    a.new-faq:hover {
+      background-color: orangered;
+    }
+
+    /* 검색창 스타일 */
+    .search-container {
+      width: 900px;
+      max-width: 100%;
+      margin: 0 auto 1.5rem;
+      text-align: center;
+    }
+    .search-container input[type="text"] {
+      width: 50%;
+      padding: 10px 14px;
+      font-size: 1rem;
+      border: 2px solid darkorange;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .search-container input[type="text"]:focus {
+      border-color: orangered;
+    }
+
+    table {
+      width: 900px;
+      max-width: 100%;
+      margin: 0 auto 1rem;
+      border-collapse: collapse;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background-color: white;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    th, td {
+      border-bottom: 1px solid lightgray;
+      padding: 12px 16px;
+      vertical-align: top;
+      font-size: 1rem;
+      text-align: center;
+    }
+    thead th {
+      background-color: darkorange;
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    tbody tr:hover {
+      background-color: lemonchiffon;
+    }
+
+    td.question-cell {
+      cursor: pointer;
+      text-align: left;
+      position: relative;
+      padding-left: 40px;
+      background-color: lightyellow;
+      border-radius: 4px;
+      border: 1px solid orange;
+      user-select: none;
+      vertical-align: top;
+      min-height: 40px;
+    }
+    td.question-cell span {
+      font-weight: 600;
+      color: midnightblue;
+      display: block;
+    }
+    td.question-cell::before {
+      content: "Q";
+      position: absolute;
+      left: 12px;
+      top: 16px;
+      background-color: darkorange;
+      color: white;
+      font-weight: 700;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-size: 1rem;
+      user-select: none;
+    }
+
+    /* 답변 숨김 영역 */
+    .answer-container {
+      display: none;
+      background-color: lightyellow;
+      border: 1px solid orange;
+      border-radius: 4px;
+      color: black;
+      white-space: pre-wrap;
+      line-height: 1.4;
+      font-size: 0.95rem;
+      margin: 8px 0 12px 40px;
+      padding: 10px 12px;
+      position: relative;
+    }
+    .answer-container::before {
+      content: "A";
+      position: absolute;
+      left: -32px;
+      top: 12px;
+      background-color: orange;
+      color: white;
+      font-weight: 700;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-size: 1rem;
+      user-select: none;
+    }
+
+    /* 페이징 스타일 */
+    .pagination {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .pagination button {
+      background-color: white;
+      border: 1px solid darkorange;
+      color: darkorange;
+      margin: 0 3px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .pagination button:hover {
+      background-color: darkorange;
+      color: white;
+    }
+    .pagination button.active {
+      background-color: darkorange;
+      color: white;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<h1>FAQ 목록</h1>
+<a href="#" th:href="@{/faqs/new}" class="new-faq">새 FAQ 등록</a>
+
+<div class="search-container">
+  <input type="text" id="faqSearch" placeholder="질문 또는 답변으로 검색하세요..." onkeyup="filterAndPaginateFAQ()">
+</div>
+
+<table id="faqTable">
+  <thead>
+  <tr>
+    <th>질문</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="faq : ${faqs}">
+    <td class="question-cell" onclick="toggleAnswer(this)">
+      <span th:text="${faq.question}">질문 제목</span>
+      <div class="answer-container" th:text="${faq.answer}"></div>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="pagination" id="pagination"></div>
+
+<script>
+  const rowsPerPage = 10;  // 페이지당 표시할 항목 수
+  let currentPage = 1;
+
+  function toggleAnswer(questionCell) {
+    const answerDiv = questionCell.querySelector('.answer-container');
+    answerDiv.style.display = (answerDiv.style.display === 'block') ? 'none' : 'block';
+  }
+
+  // 필터링 후 페이지네이션 적용 함수
+  function filterAndPaginateFAQ() {
+    const input = document.getElementById('faqSearch');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('faqTable');
+    const trs = Array.from(table.tBodies[0].getElementsByTagName('tr'));
+
+    // 필터링 된 행만 배열로 반환
+    const filteredRows = trs.filter(tr => {
+      const question = tr.querySelector('.question-cell span').textContent.toLowerCase();
+      const answer = tr.querySelector('.answer-container').textContent.toLowerCase();
+      return question.includes(filter) || answer.includes(filter);
+    });
+
+    // 전체 행 숨기기
+    trs.forEach(tr => tr.style.display = 'none');
+
+    // 페이징 후 표시할 시작과 끝 인덱스 계산
+    const totalPage = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage > totalPage) currentPage = totalPage || 1;
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    // 현재 페이지에 해당하는 행만 보이기
+    filteredRows.slice(start, end).forEach(tr => tr.style.display = '');
+
+    renderPagination(filteredRows.length, totalPage);
+  }
+
+  // 페이징 버튼 렌더링
+  function renderPagination(totalItems, totalPage) {
+    const paginationDiv = document.getElementById('pagination');
+    paginationDiv.innerHTML = '';
+
+    if (totalPage <= 1) return; // 페이지 1개면 페이징 안보이게
+
+    for(let i = 1; i <= totalPage; i++) {
+      const btn = document.createElement('button');
+      btn.innerText = i;
+      btn.className = (i === currentPage) ? 'active' : '';
+      btn.onclick = function() {
+        currentPage = i;
+        filterAndPaginateFAQ();
+      };
+      paginationDiv.appendChild(btn);
+    }
+  }
+
+  // 초기 로드 시 페이징 적용
+  window.onload = function() {
+    filterAndPaginateFAQ();
+  };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>유기동물 보호소 관리자 페이지</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      background: #F8F6F1;
+      font-family: 'Pretendard', 'Noto Sans KR', Arial, sans-serif;
+      color: #444;
+    }
+    .sidebar {
+      width: 230px;
+      background: #F5EEDD;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding: 40px 0 0 0;
+      box-shadow: 2px 0 8px #eee;
+    }
+    .sidebar h2 {
+      color: #BFAE99;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 1.5em;
+      letter-spacing: 1px;
+    }
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .nav-menu li {
+      padding: 18px 40px;
+      margin-bottom: 10px;
+      border-radius: 8px 0 0 8px;
+      background: #E7DECF;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .nav-menu li.active,
+    .nav-menu li:hover {
+      background: #D6C6B8;
+      color: #fff;
+      font-weight: bold;
+    }
+    .main {
+      margin-left: 230px;
+      padding: 40px 50px;
+      min-height: 100vh;
+    }
+    .header {
+      background: #BFAE99;
+      color: #fff;
+      padding: 25px 40px;
+      border-radius: 12px;
+      font-size: 1.5em;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px #eee;
+    }
+    .admin-info {
+      font-size: 1em;
+      color: #F5EEDD;
+    }
+    .admin-register-form {
+      background: #FFF8E7;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px #eee;
+      padding: 36px 32px 28px 32px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .admin-register-form .form-group {
+      margin-bottom: 18px;
+    }
+    .admin-register-form label {
+      display: block;
+      font-weight: 600;
+      color: #8C7B6B;
+      margin-bottom: 7px;
+      font-size: 1.05em;
+    }
+    .admin-register-form .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0d6c6;
+      border-radius: 8px;
+      font-size: 1em;
+      background: #F5EEDD;
+      color: #4d3e2b;
+      transition: border 0.18s;
+      box-sizing: border-box;
+    }
+    .admin-register-form .form-control:focus {
+      border-color: #BFAE99;
+      outline: none;
+      background: #fff;
+    }
+    .admin-register-form select.form-control {
+      appearance: none;
+      -webkit-appearance: none;
+      background: #F5EEDD url('data:image/svg+xml;utf8,<svg fill="gray" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 12px center/18px 18px;
+    }
+    .admin-register-form .btn {
+      padding: 9px 26px;
+      border: none;
+      border-radius: 8px;
+      background: #BFAE99;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .admin-register-form .btn:hover {
+      background: #8C7B6B;
+    }
+    .section {
+      margin-top: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #eee;
+      padding: 40px;
+      display: none;
+    }
+    .section.active { display: block; }
+    .section h3 {
+      color: #8C7B6B;
+      font-size: 1.3em;
+      margin-bottom: 18px;
+    }
+    .animal-table, .adopt-table, .member-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .animal-table th, .animal-table td,
+    .adopt-table th, .adopt-table td,
+    .member-table th, .member-table td {
+      border-bottom: 1px solid #eee;
+      padding: 12px 10px;
+      text-align: left;
+    }
+    .animal-table th, .adopt-table th, .member-table th {
+      background: #F5EEDD;
+      color: #8C7B6B;
+    }
+    .animal-table tr:hover, .adopt-table tr:hover, .member-table tr:hover {
+      background: #F8F6F1;
+    }
+    .status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.95em;
+      font-weight: bold;
+      background: #D6C6B8;
+      color: #fff;
+      display: inline-block;
+    }
+    .status.wait { background: #BFAE99; }
+    .status.adopted { background: #8C7B6B; }
+    .btn {
+      padding: 7px 18px;
+      border: none;
+      border-radius: 6px;
+      background: #BFAE99;
+      color: #fff;
+      font-size: 1em;
+      cursor: pointer;
+      margin-right: 5px;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #8C7B6B;
+    }
+    .modal-bg {
+      display: none;
+      position: fixed;
+      top:0; left:0; width:100vw; height:100vh;
+      background: rgba(0,0,0,0.25);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-bg.active { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px #ccc;
+      padding: 32px 40px;
+      min-width: 320px;
+      max-width: 95vw;
+      color: #444;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      right: 22px; top: 18px;
+      font-size: 1.5em;
+      color: #BFAE99;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .modal h4 { color: #8C7B6B; margin-top: 0; }
+    .modal img { border-radius: 20px; width: 120px; height: 120px; object-fit: cover; margin-bottom: 12px;}
+    @media (max-width: 900px) {
+      .sidebar { width: 160px; }
+      .main { margin-left: 160px; padding: 20px 10px; }
+      .header { padding: 15px 10px; font-size: 1.1em; }
+      .section { padding: 18px; }
+      .modal { padding: 18px 10px; }
+    }
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropbtn {
+      display: block;
+      padding: 18px 40px;
+      background: #E7DECF;
+      border-radius: 8px 0 0 8px;
+      white-space: nowrap;
+      font-size: 1.1em;
+      cursor: pointer;
+      font-weight: bold;
+      text-align: left;
+      transition: background 0.2s;
+    }
+    .dropdown:hover .dropbtn,
+    .dropdown .dropbtn:focus {
+      background: #D6C6B8;
+      color: #fff;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 100%;
+      width: 210px;
+      background: #f7f3ee;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 2px 8px #eee;
+      z-index: 100;
+      padding: 0;
+      margin: 0;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .dropdown-content li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-bottom: 1px solid #e0d6c6;
+    }
+    .dropdown-content li:last-child {
+      border-bottom: none;
+    }
+    .dropdown-content a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 60px;
+      box-sizing: border-box;
+      font-size: 1.08em;
+      font-weight: bold;
+      color: #4d3e2b;
+      background: #f7f3ee;
+      text-decoration: none;
+      transition: background 0.18s, color 0.18s;
+      text-align: center;
+      border-radius: 0;
+    }
+    .dropdown-content a:hover {
+      background: #ede5d8;
+      color: #222;
+    }
+    .modal-bg { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.2); z-index:1000; justify-content:center; align-items:center; }
+    .modal-bg.active { display:flex; }
+    .admin-edit-form-wrap {
+      background: #FFF8E7;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px #eee;
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 36px 32px 28px 32px;
+    }
+    .adminEditModal h3 {
+      color: #8C7B6B;
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-size: 1.25em;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .adminEditModal .form-group {
+      margin-bottom: 18px;
+    }
+    .adminEditModal label {
+      display: block;
+      font-weight: 600;
+      color: #8C7B6B;
+      margin-bottom: 7px;
+      font-size: 1.05em;
+    }
+    .adminEditModal .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0d6c6;
+      border-radius: 8px;
+      font-size: 1em;
+      background: #F5EEDD;
+      color: #4d3e2b;
+      transition: border 0.18s;
+      box-sizing: border-box;
+    }
+    .adminEditModal .form-control:focus {
+      border-color: #BFAE99;
+      outline: none;
+      background: #fff;
+    }
+    .btn {
+      padding: 9px 26px;
+      border: none;
+      border-radius: 8px;
+      background: #BFAE99;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #8C7B6B;
+    }
+    .btn-delete {
+      background: #f44336;
+    }
+    .btn-delete:hover {
+      background: #da190b;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 32px 40px;
+      border-radius: 12px;
+      width: 90vw;           /* 브라우저 너비의 90%까지 */
+      max-width: 1400px;     /* 최대 1400px까지 */
+      min-width: 500px;
+      height: 650px;/* 최소 500px */
+      position: relative;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+      overflow-x: auto;      /* 내용이 넘치면 가로 스크롤 */
+      /* 중앙 정렬 추가 */
+
+    }
+    .modal.active {
+      display: flex !important;
+    }
+
+
+
+    .close {
+      position: absolute; right: 18px; top: 12px;
+      font-size: 28px; font-weight: bold; color: #444; cursor: pointer;
+    }
+    .adopt-detail {
+      display: flex;
+      flex-direction: row;   /* 가로로 나열 */
+      gap: 24px;             /* 항목 사이 간격 */
+      margin-top: 20px;
+      flex-wrap: wrap;       /* 넘치면 다음 줄로 */
+      overflow-x: auto;      /* 가로 스크롤 필요시 */
+      max-width: 90vw;       /* 뷰포트 기준 최대 너비 */
+    }
+    .detail-row {
+      display: flex;
+      flex-direction: column; /* 라벨-값을 위아래로 */
+      min-width: 140px;      /* 각 항목 최소 너비 */
+      margin-bottom: 10px;
+      border: none;          /* 가로 레이아웃에선 보더 제거 */
+    }
+    .detail-row .label {
+      font-weight: bold;
+      color: #444;
+      margin-bottom: 4px;
+    }
+    .detail-row .value {
+      color: #222;
+      word-break: break-all;
+    }
+
+    .close { float:right; font-size:1.5em; cursor:pointer; }
+    .detail-row { margin-bottom: 10px; }
+    .label { display:inline-block; width:100px; font-weight:bold; }
+    .value { display:inline-block; }
+
+
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <h2>유기동물<br>보호소 관리자</h2>
+  <ul class="nav-menu">
+
+    <li data-section="adopt">입양 신청서 관리</li>
+    <li data-section="member">회원 관리</li>
+    <li class="dropdown">
+      <span class="dropbtn">게시판 관리</span>
+      <ul class="dropdown-content">
+        <li><a href="#" data-board="free">자유 게시판</a></li>
+        <li><a href="#" data-board="review">입양후기 게시판</a></li>
+        <li><a href="#" data-board="missing">유기동물/실종 보호 게시판</a></li>
+      </ul>
+    </li>
+    <li data-section="comment">댓글 관리</li>
+    <li data-section="stat">통계</li>
+    <!-- 관리자 관리 그룹 추가 -->
+    <li class="dropdown">
+      <span class="dropbtn">관리자 관리</span>
+      <ul class="dropdown-content">
+        <li data-section="admin-list"><a href="#">관리자 목록</a></li>
+        <li data-section="admin-register"><a href="#">관리자 등록</a></li>
+
+      </ul>
+    </li>
+  </ul>
+</aside>
+
+<div class="main">
+
+
+  <div class="header">
+    유기동물 보호소 관리자 페이지
+    <span class="admin-info">
+        관리자: <span th:text="${loginAdmin.aName}">님 환영합니다</span> |
+        <a th:href="@{/admin/logout}" style="color:#F5EEDD;">로그아웃</a>
+      </span>
+  </div>
+  <div id="board-view"></div>
+  <!-- 동물목록 -->
+  <!-- 입양글 관리 -->
+  <section class="section" id="section-adopt" style="display: none">
+    <h3>입양신청서 관리</h3>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <table class="adopt-table">
+      <thead>
+      <tr>
+        <th>번호</th>
+        <th>아이디</th>
+        <th>직업</th>
+        <th>유기동물 이름</th>
+        <th>상태</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="app, iterStat : ${applications}">
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${app.uId}"></td>
+        <td th:text="${app.job}"></td>
+        <td th:text="${app.animalName}"></td>
+        <td>
+          <form th:action="@{/admin/status/update}" method="post">
+            <input type="hidden" name="id" th:value="${app.id}">
+            <select name="status" onchange="this.form.submit()">
+              <option th:value="승인대기" th:selected="${app.status == '승인대기'}">승인대기</option>
+              <option th:value="승인불허" th:selected="${app.status == '승인불허'}">승인불허</option>
+              <option th:value="승인완료" th:selected="${app.status == '승인완료'}">승인완료</option>
+            </select>
+          </form>
+        </td>
+        <td>
+          <form th:action="@{'/admin/delete/' + ${app.id}}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-delete" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+          </form>
+          <button type="button" class="btn btn-detail"
+                  th:attr="onclick=|openModal('${app.id}')|">상세</button>
+
+          <!-- 여기서부터 모달! -->
+          <div th:id="|modal-${app.id}|" class="modal" style="display:none;">
+            <div class="modal-content">
+              <span class="close" th:attr="onclick=|closeModal('${app.id}')|">&times;</span>
+              <h3>입양 신청서 상세</h3>
+              <div class="adopt-detail">
+
+                <div class="detail-row"><span class="label">동물 이름</span><span class="value" th:text="${app.animalName}"></span></div>
+                <div class="detail-row"><span class="label">주거 형태</span><span class="value" th:text="${app.housing}"></span></div>
+                <div class="detail-row"><span class="label">주거 유형</span><span class="value" th:text="${app.housingType}"></span></div>
+                <div class="detail-row"><span class="label">반려동물 허용 여부</span><span class="value" th:text="${app.petAllowed}"></span></div>
+                <div class="detail-row"><span class="label">가족 정보</span><span class="value" th:text="${app.familyInfo}"></span></div>
+                <div class="detail-row"><span class="label">알레르기 정보</span><span class="value" th:text="${app.allergyInfo}"></span></div>
+                <div class="detail-row"><span class="label">입양 동기</span><span class="value" th:text="${app.motivation}"></span></div>
+                <div class="detail-row"><span class="label">서약</span><span class="value" th:text="${app.pledge}"></span></div>
+                <div class="detail-row"><span class="label">현재 반려동물</span><span class="value" th:text="${app.currentPets}"></span></div>
+                <div class="detail-row"><span class="label">반려동물 양육 경험</span><span class="value" th:text="${app.experience}"></span></div>
+                <div class="detail-row"><span class="label">직업</span><span class="value" th:text="${app.job}"></span></div>
+                <div class="detail-row"><span class="label">근무 형태</span><span class="value" th:text="${app.workType}"></span></div>
+                <div class="detail-row"><span class="label">반려동물 돌봄 계획</span><span class="value" th:text="${app.petCarePlan}"></span></div>
+                <div class="detail-row"><span class="label">경제적 상태</span><span class="value" th:text="${app.financialStatus}"></span></div>
+                <div class="detail-row"><span class="label">동물 종류</span><span class="value" th:text="${app.animalType}"></span></div>
+                <div class="detail-row"><span class="label">동물 상세</span><span class="value" th:text="${app.animalDetail}"></span></div>
+                <div class="detail-row"><span class="label">돌봄 가능 시간</span><span class="value" th:text="${app.careTime}"></span></div>
+                <div class="detail-row"><span class="label">운동 계획</span><span class="value" th:text="${app.exercisePlan}"></span></div>
+                <div class="detail-row"><span class="label">여행 계획</span><span class="value" th:text="${app.travelPlan}"></span></div>
+                <div class="detail-row"><span class="label">개인정보 동의</span><span class="value" th:text="${app.agreement}"></span></div>
+                <div class="detail-row"><span class="label">신청 상태</span><span class="value" th:text="${app.status}"></span></div>
+              </div>
+            </div>
+          </div>
+
+        </td>
+      </tr>
+      </tbody>
+
+
+
+    </table>
+
+  </section>
+  <!-- 회원 관리 -->
+  <section class="section" id="section-member" style="display: none">
+    <h3>회원 관리</h3>
+    <table class="member-table">
+      <thead>
+      <tr>
+        <th>번호</th>
+        <th>이름</th>
+        <th>아이디</th>
+        <th>이메일</th>
+        <th>전화번호</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="member,iterStat : ${members}">
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${member.u_name}"></td>
+        <td th:text="${member.u_id}"></td>
+        <td th:text="${member.u_email}"></td>
+        <td th:text="${member.u_pnumber}"></td>
+        <td>
+          <button class="btn btn-delete">삭제</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+  </section>
+  <!-- 게시판 관리 -->
+  <!-- 자유 게시판 -->
+  <table class="member-table" id="board-free" style="display:none;">
+
+    <thead>
+    <tr>
+      <th>번호</th>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>조회수</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="board, iterStat : ${boards}">
+      <td th:text="${iterStat.index + 1}"></td>
+      <td th:text="${board.bTitle}"></td>
+      <td th:text="${board.authorUid}"></td>
+      <td th:text="${board.viewCount}"></td>
+      <td>
+        <button class="btn"
+                th:attr="onclick=|openBoardModal('${board.bNo}')|"
+        >상세</button>
+        <form th:action="@{'/admin/delete/board/' + ${board.bNo}}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-delete"
+                  onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+        </form>
+        <div th:id="|modal-board-${board.bNo}|" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close" th:attr="onclick=|closeBoardModal('${board.bNo}')|">&times;</span>
+            <h3 th:text="${board.bTitle}">제목</h3>
+            <div class="board-detail">
+              <div class="detail-row"><span class="label">작성자</span><span class="value" th:text="${board.authorUid}"></span></div>
+              <div class="detail-row"><span class="label">조회수</span><span class="value" th:text="${board.viewCount}"></span></div>
+              <div class="detail-row"><span class="label">내용</span><span class="value" th:text="${board.bContent}"></span></div>
+              <!-- 필요하다면 댓글, 첨부파일 등도 추가 가능 -->
+            </div>
+          </div>
+        </div>
+      </td>
+
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- 입양후기 게시판 -->
+  <table class="member-table" id="board-review" style="display:none;">
+    <thead>
+    <tr>
+      <th>번호</th>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>조회수</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="adoption, iterStat : ${adoptionreview}">
+      <td th:text="${iterStat.index + 1}"></td>
+      <td th:text="${adoption.arTitle}"></td>
+      <td th:text="${adoption.authorUid}"></td>
+      <td th:text="${adoption.viewCount}"></td>
+      <td>
+        <button class="btn"
+                th:attr="onclick=|openReviewModal('${adoption.arNo}')|"
+        >상세</button>
+        <form th:action="@{'/admin/delete/review/' + ${adoption.arNo}}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-delete"
+                  onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+        </form>
+
+        <!-- 모달 추가 -->
+        <div th:id="|modal-review-${adoption.arNo}|" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close" th:attr="onclick=|closeReviewModal('${adoption.arNo}')|">&times;</span>
+            <h3 th:text="${adoption.arTitle}">제목</h3>
+            <div class="board-detail">
+              <div class="detail-row"><span class="label">작성자</span><span class="value" th:text="${adoption.authorUid}"></span></div>
+              <div class="detail-row"><span class="label">조회수</span><span class="value" th:text="${adoption.viewCount}"></span></div>
+              <div class="detail-row"><span class="label">내용</span><span class="value" th:text="${adoption.reviewContent}"></span></div>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- 유기동물/실종 보호 게시판 -->
+  <table class="member-table" id="board-missing" style="display:none;">
+    <thead>
+    <tr>
+      <th>번호</th>
+      <th>게시판 유형</th>
+      <th>제목</th>
+      <th>동물종류</th>
+      <th>조회수</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <tr th:each="lostfound, iterStat : ${lostfoundanimals}">
+      <td th:text="${iterStat.index + 1}"></td>
+      <td th:text="${lostfound.boardType}"></td>
+      <td th:text="${lostfound.title}"></td>
+      <td th:text="${lostfound.animalType}"></td>
+      <td th:text="${lostfound.viewCount}"></td>
+      <td>
+        <button class="btn"
+                th:attr="onclick=|openMissingModal('${lostfound.id}')|"
+        >상세</button>
+        <form th:action="@{'/admin/delete/missing/' + ${lostfound.id}}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-delete"
+                  onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+        </form>
+        <!-- 모달 추가 -->
+        <div th:id="|modal-missing-${lostfound.id}|" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close" th:attr="onclick=|closeMissingModal('${lostfound.id}')|">&times;</span>
+            <h3 th:text="${lostfound.title}">제목</h3>
+            <div class="board-detail">
+              <div class="detail-row"><span class="label">게시판 유형</span><span class="value" th:text="${lostfound.boardType}"></span></div>
+              <div class="detail-row"><span class="label">동물종류</span><span class="value" th:text="${lostfound.animalType}"></span></div>
+              <div class="detail-row"><span class="label">작성자</span><span class="value" th:text="${lostfound.userId}"></span></div>
+              <div class="detail-row"><span class="label">조회수</span><span class="value" th:text="${lostfound.viewCount}"></span></div>
+              <div class="detail-row"><span class="label">내용</span><span class="value" th:text="${lostfound.content}"></span></div>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- 댓글/후기 관리 -->
+  <section class="section" id="section-comment"style="display: none">
+    <h3>댓글 관리</h3>
+    <table class="member-table">
+      <thead>
+      <tr>
+        <th>번호</th>
+        <th>게시판 유형</th>
+        <th>작성자</th>
+        <th>등록일</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="comment, iterStat : ${comments}">
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${comment.boardType}"></td>
+        <td th:text="${comment.authorUid}"></td>
+        <td th:text="${comment.createdAt}"></td>
+        <td>
+        <button class="btn"  th:attr="onclick=|openCommentModal('${comment.cmNo}')|" >상세</button>
+          <form th:action="@{'/admin/delete/comment/' + ${comment.cmNo}}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-delete"
+                    onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+          </form>
+
+          <!-- 상세 모달 -->
+          <div th:id="|modal-comment-${comment.cmNo}|" class="modal">
+            <div class="modal-content">
+          <span class="close"
+                th:attr="onclick=|closeCommentModal('${comment.cmNo}')|">&times;</span>
+              <h3>댓글 상세 정보</h3>
+              <div class="board-detail">
+                <div class="detail-row"><span class="label">작성자</span><span class="value" th:text="${comment.authorUid}"></span></div>
+                <div class="detail-row"><span class="label">작성일</span><span class="value" th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+                <div class="detail-row"><span class="label">내용</span><span class="value" th:text="${comment.cmContent}"></span></div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+  <!-- 통계 -->
+  <section class="section" id="section-stat"style="display: none">
+    <h3>입양/보호소 통계</h3>
+    <p>입양률, 보호 동물 수, 인기 품종 등 시각화(그래프) 영역 (예시)</p>
+    <img src="/images/statistics.png" alt="통계 그래프 예시" style="width:220px; background:#F5EEDD; border-radius:15px; padding:18px;">
+  </section>
+  <!-- 관리자 목록 -->
+  <section class="section" id="section-admin-list">
+    <h3>관리자 목록</h3>
+    <table class="member-table">
+      <thead>
+      <tr>
+        <th>번호</th>
+        <th>아이디</th>
+        <th>이름</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:if="${admins != null and !#lists.isEmpty(admins)}"
+          th:each="admin,iterStat : ${admins}">
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${admin.aId}"></td>
+        <td th:text="${admin.aName}"></td>
+        <td>
+          <button class="btn" type="button"
+                  th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}"
+                  onclick="openAdminEditModal()">수정</button>
+          <form th:action="@{'/admin/delete/admin/' + ${admin.aId}}" method="post" style="display:inline;">
+            <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')"class="btn btn-delete"th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">삭제</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+  <!-- 관리자 등록 -->
+    <section class="section" id="section-admin-register"style="display: none">
+    <h3>관리자 등록</h3>
+    <form th:action="@{/admin/register}" method="post" class="admin-register-form">
+      <div class="form-group">
+        <label for="a_id">아이디</label>
+        <select id="a_id" name="aId" class="form-control" required>
+          <option value="" selected disabled>아이디 선택</option>
+          <option value="admin1">admin1</option>
+          <option value="admin2">admin2</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="a_pass">비밀번호</label>
+        <input type="password" id="a_pass" name="aPass" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="a_name">이름</label>
+        <input type="text" id="a_name" name="aName" class="form-control" required>
+      </div>
+      <div style="margin-top:18px; text-align:right;">
+        <button class="btn" type="submit">등록</button>
+      </div>
+    </form>
+  </section>
+
+
+</div>
+
+<!-- 관리자 정보 수정 모달 -->
+<div id="adminEditModal" class="modal-bg">
+  <div class="modal" style="min-width:320px;max-width:95vw;">
+    <span class="modal-close" onclick="closeAdminEditModal()">&times;</span>
+    <h4>관리자 정보 수정</h4>
+    <form id="adminEditForm" th:action="@{/admin/update}" method="post">
+      <div style="margin-bottom:10px;">
+        <label>아이디</label>
+        <input type="text" id="editAdminId" name="aId" class="form-control" required>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label>이름</label>
+        <input type="text" id="editAdminName" name="aName" class="form-control" required>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label>비밀번호</label>
+        <input type="password" id="editAdminPass" name="aPass" class="form-control" required>
+      </div>
+      <div style="text-align:right; margin-top:18px;">
+        <button type="submit" class="btn">저장</button>
+        <button type="button" class="btn btn-delete" onclick="closeAdminEditModal()">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll(
+          '.nav-menu li[data-section], .dropdown-content li[data-section], .dropdown-content a[data-board]'
+  ).forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      if (this.tagName === 'A') e.preventDefault();
+
+      // 모든 메뉴 active 제거
+      document.querySelectorAll('.nav-menu li, .dropdown-content li').forEach(function(li) {
+        li.classList.remove('active');
+      });
+      this.classList.add('active');
+
+      // 모든 섹션 숨기기 (board-view는 빼고!)
+      const sectionsToHide = [
+        'section-stat',
+        'section-adopt',
+        'section-member',
+        'section-comment',
+        'section-admin',
+        'section-admin-list',
+        'section-admin-register'
+      ];
+      sectionsToHide.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+      // 게시판 테이블 숨기기
+      document.getElementById('board-free').style.display = 'none';
+      document.getElementById('board-review').style.display = 'none';
+      document.getElementById('board-missing').style.display = 'none';
+
+      // 게시판 메뉴 클릭 시
+      if (this.hasAttribute('data-board')) {
+        var boardType = this.getAttribute('data-board');
+        var boardView = document.getElementById('board-view');
+        boardView.style.display = 'block';
+        boardView.innerHTML = ''; // 기존 내용 비우기
+        var board = document.getElementById('board-' + boardType).cloneNode(true);
+        board.style.display = 'table';
+        boardView.appendChild(board);
+      }
+      // 일반 메뉴 클릭 시
+      else if (this.hasAttribute('data-section')) {
+        var boardView = document.getElementById('board-view');
+        if (boardView) boardView.style.display = 'none'; // 게시판 뷰 숨기기
+        var section = this.getAttribute('data-section');
+        var sectionEl = document.getElementById('section-' + section);
+        if (sectionEl) sectionEl.style.display = 'block';
+      }
+    });
+  });
+
+  function openBoardModal(bNo) {
+    document.getElementById('modal-board-' + bNo).style.display = 'flex';
+  }
+
+  function closeBoardModal(bNo) {
+    document.getElementById('modal-board-' + bNo).style.display = 'none';
+  }
+
+  // 바깥 클릭 시 닫기
+  window.onclick = function(event) {
+    document.querySelectorAll('.modal').forEach(function(modal){
+      if(event.target === modal){
+        modal.style.display = 'none';
+      }
+    });
+  }
+
+  function openModal(id) {
+    document.getElementById('modal-' + id).style.display = 'flex';
+  }
+  function closeModal(id) {
+    document.getElementById('modal-' + id).style.display = 'none';
+  }
+
+  function openAdminEditModal() {
+    document.getElementById('adminEditModal').classList.add('active');
+  }
+  function closeAdminEditModal() {
+    document.getElementById('adminEditModal').classList.remove('active');
+  }
+
+  // 입양후기 게시판 모달
+  function openReviewModal(arNo) {
+    document.getElementById('modal-review-' + arNo).style.display = 'flex';
+  }
+  function closeReviewModal(arNo) {
+    document.getElementById('modal-review-' + arNo).style.display = 'none';
+  }
+
+  // 유기동물/실종 보호 게시판 모달
+  function openMissingModal(id) {
+    document.getElementById('modal-missing-' + id).style.display = 'flex';
+  }
+  function closeMissingModal(id) {
+    document.getElementById('modal-missing-' + id).style.display = 'none';
+  }
+
+
+  function openCommentModal(cmNo) {
+    document.getElementById('modal-comment-' + cmNo).classList.add('active');
+  }
+  function closeCommentModal(cmNo) {
+    document.getElementById('modal-comment-' + cmNo).classList.remove('active');
+  }
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>

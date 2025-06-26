@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>마이페이지 - 유기동물 중개소</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap');
+        body {
+            font-family: 'Nanum Gothic', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f3eb;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        main.container {
+            background-color: #fffefb;
+            max-width: 1200px;
+            width: 100%;
+            margin-top: 120px;
+            margin-bottom: 60px;
+            padding: 40px 60px;
+            border-radius: 16px;
+            box-shadow: 0 0 32px rgba(0, 0, 0, 0.12);
+            display: flex;
+            gap: 60px;
+        }
+        nav.sidebar {
+            flex: 0 0 320px;
+            background-color: #f0ead9;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: inset 3px 3px 12px #d6cfc1, inset -3px -3px 12px #fff9e7;
+        }
+        nav.sidebar h3 {
+            margin-top: 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #6b5e47;
+            margin-bottom: 22px;
+            text-align: center;
+        }
+        nav.sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav.sidebar ul li {
+            margin-bottom: 22px;
+            font-weight: 600;
+        }
+        nav.sidebar ul li a {
+            text-decoration: none;
+            color: #6b5e47;
+            font-size: 18px;
+            padding: 10px 16px;
+            display: block;
+            border-radius: 8px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        nav.sidebar ul li.active a,
+        nav.sidebar ul li a:hover {
+            background-color: #6b5e47;
+            color: #fffefb;
+        }
+        section.main-content {
+            flex: 1;
+            min-height: 600px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d6cfc1;
+            padding-bottom: 28px;
+        }
+        .profile img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-right: 32px;
+            border: 4px solid #a69f8e;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .profile-text {
+            flex: 1;
+        }
+        .profile-text h2 {
+            margin: 0;
+            font-size: 32px;
+            color: #6b5e47;
+        }
+        .content {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .content.active {
+            display: block;
+        }
+        .content h3 {
+            font-size: 24px;
+            color: #6b5e47;
+            margin-top: 0;
+            margin-bottom: 22px;
+            border-bottom: 2px solid #d6cfc1;
+            padding-bottom: 10px;
+        }
+        .content p, .content ul {
+            font-size: 18px;
+            color: #555;
+            line-height: 1.7;
+        }
+        .content ul {
+            list-style-type: disc;
+            padding-left: 28px;
+        }
+        .content ul li {
+            margin-bottom: 16px;
+        }
+        .content a {
+            color: #6b5e47;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .content a:hover {
+            text-decoration: underline;
+        }
+        p.logout {
+            margin-top: 40px;
+            font-size: 16px;
+            color: #7a6f58;
+            text-align: center;
+        }
+        p.logout a {
+            color: #6b5e47;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        p.logout a:hover {
+            text-decoration: underline;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        .edit-button {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 10px 20px;
+            background-color: #6b5e47;
+            color: #ffffff;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 17px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        /* 반응형 */
+        @media (max-width: 900px) {
+            main.container {
+                flex-direction: column;
+                max-width: 98vw;
+                padding: 16px;
+                gap: 0;
+            }
+            nav.sidebar {
+                flex: none;
+                width: 100%;
+                margin-bottom: 24px;
+                padding: 20px 10px;
+            }
+            section.main-content {
+                min-height: 400px;
+            }
+            .profile-text h2 {
+                font-size: 22px;
+            }
+            .content h3 {
+                font-size: 18px;
+            }
+            .content p, .content ul {
+                font-size: 15px;
+            }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background: #fff;
+            margin: 15% auto;
+            padding: 30px 20px;
+            border-radius: 10px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .modal-actions {
+            margin-top: 20px;
+        }
+        .modal-btn {
+            padding: 8px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .modal-btn.confirm {
+            background: #ff6b6b;
+            color: #fff;
+        }
+        .modal-btn.cancel {
+            background: #eee;
+            color: #333;
+        }
+        .cancel-btn, .print-btn {
+            padding: 6px 18px;
+            margin: 8px 2px;
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .cancel-btn:hover {
+            background: #ffdddd;
+        }
+        .print-btn:hover {
+            background: #ddeeff;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<main class="container" th:if="${session.loginMember != null}">
+    <nav class="sidebar">
+        <h3>마이페이지 메뉴</h3>
+        <ul>
+            <li class="active"><a href="#" data-tab="adopted">입양한 동물 정보</a></li>
+            <li><a href="#" data-tab="application">입양 신청 내역</a></li>
+            <li><a href="#" data-tab="volunteer">봉사신청 현황</a></li>
+            <li><a href="#" data-tab="activity">나의 활동 기록</a></li>
+            <li><a href="#" data-tab="profile">개인정보 관리</a></li>
+        </ul>
+    </nav>
+    <section class="main-content">
+        <div class="profile">
+            <div class="profile-text">
+                <h2 th:text="${session.loginMember.u_name} + ' 님, 안녕하세요!'">회원명, 안녕하세요!</h2>
+            </div>
+        </div>
+        <article id="adopted-content" class="content active">
+            <h3>입양한 동물 정보</h3>
+            <ul>
+                <li th:if="${#lists.isEmpty(adoptlist)}">
+                    입양한 동물이 없습니다.
+                </li>
+                <li th:each="adopted : ${adoptlist}" style="margin-bottom: 24px;">
+                    <strong>이름:</strong> <span th:text="${adopted.name}"></span><br>
+                    <strong>종류:</strong> <span th:text="${adopted.species}"></span><br>
+                    <strong>접종 유무:</strong>
+                    <span th:if="${adopted.vaccinated}" style="color:green;">✔ 예</span>
+                    <span th:unless="${adopted.vaccinated}" style="color:red;">✖ 아니오</span><br>
+                    <strong>중성화 유무:</strong>
+                    <span th:if="${adopted.neutered}" style="color:green;">✔ 예</span>
+                    <span th:unless="${adopted.neutered}" style="color:red;">✖ 아니오</span><br>
+                    <strong>센터 입소일:</strong> <span th:text="${#temporals.format(adopted.arrivalDate, 'yyyy-MM-dd')}"></span><br>
+                    <strong>좋아하는 것:</strong> <span th:text="${adopted.likes}"></span><br>
+                    <strong>싫어하는 것:</strong> <span th:text="${adopted.dislikes}"></span><br>
+                    <strong>특징:</strong> <span th:text="${adopted.description}"></span>
+                </li>
+            </ul>
+        </article>
+
+        <article id="application-content" class="content">
+            <h3>입양 신청 내역</h3>
+            <ul>
+                <li th:if="${#lists.isEmpty(adoptionList)}">
+                    신청하신 입양 내역이 없습니다.
+                </li>
+                <li th:each="adoption : ${adoptionList}" style="margin-bottom: 24px;">
+                    <strong>이름:</strong> <span th:text="${session.loginMember.u_name}">이호자</span><br>
+                    <strong>신청 날짜:</strong>
+                    <span th:text="${#temporals.format(adoption.createdAt, 'yyyy-MM-dd')}">2025-06-20</span><br>
+                    <strong>주거 형태:</strong> <span th:text="${adoption.housingType}"></span><br>
+                    <strong>반려동물 허용:</strong> <span th:text="${adoption.petAllowed}"></span><br>
+                    <strong>가족 정보:</strong> <span th:text="${adoption.familyInfo}"></span><br>
+                    <strong>현재 반려동물:</strong> <span th:text="${adoption.currentPets}"></span><br>
+                    <strong>양육 경험:</strong> <span th:text="${adoption.experience}"></span><br>
+                    <strong>직업:</strong> <span th:text="${adoption.job}"></span><br>
+                    <strong>근무 형태:</strong> <span th:text="${adoption.workType}"></span><br>
+                    <strong>경제적 여건:</strong> <span th:text="${adoption.financialStatus}"></span><br>
+                    <strong>돌봄 계획:</strong> <span th:text="${adoption.petCarePlan}"></span><br>
+                    <strong>평일 돌봄 시간:</strong> <span th:text="${adoption.careTime}"></span><br>
+                    <strong>산책/운동 계획:</strong> <span th:text="${adoption.exercisePlan}"></span><br>
+                    <strong>외출/여행 시 대처:</strong> <span th:text="${adoption.travelPlan}"></span><br>
+                    <strong>입양 동기:</strong> <span th:text="${adoption.motivation}"></span><br>
+                    <strong>동의여부:</strong>
+                    <span th:text="${adoption.agreement == 1 ? '동의' : '미동의'}"></span><br>
+                    <strong>서약:</strong>
+                    <span th:text="${adoption.pledge == 1 ? '서약함' : '미서약'}"></span>
+                </li>
+            </ul>
+        </article>
+
+        <article id="volunteer-content" class="content">
+            <h3>봉사신청 현황</h3>
+            <ul>
+                <li th:if="${#lists.isEmpty(volunteerList)}">
+                    신청하신 봉사 내역이 없습니다.
+                </li>
+                <li th:each="volunteer : ${volunteerList}">
+                    <strong>신청자:</strong> <span th:text="${session.loginMember.u_name}"></span><br>
+                    <strong>봉사단체:</strong> <span th:text="${volunteer.shelter}"></span><br>
+                    <strong>봉사일자:</strong> <span th:text="${volunteer.volunteerDate}"></span><br>
+                    <strong>봉사시간대:</strong> <span th:text="${volunteer.volunteerTime}"></span><br>
+                    <strong>봉사분야:</strong> <span th:text="${volunteer.volunteerArea}"></span><br>
+                    <strong>신청일:</strong> <span th:text="${volunteer.createdAt}"></span><br>
+                    <strong>동의여부:</strong> <span th:text="${volunteer.agreement == 1 ? '동의' : '미동의'}"></span><br>
+
+                    <a th:if="${session.loginMember.u_id == volunteer.u_id}"
+                       th:attr="data-id=${volunteer.id}"
+                       class="cancel-btn"
+                       href="javascript:void(0)">봉사신청 취소</a>
+                    |
+                    <a href="javascript:void(0)" class="print-btn">확인서 출력</a>
+                </li>
+
+            </ul>
+            <!-- 모달창 -->
+            <div id="cancelModal" class="modal">
+                <div class="modal-content">
+                    <p>정말로 봉사신청을 취소하시겠습니까?</p>
+                    <div class="modal-actions">
+                        <button id="confirmCancelBtn" class="modal-btn confirm">확인</button>
+                        <button id="closeModalBtn" class="modal-btn cancel">취소</button>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </article>
+        <article id="activity-content" class="content">
+            <h3>나의 활동 기록</h3>
+            <p>
+                입양 후기: <span th:text="${#lists.size(myReviews)}"></span>건 |
+                댓글: <span th:text="${#lists.size(myComments)}"></span>건
+            </p>
+
+            <!-- 입양 후기 구분 -->
+            <h4 style="margin-top:20px;">내가 쓴 입양 후기</h4>
+            <ul>
+                <li th:each="review : ${myReviews}">
+                    <a th:href="@{/reviews/{ar_no}(ar_no=${review.arNo})}" th:text="${review.arTitle}"></a>
+                    - <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}"></span>
+                </li>
+            </ul>
+
+            <!-- 입양 후기 댓글 구분 -->
+            <h4 style="margin-top:20px;">내가 쓴 댓글</h4>
+            <ul>
+                <li th:each="comment : ${myComments}">
+                    <!-- 게시판 종류를 p 태그로 표시 -->
+                    <span th:switch="${comment.boardType}">
+            <p th:case="'adoptionReview'" style="margin-bottom:4px; color:#888;">입양 후기 게시판</p>
+            <p th:case="'board'" style="margin-bottom:4px; color:#888;">자유 게시판</p>
+            <p th:case="'lostfound'" style="margin-bottom:4px; color:#888;">실종/보호 게시판</p>
+
+        </span>
+                    <!-- 게시판별 댓글 링크 -->
+                    <span th:switch="${comment.boardType}">
+            <a th:case="'adoptionReview'"
+               th:href="@{/reviews/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                <span th:text="${comment.cmContent}"></span>
+            </a>
+            <a th:case="'board'"
+               th:href="@{/boards/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                <span th:text="${comment.cmContent}"></span>
+            </a>
+           <a th:case="'lostfound'"
+              th:href="@{/lostfound/detail/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+    <span th:text="${comment.cmContent}"></span>
+</a>
+
+
+        </span>
+                     <span th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd')}"></span>
+                </li>
+            </ul>
+
+
+        </article>
+
+
+        <article id="profile-content" class="content">
+            <h3>개인정보 및 알림 설정</h3>
+            <ul>
+                <li><strong>아이디:</strong> <span th:text="${session.loginMember.u_id}"></span></li>
+                <li><strong>이름:</strong> <span th:text="${session.loginMember.u_name}"></span></li>
+                <li><strong>비밀번호:</strong> <span>보안상 비공개</span></li>
+                <li><strong>전화번호:</strong> <span th:text="${session.loginMember.u_pnumber}"></span></li>
+                <li><strong>성별:</strong> <span th:text="${session.loginMember.u_gender}"></span></li>
+                <li><strong>이메일:</strong> <span th:text="${session.loginMember.u_email}"></span></li>
+                <li><strong>생년월일:</strong> <span th:text="${session.loginMember.u_birthdate}"></span></li>
+            </ul>
+        </article>
+        <a class="edit-button" th:href="@{/mupdate}">회원정보 수정</a>
+        <p class="logout">로그아웃 하시겠습니까? <a th:href="@{/logout}">로그아웃</a></p>
+    </section>
+</main>
+
+<script>
+    const links = document.querySelectorAll('.sidebar ul li a');
+    const contents = document.querySelectorAll('.content');
+    links.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            links.forEach(l => l.parentElement.classList.remove('active'));
+            link.parentElement.classList.add('active');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(link.getAttribute('data-tab') + '-content').classList.add('active');
+        });
+    });
+
+    let selectedVolunteerId = null;
+
+    document.querySelectorAll('.cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            selectedVolunteerId = this.getAttribute('data-id');
+            document.getElementById('cancelModal').style.display = 'block';
+        });
+    });
+
+    document.getElementById('closeModalBtn').onclick = function() {
+        document.getElementById('cancelModal').style.display = 'none';
+        selectedVolunteerId = null;
+    };
+
+    document.getElementById('confirmCancelBtn').onclick = function() {
+        if (selectedVolunteerId) {
+            fetch(`/volunteer/cancel/${selectedVolunteerId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                    // 필요시 CSRF 토큰도 추가
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('신청이 취소되었습니다.');
+                        location.reload();
+                    } else {
+                        alert('취소에 실패했습니다.');
+                        document.getElementById('cancelModal').style.display = 'none';
+                    }
+                });
+        }
+    };
+
+
+
+
+
+</script>
+</body>
+</html>

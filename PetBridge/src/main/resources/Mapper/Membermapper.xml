@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.petbridge.repository.MemberRepository">
+
+    <resultMap id="memberMap" type="com.example.petbridge.entity.Member">
+        <result property="u_no" column="u_no"/>
+        <result property="u_id" column="u_id"/>
+        <result property="u_pass" column="u_pass"/>
+        <result property="u_name" column="u_name"/>
+        <result property="u_pnumber" column="u_pnumber"/>
+        <result property="u_email" column="u_email"/>
+        <result property="u_gender" column="u_gender"/>
+        <result property="u_birthdate" column="u_birthdate"/>
+    </resultMap>
+
+    <resultMap id="memberResultMap" type="com.example.petbridge.entity.Member">
+        <result property="u_no" column="u_no"/>
+        <result property="u_name" column="u_name"/>
+        <result property="u_email" column="u_email"/>
+        <result property="u_pass" column="u_pass"/>
+        <result property="u_pnumber" column="u_pnumber"/>
+        <result property="u_id" column="u_id"/>
+        <result property="u_gender" column="u_gender"/>
+        <result property="u_birthdate" column="u_birthdate"/>
+    </resultMap>
+
+
+
+        <select id="findAll" resultMap="memberResultMap">
+            SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender,u_birthdate
+            FROM users
+        </select>
+        <select id="findMemberByno" parameterType="Integer" resultType="com.example.petbridge.entity.Member">
+            SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender,u_birthdate
+            FROM users
+            WHERE u_no = #{u_no}
+        </select>
+    <select id="findById" resultType="com.example.petbridge.entity.Member">
+        SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender,u_birthdate FROM users WHERE u_name = #{u_name}
+    </select>
+
+
+    <insert id="insertMember" parameterType="com.example.petbridge.entity.Member">
+            INSERT INTO users (
+                u_id, u_pass, u_name, u_pnumber, u_email, u_gender,u_birthdate
+            ) VALUES (
+                         #{u_id}, #{u_pass}, #{u_name}, #{u_pnumber}, #{u_email}, #{u_gender},#{u_birthdate}
+                     )
+        </insert>
+        <update id="updateMember" parameterType="com.example.petbridge.entity.Member">
+            UPDATE users
+            SET u_id = #{u_id},
+                u_pass = #{u_pass},
+                u_name = #{u_name},
+                u_pnumber = #{u_pnumber},
+                u_email = #{u_email},
+                u_gender = #{u_gender}
+                u_birthdate = #{u_birthdate}
+            where u_no = #{u_no}
+
+
+        </update>
+    <delete id="deleteById" parameterType="string">
+        DELETE FROM users WHERE u_id = #{u_id}
+    </delete>
+
+
+
+    <select id="isDuplicateId" parameterType="string" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE u_id = #{u_id}
+    </select>
+
+
+
+    <select id="findByLoginIdAndPass" resultMap="memberMap">
+        SELECT u_no, u_id, u_pass, u_name, u_pnumber, u_email, u_gender,u_birthdate
+        FROM users
+        WHERE u_id = #{u_id} AND u_pass = #{u_pass}
+    </select>
+
+
+
+        <select id="findIdsByNameAndEmail" resultType="string">
+            SELECT u_id
+            FROM users
+            WHERE u_name = #{u_name}
+              AND u_email = #{u_email}
+        </select>
+
+
+    <update id="updatepassword" parameterType="String">
+        UPDATE users
+        SET u_pass = #{u_pass}
+        WHERE u_id = #{u_id}
+    </update>
+
+    <select id="countUserByInfo" resultType="int">
+        SELECT COUNT(*) FROM users
+        WHERE u_id = #{u_id}
+          AND u_name = #{u_name}
+          AND u_email = #{u_email}
+    </select>
+
+    <update id="updatePassword" >
+        UPDATE users
+        SET u_pass = #{u_pass}
+        WHERE u_id = #{u_id}
+    </update>
+
+    <update id="updateMemberInfo" parameterType="com.example.petbridge.entity.Member">
+        UPDATE users
+        SET
+            u_name = #{u_name},
+            u_pnumber = #{u_pnumber},
+            u_email = #{u_email},
+            u_pass = #{u_pass}
+        WHERE u_id = #{u_id}
+    </update>
+
+
+
+
+
+
+
+</mapper>
