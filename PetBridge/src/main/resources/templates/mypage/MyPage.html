@@ -248,7 +248,8 @@
         <h3>마이페이지 메뉴</h3>
         <ul>
             <li class="active"><a href="#" data-tab="adopted">입양한 동물 정보</a></li>
-            <li><a href="#" data-tab="application">입양 신청 내역</a></li>
+            <li><a href="#" data-tab="pending-application">승인 대기 중인 입양 신청</a></li>
+            <li><a href="#" data-tab="pending-animals">승인 대기 중인 동물 정보</a></li>
             <li><a href="#" data-tab="volunteer">봉사신청 현황</a></li>
             <li><a href="#" data-tab="activity">나의 활동 기록</a></li>
             <li><a href="#" data-tab="profile">개인정보 관리</a></li>
@@ -260,60 +261,69 @@
                 <h2 th:text="${session.loginMember.u_name} + ' 님, 안녕하세요!'">회원명, 안녕하세요!</h2>
             </div>
         </div>
+
+        <!-- 1. 입양한 동물 정보(승인완료) -->
         <article id="adopted-content" class="content active">
             <h3>입양한 동물 정보</h3>
             <ul>
-                <li th:if="${#lists.isEmpty(adoptlist)}">
+                <li th:if="${#lists.isEmpty(approvedAnimals)}">
                     입양한 동물이 없습니다.
                 </li>
-                <li th:each="adopted : ${adoptlist}" style="margin-bottom: 24px;">
-                    <strong>이름:</strong> <span th:text="${adopted.name}"></span><br>
-                    <strong>종류:</strong> <span th:text="${adopted.species}"></span><br>
+                <li th:each="animal : ${approvedAnimals}" style="margin-bottom: 24px;">
+                    <strong>이름:</strong> <span th:text="${animal.name}"></span><br>
+                    <strong>종류:</strong> <span th:text="${animal.species}"></span><br>
                     <strong>접종 유무:</strong>
-                    <span th:if="${adopted.vaccinated}" style="color:green;">✔ 예</span>
-                    <span th:unless="${adopted.vaccinated}" style="color:red;">✖ 아니오</span><br>
+                    <span th:if="${animal.vaccinated}" style="color:green;">✔ 예</span>
+                    <span th:unless="${animal.vaccinated}" style="color:red;">✖ 아니오</span><br>
                     <strong>중성화 유무:</strong>
-                    <span th:if="${adopted.neutered}" style="color:green;">✔ 예</span>
-                    <span th:unless="${adopted.neutered}" style="color:red;">✖ 아니오</span><br>
-                    <strong>센터 입소일:</strong> <span th:text="${#temporals.format(adopted.arrivalDate, 'yyyy-MM-dd')}"></span><br>
-                    <strong>좋아하는 것:</strong> <span th:text="${adopted.likes}"></span><br>
-                    <strong>싫어하는 것:</strong> <span th:text="${adopted.dislikes}"></span><br>
-                    <strong>특징:</strong> <span th:text="${adopted.description}"></span>
+                    <span th:if="${animal.neutered}" style="color:green;">✔ 예</span>
+                    <span th:unless="${animal.neutered}" style="color:red;">✖ 아니오</span><br>
+                    <strong>센터 입소일:</strong> <span th:text="${#temporals.format(animal.arrivalDate, 'yyyy-MM-dd')}"></span><br>
+                    <strong>특징:</strong> <span th:text="${animal.description}"></span>
                 </li>
             </ul>
         </article>
 
-        <article id="application-content" class="content">
-            <h3>입양 신청 내역</h3>
+        <!-- 2. 승인 대기 중인 입양 신청 -->
+        <article id="pending-application-content" class="content">
+            <h3>승인 대기 중인 입양 신청</h3>
             <ul>
-                <li th:if="${#lists.isEmpty(adoptionList)}">
-                    신청하신 입양 내역이 없습니다.
+                <li th:if="${#lists.isEmpty(pendingAdoptionList)}">
+                    승인 대기 중인 입양 신청이 없습니다.
                 </li>
-                <li th:each="adoption : ${adoptionList}" style="margin-bottom: 24px;">
-                    <strong>이름:</strong> <span th:text="${session.loginMember.u_name}">이호자</span><br>
-                    <strong>신청 날짜:</strong>
-                    <span th:text="${#temporals.format(adoption.createdAt, 'yyyy-MM-dd')}">2025-06-20</span><br>
+                <li th:each="adoption : ${pendingAdoptionList}" style="margin-bottom: 24px;">
+                    <strong>신청 번호:</strong> <span th:text="${adoption.id}"></span><br>
+                    <strong>동물 ID:</strong> <span th:text="${adoption.animal_id}"></span><br>
+                    <strong>신청 동기:</strong> <span th:text="${adoption.motivation}"></span><br>
                     <strong>주거 형태:</strong> <span th:text="${adoption.housingType}"></span><br>
-                    <strong>반려동물 허용:</strong> <span th:text="${adoption.petAllowed}"></span><br>
-                    <strong>가족 정보:</strong> <span th:text="${adoption.familyInfo}"></span><br>
-                    <strong>현재 반려동물:</strong> <span th:text="${adoption.currentPets}"></span><br>
-                    <strong>양육 경험:</strong> <span th:text="${adoption.experience}"></span><br>
-                    <strong>직업:</strong> <span th:text="${adoption.job}"></span><br>
-                    <strong>근무 형태:</strong> <span th:text="${adoption.workType}"></span><br>
-                    <strong>경제적 여건:</strong> <span th:text="${adoption.financialStatus}"></span><br>
-                    <strong>돌봄 계획:</strong> <span th:text="${adoption.petCarePlan}"></span><br>
-                    <strong>평일 돌봄 시간:</strong> <span th:text="${adoption.careTime}"></span><br>
-                    <strong>산책/운동 계획:</strong> <span th:text="${adoption.exercisePlan}"></span><br>
-                    <strong>외출/여행 시 대처:</strong> <span th:text="${adoption.travelPlan}"></span><br>
-                    <strong>입양 동기:</strong> <span th:text="${adoption.motivation}"></span><br>
-                    <strong>동의여부:</strong>
-                    <span th:text="${adoption.agreement == 1 ? '동의' : '미동의'}"></span><br>
-                    <strong>서약:</strong>
-                    <span th:text="${adoption.pledge == 1 ? '서약함' : '미서약'}"></span>
+                    <strong>신청 상태:</strong> <span th:text="${adoption.status}"></span>
                 </li>
             </ul>
         </article>
 
+        <!-- 3. 승인 대기 중인 동물 정보 -->
+        <article id="pending-animals-content" class="content">
+            <h3>승인 대기 중인 동물 정보</h3>
+            <ul>
+                <li th:if="${#lists.isEmpty(pendingAnimals)}">
+                    승인 대기 중인 동물이 없습니다.
+                </li>
+                <li th:each="animal : ${pendingAnimals}" style="margin-bottom: 24px;">
+                    <strong>이름:</strong> <span th:text="${animal.name}"></span><br>
+                    <strong>종류:</strong> <span th:text="${animal.species}"></span><br>
+                    <strong>접종 유무:</strong>
+                    <span th:if="${animal.vaccinated}" style="color:green;">✔ 예</span>
+                    <span th:unless="${animal.vaccinated}" style="color:red;">✖ 아니오</span><br>
+                    <strong>중성화 유무:</strong>
+                    <span th:if="${animal.neutered}" style="color:green;">✔ 예</span>
+                    <span th:unless="${animal.neutered}" style="color:red;">✖ 아니오</span><br>
+                    <strong>센터 입소일:</strong> <span th:text="${#temporals.format(animal.arrivalDate, 'yyyy-MM-dd')}"></span><br>
+                    <strong>특징:</strong> <span th:text="${animal.description}"></span>
+                </li>
+            </ul>
+        </article>
+
+        <!-- 4. 봉사신청 현황 (기존 그대로) -->
         <article id="volunteer-content" class="content">
             <h3>봉사신청 현황</h3>
             <ul>
@@ -328,38 +338,26 @@
                     <strong>봉사분야:</strong> <span th:text="${volunteer.volunteerArea}"></span><br>
                     <strong>신청일:</strong> <span th:text="${volunteer.createdAt}"></span><br>
                     <strong>동의여부:</strong> <span th:text="${volunteer.agreement == 1 ? '동의' : '미동의'}"></span><br>
-
-                    <a th:if="${session.loginMember.u_id == volunteer.u_id}"
-                       th:attr="data-id=${volunteer.id}"
-                       class="cancel-btn"
-                       href="javascript:void(0)">봉사신청 취소</a>
-                    |
+                    <form th:if="${session.loginMember.u_id == volunteer.u_id}"
+                          th:action="@{'/mypage/cancel/' + ${volunteer.id}}"
+                          method="post"
+                          style="display:inline;">
+                        <button type="submit" class="cancel-btn" onclick="return confirm('정말 취소하시겠습니까?')">
+                            봉사신청 취소
+                        </button>
+                    </form>
                     <a href="javascript:void(0)" class="print-btn">확인서 출력</a>
                 </li>
-
             </ul>
-            <!-- 모달창 -->
-            <div id="cancelModal" class="modal">
-                <div class="modal-content">
-                    <p>정말로 봉사신청을 취소하시겠습니까?</p>
-                    <div class="modal-actions">
-                        <button id="confirmCancelBtn" class="modal-btn confirm">확인</button>
-                        <button id="closeModalBtn" class="modal-btn cancel">취소</button>
-                    </div>
-                </div>
-            </div>
-
-
-
         </article>
+
+        <!-- 5. 나의 활동 기록 (기존 그대로) -->
         <article id="activity-content" class="content">
             <h3>나의 활동 기록</h3>
             <p>
                 입양 후기: <span th:text="${#lists.size(myReviews)}"></span>건 |
                 댓글: <span th:text="${#lists.size(myComments)}"></span>건
             </p>
-
-            <!-- 입양 후기 구분 -->
             <h4 style="margin-top:20px;">내가 쓴 입양 후기</h4>
             <ul>
                 <li th:each="review : ${myReviews}">
@@ -367,43 +365,34 @@
                     - <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}"></span>
                 </li>
             </ul>
-
-            <!-- 입양 후기 댓글 구분 -->
             <h4 style="margin-top:20px;">내가 쓴 댓글</h4>
             <ul>
                 <li th:each="comment : ${myComments}">
-                    <!-- 게시판 종류를 p 태그로 표시 -->
                     <span th:switch="${comment.boardType}">
-            <p th:case="'adoptionReview'" style="margin-bottom:4px; color:#888;">입양 후기 게시판</p>
-            <p th:case="'board'" style="margin-bottom:4px; color:#888;">자유 게시판</p>
-            <p th:case="'lostfound'" style="margin-bottom:4px; color:#888;">실종/보호 게시판</p>
-
-        </span>
-                    <!-- 게시판별 댓글 링크 -->
+                        <p th:case="'adoptionReview'" style="margin-bottom:4px; color:#888;">입양 후기 게시판</p>
+                        <p th:case="'board'" style="margin-bottom:4px; color:#888;">자유 게시판</p>
+                        <p th:case="'lostfound'" style="margin-bottom:4px; color:#888;">실종/보호 게시판</p>
+                    </span>
                     <span th:switch="${comment.boardType}">
-            <a th:case="'adoptionReview'"
-               th:href="@{/reviews/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
-                <span th:text="${comment.cmContent}"></span>
-            </a>
-            <a th:case="'board'"
-               th:href="@{/boards/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
-                <span th:text="${comment.cmContent}"></span>
-            </a>
-           <a th:case="'lostfound'"
-              th:href="@{/lostfound/detail/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
-    <span th:text="${comment.cmContent}"></span>
-</a>
-
-
-        </span>
-                     <span th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd')}"></span>
+                        <a th:case="'adoptionReview'"
+                           th:href="@{/reviews/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                            <span th:text="${comment.cmContent}"></span>
+                        </a>
+                        <a th:case="'board'"
+                           th:href="@{/boards/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                            <span th:text="${comment.cmContent}"></span>
+                        </a>
+                        <a th:case="'lostfound'"
+                           th:href="@{/lostfound/detail/{postId}#comment-{cmNo}(postId=${comment.postId}, cmNo=${comment.cmNo})}">
+                            <span th:text="${comment.cmContent}"></span>
+                        </a>
+                    </span>
+                    <span th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd')}"></span>
                 </li>
             </ul>
-
-
         </article>
 
-
+        <!-- 6. 개인정보 관리 (기존 그대로) -->
         <article id="profile-content" class="content">
             <h3>개인정보 및 알림 설정</h3>
             <ul>
@@ -415,8 +404,8 @@
                 <li><strong>이메일:</strong> <span th:text="${session.loginMember.u_email}"></span></li>
                 <li><strong>생년월일:</strong> <span th:text="${session.loginMember.u_birthdate}"></span></li>
             </ul>
+            <a class="edit-button" th:href="@{/mupdate}">회원정보 수정</a>
         </article>
-        <a class="edit-button" th:href="@{/mupdate}">회원정보 수정</a>
         <p class="logout">로그아웃 하시겠습니까? <a th:href="@{/logout}">로그아웃</a></p>
     </section>
 </main>
@@ -433,46 +422,6 @@
             document.getElementById(link.getAttribute('data-tab') + '-content').classList.add('active');
         });
     });
-
-    let selectedVolunteerId = null;
-
-    document.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            selectedVolunteerId = this.getAttribute('data-id');
-            document.getElementById('cancelModal').style.display = 'block';
-        });
-    });
-
-    document.getElementById('closeModalBtn').onclick = function() {
-        document.getElementById('cancelModal').style.display = 'none';
-        selectedVolunteerId = null;
-    };
-
-    document.getElementById('confirmCancelBtn').onclick = function() {
-        if (selectedVolunteerId) {
-            fetch(`/volunteer/cancel/${selectedVolunteerId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                    // 필요시 CSRF 토큰도 추가
-                }
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert('신청이 취소되었습니다.');
-                        location.reload();
-                    } else {
-                        alert('취소에 실패했습니다.');
-                        document.getElementById('cancelModal').style.display = 'none';
-                    }
-                });
-        }
-    };
-
-
-
-
-
 </script>
 </body>
 </html>

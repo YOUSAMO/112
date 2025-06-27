@@ -123,5 +123,10 @@
         WHERE id = #{id}
     </delete>
 
+    <select id="findByUserIdAndStatus" resultType="com.example.petbridge.entity.Adoption_application">
+        SELECT * FROM adoption_application
+        WHERE u_id = #{uId} AND status = #{status}
+    </select>
+
 
 </mapper>

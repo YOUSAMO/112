@@ -8,13 +8,11 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -172,19 +170,45 @@ public class MainController {
 
         // 봉사신청 현황 조회 (예시 서비스)
         List<Volunteer> volunteerList = volunteerService.findByUserId(loggedInUserId);
-        List<Adoption_application> adoptionList = adoption_applicationService.findByUserId(loggedInUserId);
+        // 입양 신청서 조회 (승인대기/승인완료 구분)
+        List<Adoption_application> pendingAdoptionList =
+                adoption_applicationService.findByUserIdAndStatus(loggedInUserId, "승인대기");
+        List<Adoption_application> approvedAdoptionList =
+                adoption_applicationService.findByUserIdAndStatus(loggedInUserId, "승인완료");
+
+        // 승인완료된 동물 정보 조회 (animal_id로 animal 테이블에서 조회)
+        List<Long> approvedAnimalIds = approvedAdoptionList.stream()
+                .map(Adoption_application::getAnimal_id)
+                .collect(Collectors.toList());
+        List<Animal> approvedAnimals = animalService.findByAnimalIds(approvedAnimalIds);
+
+        // 승인대기 중인 동물 정보 조회 (필요하다면)
+        List<Long> pendingAnimalIds = pendingAdoptionList.stream()
+                .map(Adoption_application::getAnimal_id)
+                .collect(Collectors.toList());
+        List<Animal> pendingAnimals = animalService.findByAnimalIds(pendingAnimalIds);
 
         List<AdoptionReview> myReviews = adoptionReviewService.findByAuthorUid(loggedInUserId);
         List<Comment> myComments = commentService.findByCommentUid(loggedInUserId);
 
 
-        model.addAttribute("adoptionList", adoptionList);
+        model.addAttribute("pendingAdoptionList", pendingAdoptionList);
+        model.addAttribute("approvedAdoptionList", approvedAdoptionList);
+        model.addAttribute("approvedAnimals", approvedAnimals);
+        model.addAttribute("pendingAnimals", pendingAnimals);
         model.addAttribute("myReviews", myReviews);
         model.addAttribute("myComments", myComments);
         model.addAttribute("currentUserId", loggedInUserId);
         model.addAttribute("volunteerList", volunteerList);
+
         System.out.println("MyPage 접근: 로그인된 사용자 ID - " + loggedInUserId);
         return "mypage/MyPage";
+    }
+
+    @PostMapping("/mypage/cancel/{id}")
+    public String cancelVolunteer(@PathVariable Long id) {
+        volunteerService.deleteById(id);
+        return "redirect:/mypage";
     }
 
 

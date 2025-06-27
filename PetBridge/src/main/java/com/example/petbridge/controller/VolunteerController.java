@@ -5,6 +5,7 @@ import com.example.petbridge.entity.Volunteer;
 import com.example.petbridge.service.VolunteerService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -76,4 +77,10 @@ public class VolunteerController {
         model.addAttribute("volunteerForm", volunteerForm);
         return "main";
     }
+
+
+
+
+
+
 }

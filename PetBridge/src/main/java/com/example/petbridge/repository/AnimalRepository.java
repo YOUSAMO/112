@@ -32,5 +32,5 @@ public interface AnimalRepository {
             @Param("species") String species);
 
 
-    List<Animal> findByUserId(@Param("u_id") String u_id);
+    List<Animal> findByAnimalIds(@Param("animalIds") List<Long> animalIds);
 }

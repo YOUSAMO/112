@@ -47,8 +47,8 @@ public class Adoption_applicationService {
         return adoptionApplicationRepository.countByUserIdAndAnimalId(uId, animal_id) > 0;
     }
 
-    public List<Adoption_application> findByUserId(String userId) {
-        return adoptionApplicationRepository.findByUserId(userId);
+    public List<Adoption_application> findByUserIdAndStatus(String uId,String status) {
+        return adoptionApplicationRepository.findByUserIdAndStatus(uId,status);
     }
 
     public List<Adoption_application> getAllApplications() {

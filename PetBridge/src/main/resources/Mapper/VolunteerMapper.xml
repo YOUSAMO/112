@@ -52,8 +52,9 @@
     </select>
 
 
-
-
+    <delete id="deleteById">
+        DELETE FROM volunteer_application WHERE id = #{id}
+    </delete>
 
 
 

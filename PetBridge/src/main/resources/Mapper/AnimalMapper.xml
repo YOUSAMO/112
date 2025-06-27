@@ -108,6 +108,14 @@
         LIMIT 1
     </select>
 
+    <select id="findByAnimalIds" resultType="com.example.petbridge.entity.Animal">
+        SELECT * FROM animal WHERE id IN
+        <foreach item="id" index="index" collection="animalIds"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
 
 
 </mapper>

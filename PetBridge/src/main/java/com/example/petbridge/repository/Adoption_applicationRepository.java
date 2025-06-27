@@ -15,7 +15,7 @@ public interface Adoption_applicationRepository {
  void update(Adoption_application adoption_application);
  void delete(Adoption_application adoption_application);
  int countByUserIdAndAnimalId(@Param("uId") String uId, @Param("animal_id") long animal_id);
- List<Adoption_application> findByUserId(@Param("uId") String uId);
+ List<Adoption_application> findByUserIdAndStatus(@Param("uId") String uId,@Param("status") String status);
 
  List<Adoption_application> findAll();
  Adoption_application findById(Long id);

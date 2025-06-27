@@ -11,6 +11,8 @@ public interface VolunteerRepository {
 
     void insert(Volunteer volunteer);
     List<Volunteer> findByUserId(@Param("u_id") String u_id);
+
+    void deleteById(Long id); // 신청서 삭제
     //void update
     //void delete
 

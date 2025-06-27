@@ -28,5 +28,8 @@ public class VolunteerService {
     }
 
 
+    public void deleteById(Long id) {
+        volunteerRepository.deleteById(id);
+    }
 
 }
