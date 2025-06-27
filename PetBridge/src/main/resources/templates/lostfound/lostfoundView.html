@@ -303,8 +303,7 @@
                          th:alt="${attachment.fileName}"
                          class="attachment-image"
                          th:data-original-filename="${attachment.fileName}"
-                         th:data-board-id="${attachment.boardId}"
-                         onerror="this.onerror=null; this.src='/images/no-image.png'; console.log('Image failed to load:', this.src);" />
+                         th:data-board-id="${attachment.boardId}" />
                     <div class="image-info" th:text="${attachment.fileName}"></div>
                 </div>
             </th:block>
