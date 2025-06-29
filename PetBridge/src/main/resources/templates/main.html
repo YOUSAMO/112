@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>AdoptBridge - 유기동물 입양 플랫폼</title>
+</head>
+<style>
+    :root {
+        --main-bg: #f9f6ef;
+        --card-bg: #fff8ee;
+        --accent: #ffb74d;
+        --accent-dark: #ff7043;
+        --text-main: #3e2723;
+        --text-accent: #bf360c;
+        --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    body {
+        font-family: 'Segoe UI', 'Apple SD Gothic Neo', Arial, sans-serif;
+        background: var(--main-bg);
+        color: var(--text-main);
+        margin: 0;
+        padding-bottom: 70px;
+    }
+    .top-menu {
+        position: fixed;
+        top: 0; left: 0; width: 100%;
+        height: 60px;
+        background: var(--card-bg);
+        box-shadow: var(--shadow);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 32px; z-index: 1000;
+    }
+    .logo {
+        font-size: 1.5em; font-weight: bold; color: var(--accent-dark);
+        letter-spacing: 1.5px;
+    }
+    .top-menu nav a {
+        color: var(--text-main); text-decoration: none; margin-left: 28px;
+        font-weight: 500; transition: color 0.2s;
+    }
+    .top-menu nav a:hover {
+        color: var(--accent-dark);
+    }
+    .alert-bar {
+        position: fixed; top: 60px; left: 0; width: 100%;
+        background: #ffe0b2; color: var(--text-accent);
+        text-align: center; font-weight: bold; padding: 10px 0;
+        z-index: 999;
+        box-shadow: 0 2px 8px rgba(255,183,77,0.13);
+        animation: fadeInDown 1s;
+    }
+    .hero {
+        margin-top: 100px;
+        text-align: center;
+        padding: 60px 20px 40px 20px;
+        background: linear-gradient(120deg, #fff8ee 70%, #ffe0b2 100%);
+        border-radius: 0 0 36px 36px;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    .hero h1 {
+        font-size: 2.7em;
+        color: var(--accent-dark);
+        margin-bottom: 0.4em;
+        animation: fadeInDown 1s;
+    }
+    .hero p {
+        font-size: 1.2em;
+        color: var(--text-accent);
+        margin-bottom: 1.5em;
+        animation: fadeIn 1.7s;
+    }
+    .hero .cta-btn {
+        background: var(--accent-dark);
+        color: #fff;
+        border: none;
+        border-radius: 24px;
+        padding: 16px 36px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(255,112,67,0.13);
+        transition: background 0.2s, transform 0.2s;
+        animation: fadeInUp 1.2s;
+    }
+    .hero .cta-btn:hover {
+        background: #d84315;
+        transform: translateY(-2px) scale(1.04);
+    }
+    .slider {
+        margin: 40px auto 32px auto;
+        max-width: 900px;
+        height: 350px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        background: #fff8ee;
+    }
+    .slide {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0; transition: opacity 0.8s ease-in-out;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2em; font-weight: bold;
+        color: var(--accent-dark);
+        background-size: cover;
+        background-position: center;
+    }
+    .slide.active { opacity: 1; z-index: 1; }
+    .slider .dots {
+        position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 10px; z-index: 2;
+    }
+    .slider .dot {
+        width: 12px; height: 12px; border-radius: 50%;
+        background: #ffe0b2; cursor: pointer;
+        border: 2px solid var(--accent-dark);
+        transition: background 0.2s;
+    }
+    .slider .dot.active { background: var(--accent-dark); }
+    .adopt-process {
+        max-width: 900px; margin: 48px auto;
+        background: #fff8ee;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 32px 24px;
+    }
+    .adopt-process h3 {
+        color: var(--accent-dark); margin-bottom: 18px;
+    }
+    .process-steps {
+        display: flex; gap: 28px; flex-wrap: wrap; justify-content: center;
+    }
+    .step {
+        flex: 1 1 180px;
+        min-width: 160px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(255,183,77,0.08);
+        padding: 18px 10px;
+        text-align: center;
+        margin-bottom: 14px;
+    }
+    .step .num {
+        background: var(--accent-dark); color: #fff; border-radius: 50%;
+        width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+        font-weight: bold; margin-bottom: 10px; font-size: 1.1em;
+    }
+    .step .desc {
+        color: var(--text-main); font-size: 1em;
+    }
+    .shelter-info {
+        max-width: 900px; margin: 48px auto;
+        background: #fff8ee;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 32px 24px;
+        text-align: center;
+    }
+    .shelter-info h3 { color: var(--accent-dark); margin-bottom: 14px;}
+    .shelter-list { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;}
+    .shelter-card {
+        background: #fff;
+        border-radius: 11px;
+        box-shadow: 0 2px 8px rgba(255,183,77,0.08);
+        padding: 16px;
+        min-width: 180px; flex: 1 1 200px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .shelter-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(255,183,77,0.2);
+    }
+    .shelter-card .name { color: var(--accent-dark); font-weight: bold;}
+    .shelter-card .desc { font-size: 0.9em; color: #6d4c41; margin-top: 6px; }
+    #animal-section {
+        max-width: 1000px;
+        margin: 48px auto;
+        padding: 0 20px;
+    }
+    .animal-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 28px;
+    }
+    .animal-cards.single-item {
+        display: flex;
+        justify-content: center;
+    }
+    .animal-cards.single-item .animal-card {
+        max-width: 400px;
+    }
+    .animal-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        transition: transform 0.18s, opacity 0.3s;
+        animation: fadeIn 1.2s;
+        cursor: pointer;
+    }
+    .animal-card:hover { transform: translateY(-5px) scale(1.025); }
+    .animal-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-bottom: 3px solid var(--accent);
+    }
+    .animal-card .info {
+        padding: 18px 16px 16px 16px; flex-grow: 1; display: flex; flex-direction: column;
+    }
+    .animal-card .info h4 {
+        margin: 0 0 8px 0; color: var(--accent-dark);
+        font-size: 1.2em;
+    }
+    .animal-card .info p {
+        margin: 0 0 6px 0; color: #6d4c41;
+        font-size: 0.95em;
+        line-height: 1.5;
+    }
+    .animal-card .info .tag {
+        background-color: var(--accent);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: auto;
+    }
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 2000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+    .modal-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        width: 600px;
+        max-width: 90%;
+        overflow: hidden;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .modal-overlay.active .modal-card {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    .modal-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-bottom: 4px solid var(--accent);
+    }
+    .modal-card .info {
+        padding: 24px 20px;
+    }
+    .modal-card .info h4 {
+        font-size: 1.8em;
+        color: var(--accent-dark);
+        margin-bottom: 12px;
+    }
+    .modal-card .info p {
+        font-size: 1.1em;
+        color: #6d4c41;
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+    .modal-card .info .tag {
+        font-size: 1em;
+        padding: 5px 12px;
+    }
+    @media (max-width: 700px) {
+        .modal-card {
+            width: 90%;
+        }
+        .modal-card img {
+            height: 220px;
+        }
+        .modal-card .info h4 {
+            font-size: 1.5em;
+        }
+        .modal-card .info p {
+            font-size: 1em;
+        }
+    }
+    .pagination-container {
+        display: flex; justify-content: center; align-items: center; margin-top: 24px; gap: 8px; flex-wrap: wrap;
+    }
+    .pagination-container button {
+        padding: 8px 12px;
+        border: 1px solid var(--accent);
+        background: white;
+        color: var(--accent-dark);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+    .pagination-container button.active {
+        background: var(--accent-dark);
+        color: white;
+        transform: scale(1.1);
+    }
+    .pagination-container button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .bottom-quick-menu {
+        position: fixed; bottom: 0; left: 0; width: 100%;
+        height: 54px; background: var(--card-bg);
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.07);
+        display: flex; justify-content: space-around; align-items: center;
+        z-index: 1000;
+    }
+    .bottom-quick-menu button {
+        background: var(--accent-dark); color: #fff;
+        border: none; border-radius: 20px;
+        padding: 10px 22px; font-size: 1em; font-weight: 500;
+        cursor: pointer; transition: background 0.18s;
+    }
+    .bottom-quick-menu button:hover { background: #d84315; }
+    @keyframes fadeInDown { from {opacity:0; transform:translateY(-40px);} to {opacity:1; transform:translateY(0);} }
+    @keyframes fadeInUp { from {opacity:0; transform:translateY(40px);} to {opacity:1; transform:translateY(0);} }
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+    @media (max-width: 700px) {
+        .animal-cards { grid-template-columns: 1fr;}
+        .hero h1 { font-size: 2em;}
+        .hero { padding: 32px 6px 26px 6px;}
+        .slider { height: 150px;}
+        .process-steps { flex-direction: column; gap: 12px;}
+        .shelter-list { flex-direction: column; gap: 10px;}
+    }
+    .adoption-stories {
+        max-width: 900px; margin: 0 auto 36px auto;
+    }
+    .adoption-stories h3 { color: var(--accent-dark); }
+    .story-list {
+        display: flex; gap: 22px; overflow-x: auto; padding-bottom: 8px;
+    }
+    .story-card {
+        background: var(--card-bg);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        min-width: 270px; max-width: 280px;
+        padding: 18px 14px;
+        display: flex; flex-direction: column; align-items: center;
+        animation: fadeIn 1.2s;
+    }
+    .story-card img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%; object-fit: cover;
+        margin-bottom: 10px;
+    }
+    .story-card .text { color: #6d4c41; font-size: 0.98em; text-align: center; }
+    .story-card .author { color: var(--accent-dark); font-weight: bold; margin-top: 8px; font-size: 0.95em; }
+    .faq-section {
+        max-width: 900px; margin: 0 auto 48px auto;
+        background: #fff8ee;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 32px 24px;
+    }
+    .faq-section h3 { color: var(--accent-dark); margin-bottom: 16px;}
+    .faq-list { margin: 0; padding: 0; }
+    .faq-item {
+        margin-bottom: 14px;
+        border-bottom: 1px solid #ffe0b2;
+        padding-bottom: 10px;
+    }
+    .faq-q {
+        font-weight: bold; color: var(--accent-dark); cursor: pointer;
+    }
+    .faq-a {
+        display: none; color: #6d4c41; margin-top: 5px;
+    }
+    .faq-item.active .faq-a { display: block; }
+    .notice-banner {
+        background: linear-gradient(90deg, #ffe0b2 80%, #ffb74d 120%);
+        border-radius: 13px;
+        padding: 18px 0;
+        text-align: center;
+        font-weight: bold;
+        color: var(--text-accent);
+        font-size: 1.1em;
+        margin: 0 auto 40px auto;
+        max-width: 900px;
+        animation: fadeInDown 1.3s;
+        box-shadow: var(--shadow);
+    }
+    footer {
+        background: #222;
+        color: #fff;
+        padding: 30px 0 10px 0;
+        margin-top: 60px;
+    }
+    footer ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    footer a {
+        color: #fff;
+        text-decoration: underline;
+    }
+    footer a:hover {
+        color: #ffd700;
+    }
+    footer img {
+        width: 22px;
+        vertical-align: middle;
+    }
+    footer hr {
+        border: none;
+        border-top: 1px solid #444;
+        margin: 24px 0 10px 0;
+    }
+    footer p.copyright {
+        text-align: center;
+        font-size: 0.95em;
+        color: #aaa;
+        margin: 0;
+    }
+</style>
+
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="alert-bar" id="alertBar">
+    [실시간 알림] 오늘 3마리의 동물이 새로운 가족을 만났어요! 🎉
+</div>
+<section class="hero">
+    <h1>새로운 가족을 만나는 따뜻한 연결</h1>
+    <p>유기동물에게 두 번째 기회를, 당신에게 특별한 인연을.<br>
+        PetBridge에서 소중한 가족을 만나보세요.</p>
+    <button class="cta-btn" onclick="document.getElementById('shelter-info-section').scrollIntoView({ behavior: 'smooth' });">입양 동물 둘러보기</button>
+</section>
+<section class="slider" id="slider">
+
+        <div class="slide active" style="background-image:url('https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&w=900&q=80');">
+            <span>유기동물 보호와 사랑의 시작</span>
+        </div>
+    <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=900&q=80');">
+        <span>새로운 가족을 기다리는 친구들</span>
+    </div>
+
+    <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1525253086316-d0c936c814f8?auto=format&fit=crop&w=900&q=80');">
+            <span>함께하는 따뜻한 보호소 이야기</span>
+        </div>
+        <div class="dots"></div>
+    </section>
+
+
+
+<section id="shelter-info-section" class="shelter-info">
+    <h3>보호소를 선택하시면 해당 보호소의 동물들을 볼 수 있습니다.</h3>
+    <div class="shelter-list" id="shelter-list-container">
+    </div>
+    <div id="shelter-pagination-container" class="pagination-container">
+    </div>
+</section>
+
+<section id="animal-section">
+    <h3 id="animal-list-title" style="text-align:center; color: var(--accent-dark); font-size: 1.8em; margin-bottom: 24px;">모든 보호 동물 보기</h3>
+    <div class="animal-cards" id="animal-cards-container">
+    </div>
+    <div id="animal-pagination-container" class="pagination-container">
+    </div>
+</section>
+
+<section class="adopt-process">
+    <h3>입양 절차 안내</h3>
+    <div class="process-steps">
+        <div class="step"><div class="num">1</div><div class="desc">입양 동물 둘러보기</div></div>
+        <div class="step"><div class="num">2</div><div class="desc">입양 신청서 작성</div></div>
+        <div class="step"><div class="num">3</div><div class="desc">상담 및 보호소 방문</div></div>
+        <div class="step"><div class="num">4</div><div class="desc">입양 확정 및 가족 맞이</div></div>
+    </div>
+</section>
+
+<section class="adoption-stories">
+    <h3>입양 후기 & 따뜻한 이야기</h3>
+</section>
+
+<section class="notice-banner">
+    6월, 입양 캠페인 진행 중! <span style="color:#d84315;">입양 시 특별 선물 증정</span>  |  봉사/후원 참여자 모집
+</section>
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card" id="modalCard"></div>
+</div>
+<footer th:fragment="site-footer" style="background:#222; color:#fff; padding:30px 0 10px 0; margin-top:60px;">
+    <div style="max-width:1200px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:30px;">
+        <div>
+            <h3 style="margin:0 0 10px 0; font-size:1.3em;">PetBridge</h3>
+            <p style="margin:0; font-size:0.95em; color:#ccc;">
+                유기동물 보호소와 입양 희망자를 연결하는<br>
+                따뜻한 동물 커뮤니티 플랫폼입니다.
+            </p>
+        </div>
+        <div>
+            <ul style="list-style:none; padding:0; margin:0;">
+                <li style="color:#fff; text-decoration:underline;">이용약관</li>
+                <li style="color:#fff; text-decoration:underline;">개인정보처리방침</li>
+                <li style="color:#fff; text-decoration:underline;">문의하기</li>
+            </ul>
+        </div>
+        <div>
+            <div style="margin-bottom:8px;">
+                <a href="https://www.instagram.com/petbridge" style="margin-right:8px; color:#fff;" target="_blank" title="Instagram">
+                    <img src="/static/img/instagram_icon.png" alt="Instagram" style="width:22px;vertical-align:middle;">
+                </a>
+                <a href="https://www.facebook.com/petbridge" style="margin-right:8px; color:#fff;" target="_blank" title="Facebook">
+                    <img src="/static/img/facebook_icon.png" alt="Facebook" style="width:22px;vertical-align:middle;">
+                </a>
+                <a href="mailto:help@petbridge.com" style="color:#fff;" title="Email">
+                    <img src="/static/img/email_icon.png" alt="Email" style="width:22px;vertical-align:middle;">
+                </a>
+            </div>
+            <span style="font-size:0.9em; color:#ccc;">문의: help@petbridge.com</span>
+        </div>
+    </div>
+    <hr style="border:none; border-top:1px solid #444; margin:24px 0 10px 0;">
+    <p style="text-align:center; font-size:0.95em; color:#aaa; margin:0;">
+        © [[${#dates.format(#dates.createNow(), 'yyyy')}]] PetBridge. All rights reserved.
+    </p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shelterContainer = document.getElementById('shelter-list-container');
+        const shelterPaginationContainer = document.getElementById('shelter-pagination-container');
+        const animalContainer = document.getElementById('animal-cards-container');
+        const animalListTitle = document.getElementById('animal-list-title');
+        const animalPaginationContainer = document.getElementById('animal-pagination-container');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalCard = document.getElementById('modalCard');
+
+        let allAnimals = [];
+        let allShelters = [];
+        let currentAnimalList = [];
+        let currentModalAnimal = null;
+
+        const pageRange = 5;
+        let currentShelterPage = 1;
+        const sheltersPerPage = 9;
+        let currentAnimalPage = 1;
+        const animalsPerPage = 9;
+
+        Promise.all([
+            fetch('/data/animals.json'),
+            //fetch('/data/animals2.json')
+        ])
+            .then(responses => Promise.all(responses.map(res => res.json())))
+            .then(dataArray => {
+                const items1 = dataArray[0].response.body.items.item.map(item => ({
+                    ...item,
+                    popfile: item.popfile || item.popfile1,
+                }));
+                // const items2 = dataArray[1].response.body.items.item.map(item => ({
+                //     ...item,
+                //     popfile: item.popfile || item.popfile1,
+                // }));
+                allAnimals = [...items1]; //...items2
+                console.log('Loaded animals:', allAnimals); // 데이터 확인용 로그
+                initializeApp();
+            })
+            .catch(error => {
+                console.error('JSON 파일을 불러오는 중 오류가 발생했습니다:', error);
+                shelterContainer.innerHTML = '<p style="text-align:center;">정보를 불러오는 데 실패했습니다.</p>';
+                animalContainer.innerHTML = '';
+            });
+
+        function initializeApp() {
+            const shelterMap = {};
+            allAnimals.forEach(animal => {
+                if (animal.careNm && !shelterMap[animal.careNm]) {
+                    shelterMap[animal.careNm] = { name: animal.careNm, addr: animal.careAddr, count: 0 };
+                }
+                if (animal.careNm) shelterMap[animal.careNm].count++;
+            });
+            allShelters = Object.values(shelterMap);
+
+            setupShelterPagination();
+            displayShelters(1);
+
+            filterAnimalsByShelter('all');
+        }
+
+        function createShelterCard(shelter) {
+            const shelterCard = document.createElement('div');
+            shelterCard.className = 'shelter-card';
+            shelterCard.innerHTML = `<div class="name">${shelter.name}</div><div class="desc">${shelter.addr} (${shelter.count}마리 보호중)</div>`;
+            shelterCard.onclick = () => filterAnimalsByShelter(shelter.name);
+            return shelterCard;
+        }
+
+        // function createAllShelterCard() {
+        //     const allShelterCard = document.createElement('div');
+        //     allShelterCard.className = 'shelter-card';
+        //     allShelterCard.innerHTML = `<div class="name">전체 보기</div><div class="desc">모든 보호소의 동물을 봅니다.</div>`;
+        //     allShelterCard.onclick = () => filterAnimalsByShelter('all');
+        //     return allShelterCard;
+        // }
+
+        function displayShelters(page) {
+            currentShelterPage = page;
+            shelterContainer.innerHTML = '';
+            //shelterContainer.appendChild(createAllShelterCard());
+
+            const startIndex = (page - 1) * sheltersPerPage;
+            const endIndex = startIndex + sheltersPerPage;
+            const paginatedShelters = allShelters.slice(startIndex, endIndex);
+
+            paginatedShelters.forEach(shelter => shelterContainer.appendChild(createShelterCard(shelter)));
+            updateShelterPaginationButtons();
+        }
+
+        function setupShelterPagination() {
+            shelterPaginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(allShelters.length / sheltersPerPage);
+
+            if (totalPages <= 1) return;
+
+            const currentGroup = Math.ceil(currentShelterPage / pageRange);
+            const startPage = (currentGroup - 1) * pageRange + 1;
+            const endPage = Math.min(startPage + pageRange - 1, totalPages);
+
+            if (currentGroup > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.innerText = '<<';
+                firstBtn.addEventListener('click', () => displayShelters(1));
+                shelterPaginationContainer.appendChild(firstBtn);
+            }
+
+            const prevGroupBtn = document.createElement('button');
+            prevGroupBtn.innerText = '이전';
+            prevGroupBtn.addEventListener('click', () => {
+                if (currentShelterPage - pageRange >= 1) {
+                    displayShelters(startPage - 1);
+                } else if (currentShelterPage > 1) {
+                    displayShelters(1);
+                }
+            });
+            prevGroupBtn.disabled = currentShelterPage <= pageRange;
+            shelterPaginationContainer.appendChild(prevGroupBtn);
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.addEventListener('click', () => displayShelters(i));
+                shelterPaginationContainer.appendChild(btn);
+            }
+
+            const nextGroupBtn = document.createElement('button');
+            nextGroupBtn.innerText = '다음';
+            nextGroupBtn.addEventListener('click', () => {
+                if (currentShelterPage + pageRange <= totalPages) {
+                    displayShelters(endPage + 1);
+                } else if (currentShelterPage < totalPages) {
+                    displayShelters(totalPages);
+                }
+            });
+            nextGroupBtn.disabled = currentGroup * pageRange >= totalPages;
+            shelterPaginationContainer.appendChild(nextGroupBtn);
+
+            if (currentGroup * pageRange < totalPages) {
+                const lastBtn = document.createElement('button');
+                lastBtn.innerText = '>>';
+                lastBtn.addEventListener('click', () => displayShelters(totalPages));
+                shelterPaginationContainer.appendChild(lastBtn);
+            }
+        }
+
+        function updateShelterPaginationButtons() {
+            const buttons = shelterPaginationContainer.querySelectorAll('button');
+            buttons.forEach(button => {
+                const pageNum = parseInt(button.innerText);
+                if (!isNaN(pageNum)) {
+                    button.classList.toggle('active', pageNum === currentShelterPage);
+                }
+            });
+            setupShelterPagination();
+        }
+
+        function createAnimalCard(animal) {
+            const sex = animal.sexCd === 'F' ? '암컷' : (animal.sexCd === 'M' ? '수컷' : '미상');
+            const neuter = animal.neuterYn === 'Y' ? '완료' : (animal.neuterYn === 'N' ? '안됨' : '미상');
+            const card = document.createElement('div');
+            card.className = 'animal-card';
+            const imageUrl = animal.popfile || 'https://via.placeholder.com/300x220/f0f0f0/cccccc?text=Image+Not+Found';
+            console.log('Animal card image URL:', imageUrl); // 이미지 URL 디버깅
+            card.innerHTML = `<img src="${imageUrl}" alt="${animal.kindNm}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x220/f0f0f0/cccccc?text=Image+Not+Found';"><div class="info"><h4>${animal.kindNm} <span style="font-size:0.8em; color: #6d4c41;">(${sex})</span></h4><p><strong>나이:</strong> ${animal.age}<br><strong>체중:</strong> ${animal.weight}<br><strong>특징:</strong> ${animal.specialMark || '특이사항 없음'}<br><strong>중성화:</strong> ${neuter}</p><div class="tag">${animal.processState}</div></div>`;
+            card.addEventListener('click', () => showModal(animal));
+            return card;
+        }
+
+        function displayAnimals(page) {
+            currentAnimalPage = page;
+            animalContainer.innerHTML = '';
+            const startIndex = (page - 1) * animalsPerPage;
+            const endIndex = startIndex + animalsPerPage;
+            const paginatedAnimals = currentAnimalList.slice(startIndex, endIndex);
+
+            if (paginatedAnimals.length === 1) {
+                animalContainer.classList.add('single-item');
+            } else {
+                animalContainer.classList.remove('single-item');
+            }
+
+            paginatedAnimals.forEach(animal => animalContainer.appendChild(createAnimalCard(animal)));
+            updateAnimalPaginationButtons();
+        }
+
+        function showModal(animal) {
+            if (currentModalAnimal === animal) {
+                closeModal();
+                return;
+            }
+            currentModalAnimal = animal;
+            const sex = animal.sexCd === 'F' ? '암컷' : (animal.sexCd === 'M' ? '수컷' : '미상');
+            const neuter = animal.neuterYn === 'Y' ? '완료' : (animal.neuterYn === 'N' ? '안됨' : '미상');
+            const imageUrl = animal.popfile || 'https://via.placeholder.com/600x300/f0f0f0/cccccc?text=Image+Not+Found';
+            console.log('Modal image URL:', imageUrl); // 모달 이미지 URL 디버깅
+            modalCard.innerHTML = `<img src="${imageUrl}" alt="${animal.kindNm}" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x300/f0f0f0/cccccc?text=Image+Not+Found';"><div class="info"><h4>${animal.kindNm} <span style="font-size:0.8em; color: #6d4c41;">(${sex})</span></h4><p><strong>나이:</strong> ${animal.age}<br><strong>체중:</strong> ${animal.weight}<br><strong>특징:</strong> ${animal.specialMark || '특이사항 없음'}<br><strong>중성화:</strong> ${neuter}</p><div class="tag">${animal.processState}</div></div>`;
+            modalOverlay.classList.add('active');
+            modalCard.addEventListener('click', (e) => e.stopPropagation());
+            modalOverlay.addEventListener('click', closeModal);
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            currentModalAnimal = null;
+            modalOverlay.removeEventListener('click', closeModal);
+        }
+
+        function setupAnimalPagination() {
+            animalPaginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(currentAnimalList.length / animalsPerPage);
+
+            if (totalPages <= 1) return;
+
+            const currentGroup = Math.ceil(currentAnimalPage / pageRange);
+            const startPage = (currentGroup - 1) * pageRange + 1;
+            const endPage = Math.min(startPage + pageRange - 1, totalPages);
+
+            if (currentGroup > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.innerText = '<<';
+                firstBtn.addEventListener('click', () => {
+                    displayAnimals(1);
+                    document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                animalPaginationContainer.appendChild(firstBtn);
+            }
+
+            const prevGroupBtn = document.createElement('button');
+            prevGroupBtn.innerText = '이전';
+            prevGroupBtn.addEventListener('click', () => {
+                if (currentAnimalPage - pageRange >= 1) {
+                    displayAnimals(startPage - 1);
+                } else if (currentAnimalPage > 1) {
+                    displayAnimals(1);
+                }
+                document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            prevGroupBtn.disabled = currentAnimalPage <= pageRange;
+            animalPaginationContainer.appendChild(prevGroupBtn);
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.addEventListener('click', () => {
+                    displayAnimals(i);
+                    document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                animalPaginationContainer.appendChild(btn);
+            }
+
+            const nextGroupBtn = document.createElement('button');
+            nextGroupBtn.innerText = '다음';
+            nextGroupBtn.addEventListener('click', () => {
+                if (currentAnimalPage + pageRange <= totalPages) {
+                    displayAnimals(endPage + 1);
+                } else if (currentAnimalPage < totalPages) {
+                    displayAnimals(totalPages);
+                }
+                document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            nextGroupBtn.disabled = currentGroup * pageRange >= totalPages;
+            animalPaginationContainer.appendChild(nextGroupBtn);
+
+            if (currentGroup * pageRange < totalPages) {
+                const lastBtn = document.createElement('button');
+                lastBtn.innerText = '>>';
+                lastBtn.addEventListener('click', () => {
+                    displayAnimals(totalPages);
+                    document.getElementById('animal-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                animalPaginationContainer.appendChild(lastBtn);
+            }
+        }
+
+        function updateAnimalPaginationButtons() {
+            const buttons = animalPaginationContainer.querySelectorAll('button');
+            buttons.forEach(button => {
+                const pageNum = parseInt(button.innerText);
+                if (!isNaN(pageNum)) {
+                    button.classList.toggle('active', pageNum === currentAnimalPage);
+                }
+            });
+            setupAnimalPagination();
+        }
+
+        window.filterAnimalsByShelter = (shelterName) => {
+            if (shelterName === 'all') {
+                currentAnimalList = [...allAnimals];
+                animalListTitle.textContent = '모든 보호소 동물 보기';
+            } else {
+                currentAnimalList = allAnimals.filter(animal => animal.careNm === shelterName);
+                animalListTitle.textContent = `"${shelterName}" 보호 동물 보기`;
+            }
+            currentAnimalPage = 1;
+            setupAnimalPagination();
+            displayAnimals(1);
+            closeModal();
+        }
+
+        const slides = document.querySelectorAll('.slide');
+        const dotsContainer = document.querySelector('.slider .dots');
+        let currentSlide = 0;
+        let slideInterval;
+
+        function showSlide(idx) {
+            if (!slides.length) return;
+            currentSlide = idx;
+
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide].classList.add('active');
+
+            const dots = dotsContainer.children;
+            for (let dot of dots) {
+                dot.classList.remove('active');
+            }
+            if (dots[currentSlide]) {
+                dots[currentSlide].classList.add('active');
+            }
+        }
+
+        function startSlider() {
+            if (dotsContainer) {
+                dotsContainer.innerHTML = '';
+                slides.forEach((_, i) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dot.addEventListener('click', () => {
+                        showSlide(i);
+                        clearInterval(slideInterval);
+                        slideInterval = setInterval(() => {
+                            showSlide((currentSlide + 1) % slides.length);
+                        }, 3500);
+                    });
+                    dotsContainer.appendChild(dot);
+                });
+            }
+
+            showSlide(0);
+            slideInterval = setInterval(() => {
+                showSlide((currentSlide + 1) % slides.length);
+            }, 3500);
+        }
+
+        startSlider();
+
+        setTimeout(() => {
+            const alertBar = document.getElementById('alertBar');
+            if (alertBar) alertBar.style.display = 'none';
+        }, 5000);
+    });
+</script>
+</body>
+</html>

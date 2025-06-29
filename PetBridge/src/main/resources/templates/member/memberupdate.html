@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>유기동물 보호소 - 회원정보 수정</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            background-color: #fefcf9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            margin-top: 100px
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            text-align: center;
+            color: #f57c00;
+            margin-bottom: 32px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button[type="submit"], button[type="reset"], button[type="button"] {
+            width: 100%;
+            background-color: #f57c00;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 14px;
+        }
+        button[type="submit"]:hover, button[type="reset"]:hover, button[type="button"]:hover {
+            background-color: #e65100;
+        }
+        /* 모달 스타일 */
+        #deleteModal {
+            display: none;
+            position: fixed;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.25);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        #deleteModal .modal-content {
+            background: white;
+            padding: 32px 28px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+            max-width: 320px;
+            margin: auto;
+            text-align: center;
+        }
+        #deleteModal h3 {
+            color: #d32f2f;
+            margin-bottom: 18px;
+        }
+        #deleteModal button {
+            width: auto;
+            min-width: 80px;
+            margin: 0 8px;
+            padding: 10px 24px;
+        }
+        #deleteModal .cancel-btn {
+            background: #aaa;
+        }
+        #deleteModal .delete-btn {
+            background: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<div class="container">
+    <h2>회원정보 수정</h2>
+    <form th:action="@{/mupdate}" th:object="${member}" method="post">
+        <label for="u_id">아이디</label>
+        <input type="text" id="u_id" th:field="*{u_id}" readonly>
+
+        <label for="u_name">이름</label>
+        <input type="text" id="u_name" th:field="*{u_name}">
+
+        <label for="u_pnumber">전화번호</label>
+        <input type="tel" id="u_pnumber" th:field="*{u_pnumber}">
+
+        <label for="u_email">이메일</label>
+        <input type="email" id="u_email" th:field="*{u_email}">
+
+        <label for="u_gender">성별</label>
+        <select id="u_gender" th:field="*{u_gender}" disabled>
+            <option value="">성별 선택</option>
+            <option value="M">남</option>
+            <option value="F">여</option>
+        </select>
+
+        <label for="u_pass">새 비밀번호</label>
+        <input type="password" id="u_pass" name="u_pass" placeholder="8~20자, 영문+숫자 포함" required>
+
+        <label for="u_pass_check">비밀번호 확인</label>
+        <input type="password" id="u_pass_check" name="u_pass_check" required>
+
+        <button type="submit">정보 수정</button>
+        <button type="reset">초기화</button>
+        <button type="button" id="deleteBtn">탈퇴</button>
+    </form>
+</div>
+
+<!-- 탈퇴 확인 모달 -->
+<div id="deleteModal">
+    <div class="modal-content">
+        <h3>정말 탈퇴하시겠습니까?</h3>
+        <p style="margin-bottom:24px; color:#444;">
+            탈퇴 후에는 복구가 불가능합니다.<br>계속 진행하시겠습니까?
+        </p>
+        <form th:action="@{/member/delete}" method="post">
+            <button type="submit" class="delete-btn">탈퇴</button>
+            <button type="button" class="cancel-btn" onclick="closeDeleteModal()">취소</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 탈퇴 버튼 클릭 시 모달 띄우기
+    document.getElementById('deleteBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('deleteModal').style.display = 'flex';
+    });
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    document.querySelector("form").addEventListener("submit", function(e) {
+        const pw = document.getElementById("u_pass").value;
+        const pwCheck = document.getElementById("u_pass_check").value;
+        if (pw !== pwCheck) {
+            alert("비밀번호가 일치하지 않습니다.");
+            e.preventDefault();
+        }
+    });
+</script>
+</body>
+</html>

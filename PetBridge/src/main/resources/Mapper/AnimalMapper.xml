@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.petbridge.repository.AnimalRepository">
+
+    <select id="findAll" resultType="com.example.petbridge.entity.Animal">
+        SELECT id, name, species, age, description, gender, vaccinated, neutered,
+               arrival_date AS arrivalDate, likes, dislikes,created_by
+        FROM animal
+    </select>
+
+    <select id="findById" parameterType="long" resultType="com.example.petbridge.entity.Animal">
+        SELECT id, name, species, age, description, gender, vaccinated, neutered,
+               arrival_date AS arrivalDate, likes, dislikes,created_by
+        FROM animal
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.petbridge.entity.Animal" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO animal (name, species, age, description, gender, vaccinated, neutered,
+                            arrival_date, likes, dislikes,created_by)
+        VALUES (#{name}, #{species}, #{age}, #{description}, #{gender}, #{vaccinated}, #{neutered},
+                #{arrivalDate}, #{likes}, #{dislikes},#{created_by})
+    </insert>
+
+    <update id="update" parameterType="com.example.petbridge.entity.Animal">
+        UPDATE animal
+        SET name = #{name},
+            species = #{species},
+            age = #{age},
+            description = #{description},
+            gender = #{gender},
+            vaccinated = #{vaccinated},
+            neutered = #{neutered},
+            arrival_date = #{arrivalDate},
+            likes = #{likes},
+            dislikes = #{dislikes},
+            created_by = #{created_by}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM animal
+        WHERE id = #{id}
+    </delete>
+
+    <select id="findAllWithPaging" resultType="com.example.petbridge.entity.Animal" parameterType="map">
+        SELECT id, name, species, age, description, gender, vaccinated, neutered,
+               arrival_date AS arrivalDate, likes, dislikes,created_by
+        FROM animal
+        ORDER BY id DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM animal
+    </select>
+
+    <!-- 검색 조건으로 페이징 처리된 동물 리스트 -->
+    <select id="getAnimalsByCondition" resultType="com.example.petbridge.entity.Animal">
+        SELECT id, name, species, age, description, gender, vaccinated, neutered,
+        arrival_date AS arrivalDate, likes, dislikes
+        FROM animal
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="species != null and species != ''">
+            AND species = #{species}
+        </if>
+        ORDER BY id DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 검색 조건에 따른 총 동물 수 -->
+    <select id="getTotalCountByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM animal
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="species != null and species != ''">
+            AND species = #{species}
+        </if>
+    </select>
+
+
+    <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Animal">
+        SELECT
+        a.id AS id,
+        a.name AS name,
+        a.species AS species,
+        a.age AS age,
+        a.description AS description,
+        a.gender AS gender,
+        a.vaccinated AS vaccinated,
+        a.neutered AS neutered,
+        a.arrival_date AS arrivalDate,
+        a.likes AS likes,
+        a.dislikes AS dislikes,
+        a.created_by AS createdBy
+        FROM adoption_application aa
+        JOIN animal a ON aa.animal_id = a.id
+        WHERE aa.u_id = #{u_id}
+        AND aa.agreement = 1   <!-- 실제 입양 완료 조건에 맞게 수정 -->
+        ORDER BY aa.created_at DESC
+        LIMIT 1
+    </select>
+
+    <select id="findByAnimalIds" resultType="com.example.petbridge.entity.Animal">
+        SELECT * FROM animal WHERE id IN
+        <foreach item="id" index="index" collection="animalIds"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+
+</mapper>
