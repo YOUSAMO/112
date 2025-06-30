@@ -4,41 +4,248 @@
     <meta charset="UTF-8" />
     <title th:text="${review != null ? review.arTitle + ' - 입양 후기' : '입양 후기 상세보기'}"></title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* 기본 스타일 */
         body {
-            background-color: #f3f4f6; /* Tailwind: bg-gray-100 */
-            color: #1f2937;           /* Tailwind: text-gray-800 */
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #1f2937;
             margin: 0;
-            /* 중요: 이 padding-top을 추가하여 헤더 높이만큼 본문을 밀어냅니다. */
-            /* 헤더가 대략 60px 높이이므로, 그 이상으로 설정합니다. */
-            padding-top: 80px; /* sm:pt-24 (96px)와 겹치지 않게 주의 */
+            padding-top: 100px;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.5;
         }
-        /* action-links, attachment-image 등 필요한 모든 스타일 추가 */
-        .action-links a, .action-links button { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; padding: 0.625rem 1.25rem; border-radius: 0.375rem; border: none; cursor: pointer; text-decoration: none; text-align: center; transition: background-color 0.2s, transform 0.1s; color: white; }
-        .action-links a.edit-action { background-color: #0ea5e9; }
-        .action-links button.delete-action { background-color: #ef4444; }
-        .action-links button#like-button { background-color: #3b82f6; }
-        .action-links button#like-button.liked { background-color: #ec4899; }
-        .action-links a.list-action { background-color: #64748b; }
-        .action-links a:hover, .action-links button:hover { transform: translateY(-1px); opacity: 0.9; }
-        .attachment-image { width: 180px; height: 135px; object-fit: cover; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition: transform 0.2s; }
+
+        /* 컨테이너 및 중앙 정렬 */
+        .container {
+            max-width: 1280px; /* max-w-7xl (Tailwind) 대략 1280px */
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;   /* px-4 */
+            padding-right: 1rem;  /* px-4 */
+        }
+        @media (min-width: 640px) { /* sm:px-6 */
+            .container {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        @media (min-width: 1024px) { /* lg:px-8 */
+            .container {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+        .pt-20 { padding-top: 5rem; } /* pt-20 */
+        @media (min-width: 640px) { /* sm:pt-24 */
+            .sm-pt-24 { padding-top: 6rem; }
+        }
+
+        /* 카드 (리뷰 상세) */
+        .bg-white { background-color: #ffffff; }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        .rounded-xl { border-radius: 0.75rem; }
+        .p-6 { padding: 1.5rem; }
+        @media (min-width: 768px) { /* md:p-10 */
+            .md-p-10 { padding: 2.5rem; }
+        }
+        .mb-8 { margin-bottom: 2rem; }
+
+        /* 제목 */
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; } /* text-3xl */
+        @media (min-width: 768px) { /* md:text-4xl */
+            .md-text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        }
+        .font-bold { font-weight: 700; }
+        .text-gray-900 { color: #111827; }
+        .mb-4 { margin-bottom: 1rem; }
+
+        /* 작성자 정보 */
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-x-6 { column-gap: 1.5rem; }
+        .gap-y-2 { row-gap: 0.5rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-gray-600 { color: #4b5563; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .p-4 { padding: 1rem; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .rounded-md { border-radius: 0.375rem; }
+        /* .mr-2 { margin-right: 0.5rem; } */ /* 아이콘 제거로 인해 불필요 */
+
+        /* 구분선 */
+        hr { border: none; border-top: 1px solid #e5e7eb; margin-top: 2rem; margin-bottom: 2rem; } /* my-8, border-gray-200 */
+
+        /* 본문 내용 */
+        .prose {
+            max-width: 65ch; /* Tailwind prose 기본 max-width */
+        }
+        .max-w-none { max-width: none; }
+        .whitespace-pre-wrap { white-space: pre-wrap; }
+
+        /* 첨부 파일 섹션 */
+        .mt-8 { margin-top: 2rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .font-semibold { font-weight: 600; }
+        .mb-4 { margin-bottom: 1rem; }
+        .gap-4 { gap: 1rem; }
+
+        .attachment-image {
+            width: 180px;
+            height: 135px;
+            object-fit: cover;
+            border: 1px solid #e5e7eb; /* border border-gray-200 */
+            border-radius: 0.5rem;     /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
+            transition: transform 0.2s;
+        }
         .attachment-image:hover { transform: scale(1.05); }
 
-        /* 댓글 섹션 스타일 */
-        .comments-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
-        .comment-item, .reply-item { border: 1px solid #e2e8f0; border-radius: 0.375rem; padding: 1rem; margin-bottom: 0.75rem; background-color: #f8fafc; }
-        .comment-item { background-color: #ffffff; } /* 댓글 항목 배경색 */
-        .reply-section { margin-top: 1rem; padding-left: 2rem; border-left: 2px solid #cbd5e1; } /* 대댓글 들여쓰기 */
+        /* 댓글 섹션 */
+        .comments-section {
+            margin-top: 2rem; /* mt-8 */
+            padding-top: 1.5rem; /* pt-6 */
+            border-top: 1px solid #e2e8f0; /* border-t border-gray-200 */
+        }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; } /* text-2xl */
+        .mb-6 { margin-bottom: 1.5rem; }
+        .items-center { align-items: center; }
+        /* .mr-3 { margin-right: 0.75rem; } */ /* 아이콘 제거로 인해 불필요 */
+        .text-blue-600 { color: #2563eb; }
 
-        /* 댓글/대댓글 액션 버튼 스타일 */
-        .comment-actions, .reply-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-        .comment-actions button, .reply-actions button { background: none; border: none; color: #4299e1; cursor: pointer; font-size: 0.875rem; padding: 0; }
+        /* 댓글 작성 폼 */
+        .bg-gray-50 { background-color: #f9fafb; }
+        .p-6 { padding: 1.5rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .w-full { width: 100%; }
+        .p-3 { padding: 0.75rem; }
+        .border { border-width: 1px; border-style: solid; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .focus-ring-blue-500:focus { --tw-ring-color: #3b82f6; ring-color: var(--tw-ring-color); ring-width: 2px; } /* focus:ring-blue-500 */
+        .focus-border-blue-500:focus { border-color: #3b82f6; } /* focus:border-blue-500 */
+        .resize-y { resize: vertical; }
+        .mt-3 { margin-top: 0.75rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .text-white { color: #ffffff; }
+        .font-medium { font-weight: 500; }
+        .hover-bg-blue-700:hover { background-color: #1d4ed8; } /* hover:bg-blue-700 */
+        .transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+
+        /* 로그인 필요 메시지 */
+        .text-center { text-align: center; }
+        .text-gray-600 { color: #4b5563; }
+        .hover-underline:hover { text-decoration-line: underline; }
+
+        /* 댓글 목록 */
+        .space-y-4 > *:not([hidden]) ~ *:not([hidden]) { margin-top: 1rem; } /* space-y-4 */
+
+        /* 댓글/대댓글 아이템 */
+        .comment-item, .reply-item {
+            border: 1px solid #e2e8f0; /* border border-gray-200 */
+            border-radius: 0.375rem;   /* rounded-md */
+            padding: 1rem;             /* p-4 */
+            margin-bottom: 0.75rem;    /* mb-3 */
+            background-color: #f8fafc; /* bg-gray-50 for reply-item */
+        }
+        .comment-item { background-color: #ffffff; } /* 댓글 항목 배경색 */
+        .font-semibold { font-weight: 600; }
+        .text-gray-900 { color: #111827; }
+        .text-gray-500 { color: #6b7280; }
+        .mt-1 { margin-top: 0.25rem; }
+        .text-gray-700 { color: #374151; }
+
+        /* 댓글/대댓글 액션 버튼 */
+        .comment-actions, .reply-actions {
+            display: flex;
+            gap: 0.5rem;      /* gap-2 */
+            margin-top: 0.5rem; /* mt-2 */
+        }
+        .comment-actions button, .reply-actions button {
+            background: none;
+            border: none;
+            color: #4299e1; /* text-blue-500 */
+            cursor: pointer;
+            font-size: 0.875rem; /* text-sm */
+            padding: 0;
+        }
         .comment-actions button:hover, .reply-actions button:hover { text-decoration: underline; }
 
-        /* 대댓글 입력 폼 스타일 */
-        .reply-input-form { background-color: #f0f4f8; padding: 0.75rem; border-radius: 0.375rem; }
+        /* 대댓글 입력 폼 */
+        .hidden { display: none; }
+        .reply-input-form {
+            background-color: #f0f4f8; /* bg-gray-100 (원래는 f9fafb인데, 예시에서 f0f4f8을 썼기에 통일) */
+            padding: 0.75rem;      /* p-3 */
+            border-radius: 0.375rem; /* rounded-md */
+            margin-top: 0.5rem; /* mt-2 */
+        }
+        .reply-content-textarea {
+            width: 100%;
+            padding: 0.5rem; /* p-2 */
+            border: 1px solid #d1d5db; /* border border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            resize: vertical;
+        }
+        .submit-reply-btn, .cancel-reply-btn {
+            margin-top: 0.25rem; /* mt-1 */
+            padding: 0.375rem 1rem; /* px-4 py-1.5 */
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: #ffffff;
+            font-size: 0.875rem; /* text-sm */
+            border-radius: 0.375rem; /* rounded-md */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-reply-btn:hover { background-color: #2563eb; } /* hover:bg-blue-600 */
+        .cancel-reply-btn { background-color: #9ca3af; } /* bg-gray-400 */
+        .cancel-reply-btn:hover { background-color: #6b7280; } /* hover:bg-gray-500 */
+
+        /* 대댓글 목록 들여쓰기 */
+        .replies-list {
+            margin-top: 0.75rem; /* mt-3 */
+            padding-left: 1rem;  /* pl-4 */
+            border-left: 2px solid #e5e7eb; /* border-l-2 border-gray-200 */
+        }
+        .space-y-2 > *:not([hidden]) ~ *:not([hidden]) { margin-top: 0.5rem; } /* space-y-2 */
+
+
+        /* action-links (하단 버튼 그룹) */
+        .action-links {
+            margin-top: 2rem; /* mt-8 */
+            display: flex;
+            gap: 1rem; /* gap-4 */
+            flex-wrap: wrap; /* flex-wrap */
+            justify-content: flex-end; /* justify-end (원래 없었지만, 레이아웃 상 오른쪽에 정렬될 것 같아 추가) */
+        }
+        .action-links a, .action-links button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;        /* gap-2 */
+            font-size: 0.9rem;  /* text-sm */
+            font-weight: 500;   /* font-medium */
+            padding: 0.625rem 1.25rem; /* px-5 py-2.5 */
+            border-radius: 0.375rem; /* rounded-md */
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.2s, transform 0.1s;
+            color: white;
+        }
+        .action-links a.edit-action { background-color: #0ea5e9; } /* bg-sky-500 */
+        .action-links button.delete-action { background-color: #ef4444; } /* bg-red-500 */
+        .action-links button#like-button { background-color: #3b82f6; } /* bg-blue-500 */
+        .action-links button#like-button.liked { background-color: #ec4899; } /* bg-pink-500 */
+        .action-links a.list-action { background-color: #64748b; } /* bg-slate-500 */
+        .action-links a:hover, .action-links button:hover { transform: translateY(-1px); opacity: 0.9; }
+
+        /* 기타 필요한 유틸리티 클래스 (Tailwind 기본값) */
+        .flex { display: flex; }
+        .justify-center { justify-content: center; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -49,16 +256,16 @@
     <div th:if="${review != null}" class="bg-white shadow-xl rounded-xl p-6 md:p-10 mb-8">
         <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4" th:text="${review.arTitle}"></h1>
         <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-6 p-4 bg-gray-50 rounded-md">
-            <p><i class="fas fa-user mr-2"></i>작성자: <span th:text="${review.authorName}"></span></p>
-            <p><i class="fas fa-clock mr-2"></i>작성일: <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
-            <p><i class="fas fa-eye mr-2"></i>조회수: <span th:text="${review.viewCount}"></span></p>
+            <p>작성자: <span th:text="${review.authorName}"></span></p>
+            <p>작성일: <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+            <p>조회수: <span th:text="${review.viewCount}"></span></p>
         </div>
         <hr class="my-8"/>
         <div class="prose max-w-none whitespace-pre-wrap" th:text="${review.reviewContent}"></div>
         <div th:if="${review.attachments != null and !review.attachments.isEmpty()}">
             <hr class="my-8"/>
             <div class="mt-8 mb-8">
-                <h3 class="text-xl font-semibold mb-4"><i class="fas fa-paperclip mr-2"></i>첨부된 파일</h3>
+                <h3 class="text-xl font-semibold mb-4">첨부된 파일</h3>
                 <div class="flex flex-wrap gap-4">
                     <div th:each="att : ${review.attachments}">
                         <a th:href="@{'/uploads/' + ${att.filePath}}" target="_blank">
@@ -71,7 +278,7 @@
         <hr class="my-8"/>
 
         <div class="comments-section mt-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center"><i class="fas fa-comments mr-3 text-blue-600"></i> 댓글</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center"> 댓글</h2>
             <div th:if="${currentUserId != null}" class="mb-6 bg-gray-50 p-6 rounded-lg shadow-sm">
                 <h3 class="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
                 <textarea id="commentContent" rows="4" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 resize-y" placeholder="댓글 내용을 입력하세요..."></textarea>
@@ -94,7 +301,6 @@
             <button type="button" id="like-button" class="like-btn"
                     th:classappend="${likeStatus?.currentUserLiked} ? 'liked'"
                     th:data-ar-no="${review.arNo}" th:data-board-type="${defaultBoardType}">
-                <i class="fas fa-heart mr-1"></i>
                 <span class="like-button-text" th:text="${likeStatus?.currentUserLiked} ? '좋아요 취소' : '좋아요'"></span>
                 (<span id="like-count" th:text="${likeStatus?.totalLikeCount}">0</span>)
             </button>

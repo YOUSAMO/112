@@ -6,7 +6,6 @@ import com.example.petbridge.repository.AttachmentFileRepository;
 import com.example.petbridge.repository.BoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-// import org.springframework.security.access.AccessDeniedException; // Spring Security 의존성 제거
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
