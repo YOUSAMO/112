@@ -1,6 +1,7 @@
 package com.example.petbridge.repository;
 
 
+import com.example.petbridge.DTO.MyPageApplicationDTO;
 import com.example.petbridge.entity.Adoption_application;
 import com.example.petbridge.entity.Volunteer;
 import org.apache.ibatis.annotations.Mapper;
@@ -15,12 +16,13 @@ public interface Adoption_applicationRepository {
  void update(Adoption_application adoption_application);
  void delete(Adoption_application adoption_application);
  int countByUserIdAndAnimalId(@Param("uId") String uId, @Param("animal_id") long animal_id);
- List<Adoption_application> findByUserIdAndStatus(@Param("uId") String uId,@Param("status") String status);
 
  List<Adoption_application> findAll();
  Adoption_application findById(Long id);
  void updateStatus(@Param("id") Long id, @Param("status") String status);
  void deleteById(@Param("id") Long id);
+ List<MyPageApplicationDTO> findAdoptionApplicationsWithAnimalAndUser(@Param("userId") String userId);
+
 
 
 

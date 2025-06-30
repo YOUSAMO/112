@@ -1,6 +1,7 @@
 package com.example.petbridge.controller;
 
 
+import com.example.petbridge.DTO.MyPageApplicationDTO;
 import com.example.petbridge.DTO.SessionMemberDTO;
 import com.example.petbridge.entity.*;
 import com.example.petbridge.service.*;
@@ -11,7 +12,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -157,7 +160,7 @@ public class MainController {
     }
 
     @GetMapping("/mypage")
-    public String showMyPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String showMyPage( @RequestParam(defaultValue = "1") int page,HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         System.out.println("MainController의 /mypage 요청 받음");
 
         String loggedInUserId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
@@ -170,46 +173,55 @@ public class MainController {
 
         // 봉사신청 현황 조회 (예시 서비스)
         List<Volunteer> volunteerList = volunteerService.findByUserId(loggedInUserId);
-        // 입양 신청서 조회 (승인대기/승인완료 구분)
-        List<Adoption_application> pendingAdoptionList =
-                adoption_applicationService.findByUserIdAndStatus(loggedInUserId, "승인대기");
-        List<Adoption_application> approvedAdoptionList =
-                adoption_applicationService.findByUserIdAndStatus(loggedInUserId, "승인완료");
+        // 조인 쿼리로 한 번에 데이터 조회
+        List<MyPageApplicationDTO> myApplications = adoption_applicationService.getMyAdoptionApplicationsWithAnimalAndUser(loggedInUserId);
 
-        // 승인완료된 동물 정보 조회 (animal_id로 animal 테이블에서 조회)
-        List<Long> approvedAnimalIds = approvedAdoptionList.stream()
-                .map(Adoption_application::getAnimal_id)
-                .collect(Collectors.toList());
-        List<Animal> approvedAnimals = animalService.findByAnimalIds(approvedAnimalIds);
-
-        // 승인대기 중인 동물 정보 조회 (필요하다면)
-        List<Long> pendingAnimalIds = pendingAdoptionList.stream()
-                .map(Adoption_application::getAnimal_id)
-                .collect(Collectors.toList());
-        List<Animal> pendingAnimals = animalService.findByAnimalIds(pendingAnimalIds);
 
         List<AdoptionReview> myReviews = adoptionReviewService.findByAuthorUid(loggedInUserId);
-        List<Comment> myComments = commentService.findByCommentUid(loggedInUserId);
+        // 댓글 조회 (페이징 처리)
+        int pageSize = 10;
+        int offset = (page - 1) * pageSize;
+        Map<String, Object> param = new HashMap<>();
+        param.put("userId", loggedInUserId);
+        param.put("offset", offset);
+        param.put("pageSize", pageSize);
+        List<Comment> myComments = commentService.getMyComments(param);
+        int totalCount = commentService.getMyCommentsCount(loggedInUserId);
+        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
 
 
-        model.addAttribute("pendingAdoptionList", pendingAdoptionList);
-        model.addAttribute("approvedAdoptionList", approvedAdoptionList);
-        model.addAttribute("approvedAnimals", approvedAnimals);
-        model.addAttribute("pendingAnimals", pendingAnimals);
         model.addAttribute("myReviews", myReviews);
         model.addAttribute("myComments", myComments);
+        model.addAttribute("myApplications", myApplications);
         model.addAttribute("currentUserId", loggedInUserId);
         model.addAttribute("volunteerList", volunteerList);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("hasPrev", page > 1);
+        model.addAttribute("hasNext", page < totalPages);
 
         System.out.println("MyPage 접근: 로그인된 사용자 ID - " + loggedInUserId);
+        System.out.println("myApplications size: " + myApplications.size());
+
+
         return "mypage/MyPage";
     }
+
+
+
 
     @PostMapping("/mypage/cancel/{id}")
     public String cancelVolunteer(@PathVariable Long id) {
         volunteerService.deleteById(id);
         return "redirect:/mypage";
     }
+
+
+
+
+
+
+
 
 
     @GetMapping("/terms")

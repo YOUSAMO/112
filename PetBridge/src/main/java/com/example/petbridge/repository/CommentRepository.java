@@ -6,6 +6,8 @@ import com.example.petbridge.entity.Volunteer;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
+import java.util.Map;
+
 @Mapper
 public interface CommentRepository {
     void insertComment(Comment comment);
@@ -22,4 +24,8 @@ public interface CommentRepository {
     List<Comment> getAllComments();
 
     void deleteBycmNo(Long cmNo);
+
+
+    List<Comment> getMyComments(Map<String, Object> param);
+    int getMyCommentsCount(String userId);
 }

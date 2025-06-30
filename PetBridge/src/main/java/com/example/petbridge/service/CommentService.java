@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 // import java.util.Optional; // Optional은 더 이상 직접 사용되지 않으므로 제거 가능 (필요 없으면)
 
 @Service
@@ -140,6 +141,16 @@ public class CommentService {
 
     public void deleteBycmNo(Long cmNo) {
         commentRepository.deleteBycmNo(cmNo);
+    }
+
+
+
+    public List<Comment> getMyComments(Map<String, Object> param) {
+        return commentRepository.getMyComments(param);
+    }
+
+    public int getMyCommentsCount(String userId) {
+        return commentRepository.getMyCommentsCount(userId);
     }
 
 

@@ -120,12 +120,7 @@ public class AnimalService {
         return animal; // 2. MyBatis가 id를 채워준 animal 객체를 그대로 반환
     }
 
-    public List<Animal> findByAnimalIds(List<Long> animalIds) {
-        if (animalIds == null || animalIds.isEmpty()) {
-            return List.of(); // 또는 return new ArrayList<>();
-        }
-        return animalRepository.findByAnimalIds(animalIds);
-    }
+
 
 
 

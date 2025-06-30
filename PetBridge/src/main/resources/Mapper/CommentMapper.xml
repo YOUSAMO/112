@@ -87,5 +87,23 @@
 
 
 
+    <!-- CommentMapper.xml -->
+    <select id="getMyComments" resultType="com.example.petbridge.entity.Comment">
+        SELECT *
+        FROM comment
+        WHERE author_uid = #{userId}
+        ORDER BY created_at DESC
+            LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="getMyCommentsCount" resultType="int">
+        SELECT COUNT(*)
+        FROM comment
+        WHERE author_uid = #{userId}
+    </select>
+
+
+
+
 
 </mapper>

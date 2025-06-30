@@ -123,10 +123,32 @@
         WHERE id = #{id}
     </delete>
 
-    <select id="findByUserIdAndStatus" resultType="com.example.petbridge.entity.Adoption_application">
-        SELECT * FROM adoption_application
-        WHERE u_id = #{uId} AND status = #{status}
+    <select id="findAdoptionApplicationsWithAnimalAndUser" resultType="com.example.petbridge.DTO.MyPageApplicationDTO">
+        SELECT
+            aa.id AS adoptionId,
+            aa.status,
+            aa.created_at AS createdAt,
+            aa.animal_id AS animalId,
+            aa.u_id AS applicantId,
+            a.name AS animalName,
+            a.species AS animalSpecies,
+            a.age AS animalAge,
+            a.gender AS animalGender,
+            u.u_name AS applicantName,
+            u.u_email AS applicantEmail
+        FROM
+            adoption_application aa
+                JOIN
+            animal a ON aa.animal_id = a.id
+                JOIN
+            users u ON aa.u_id = u.u_id
+        WHERE
+            aa.u_id = #{userId}
+        ORDER BY
+            aa.created_at DESC
+
     </select>
+
 
 
 </mapper>

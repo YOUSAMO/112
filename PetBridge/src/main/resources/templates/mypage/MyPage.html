@@ -149,6 +149,7 @@
         }
         .edit-button {
             display: inline-block;
+            color: whitesmoke;
             margin-top: 14px;
             padding: 10px 20px;
             background-color: #6b5e47;
@@ -239,6 +240,25 @@
         .print-btn:hover {
             background: #ddeeff;
         }
+        .paging button {
+            border: 1px solid #aaa;
+            background: #fff;
+            padding: 6px 14px;
+            margin: 0 2px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .paging button.active-page {
+            background: #444;
+            color: #fff;
+            font-weight: bold;
+        }
+        .paging button:disabled {
+            background: #eee;
+            color: #bbb;
+            cursor: not-allowed;
+        }
+
     </style>
 </head>
 <body>
@@ -247,9 +267,7 @@
     <nav class="sidebar">
         <h3>마이페이지 메뉴</h3>
         <ul>
-            <li class="active"><a href="#" data-tab="adopted">입양한 동물 정보</a></li>
-            <li><a href="#" data-tab="pending-application">승인 대기 중인 입양 신청</a></li>
-            <li><a href="#" data-tab="pending-animals">승인 대기 중인 동물 정보</a></li>
+            <li class="active"><a href="#" data-tab="approved-applications">입양한 동물 정보</a></li>
             <li><a href="#" data-tab="volunteer">봉사신청 현황</a></li>
             <li><a href="#" data-tab="activity">나의 활동 기록</a></li>
             <li><a href="#" data-tab="profile">개인정보 관리</a></li>
@@ -262,66 +280,26 @@
             </div>
         </div>
 
-        <!-- 1. 입양한 동물 정보(승인완료) -->
+        <!-- 1. 승인완료된 입양 신청서 및 동물 정보 -->
         <article id="adopted-content" class="content active">
             <h3>입양한 동물 정보</h3>
             <ul>
-                <li th:if="${#lists.isEmpty(approvedAnimals)}">
+                <li th:if="${#lists.isEmpty(myApplications)}">
                     입양한 동물이 없습니다.
                 </li>
-                <li th:each="animal : ${approvedAnimals}" style="margin-bottom: 24px;">
-                    <strong>이름:</strong> <span th:text="${animal.name}"></span><br>
-                    <strong>종류:</strong> <span th:text="${animal.species}"></span><br>
-                    <strong>접종 유무:</strong>
-                    <span th:if="${animal.vaccinated}" style="color:green;">✔ 예</span>
-                    <span th:unless="${animal.vaccinated}" style="color:red;">✖ 아니오</span><br>
-                    <strong>중성화 유무:</strong>
-                    <span th:if="${animal.neutered}" style="color:green;">✔ 예</span>
-                    <span th:unless="${animal.neutered}" style="color:red;">✖ 아니오</span><br>
-                    <strong>센터 입소일:</strong> <span th:text="${#temporals.format(animal.arrivalDate, 'yyyy-MM-dd')}"></span><br>
-                    <strong>특징:</strong> <span th:text="${animal.description}"></span>
+                <li th:each="app : ${myApplications}" style="margin-bottom: 24px;">
+                    <strong>동물명:</strong> <span th:text="${app.animalName}"></span><br>
+                    <strong>종:</strong> <span th:text="${app.animalSpecies}"></span><br>
+                    <strong>나이:</strong> <span th:text="${app.animalAge}"></span><br>
+                    <strong>성별:</strong> <span th:text="${app.animalGender}"></span><br>
+                    <strong>신청일:</strong> <span th:text="${app.createdAt}"></span><br>
+                    <strong>승인상태:</strong> <span th:text="${app.status}"></span><br>
+                    <!-- 추가 정보(예: 접종, 중성화 등)는 DTO에 추가하면 여기서도 출력 가능 -->
                 </li>
             </ul>
         </article>
 
-        <!-- 2. 승인 대기 중인 입양 신청 -->
-        <article id="pending-application-content" class="content">
-            <h3>승인 대기 중인 입양 신청</h3>
-            <ul>
-                <li th:if="${#lists.isEmpty(pendingAdoptionList)}">
-                    승인 대기 중인 입양 신청이 없습니다.
-                </li>
-                <li th:each="adoption : ${pendingAdoptionList}" style="margin-bottom: 24px;">
-                    <strong>신청 번호:</strong> <span th:text="${adoption.id}"></span><br>
-                    <strong>동물 ID:</strong> <span th:text="${adoption.animal_id}"></span><br>
-                    <strong>신청 동기:</strong> <span th:text="${adoption.motivation}"></span><br>
-                    <strong>주거 형태:</strong> <span th:text="${adoption.housingType}"></span><br>
-                    <strong>신청 상태:</strong> <span th:text="${adoption.status}"></span>
-                </li>
-            </ul>
-        </article>
 
-        <!-- 3. 승인 대기 중인 동물 정보 -->
-        <article id="pending-animals-content" class="content">
-            <h3>승인 대기 중인 동물 정보</h3>
-            <ul>
-                <li th:if="${#lists.isEmpty(pendingAnimals)}">
-                    승인 대기 중인 동물이 없습니다.
-                </li>
-                <li th:each="animal : ${pendingAnimals}" style="margin-bottom: 24px;">
-                    <strong>이름:</strong> <span th:text="${animal.name}"></span><br>
-                    <strong>종류:</strong> <span th:text="${animal.species}"></span><br>
-                    <strong>접종 유무:</strong>
-                    <span th:if="${animal.vaccinated}" style="color:green;">✔ 예</span>
-                    <span th:unless="${animal.vaccinated}" style="color:red;">✖ 아니오</span><br>
-                    <strong>중성화 유무:</strong>
-                    <span th:if="${animal.neutered}" style="color:green;">✔ 예</span>
-                    <span th:unless="${animal.neutered}" style="color:red;">✖ 아니오</span><br>
-                    <strong>센터 입소일:</strong> <span th:text="${#temporals.format(animal.arrivalDate, 'yyyy-MM-dd')}"></span><br>
-                    <strong>특징:</strong> <span th:text="${animal.description}"></span>
-                </li>
-            </ul>
-        </article>
 
         <!-- 4. 봉사신청 현황 (기존 그대로) -->
         <article id="volunteer-content" class="content">
@@ -346,7 +324,7 @@
                             봉사신청 취소
                         </button>
                     </form>
-                    <a href="javascript:void(0)" class="print-btn">확인서 출력</a>
+
                 </li>
             </ul>
         </article>
@@ -390,6 +368,27 @@
                     <span th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd')}"></span>
                 </li>
             </ul>
+
+
+            <div class="paging">
+                <ul style="display: flex; list-style: none; padding: 0;">
+                    <li th:if="${hasPrev}">
+                        <button type="button"
+                                th:onclick="'location.href=\'/mypage/comments?page=' + (${currentPage} - 1) + '\''"
+                                style="margin-right: 8px;">이전</button>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(1, totalPages)}" style="margin-right: 8px;">
+                        <button type="button"
+                                th:onclick="'location.href=\'/mypage/comments?page=' + ${i} + '\''"
+                                th:text="${i}"
+                                th:classappend="${i == currentPage} ? 'active-page'"></button>
+                    </li>
+                    <li th:if="${hasNext}">
+                        <button type="button"
+                                th:onclick="'location.href=\'/mypage/comments?page=' + (${currentPage} + 1) + '\''">다음</button>
+                    </li>
+                </ul>
+            </div>
         </article>
 
         <!-- 6. 개인정보 관리 (기존 그대로) -->
@@ -422,6 +421,7 @@
             document.getElementById(link.getAttribute('data-tab') + '-content').classList.add('active');
         });
     });
+
 </script>
 </body>
 </html>

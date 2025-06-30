@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>유기동물 보호소 관리자 페이지</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
   <style>
     body {
       margin: 0;
@@ -753,8 +756,16 @@
   <!-- 통계 -->
   <section class="section" id="section-stat"style="display: none">
     <h3>입양/보호소 통계</h3>
-    <p>입양률, 보호 동물 수, 인기 품종 등 시각화(그래프) 영역 (예시)</p>
-    <img src="/images/statistics.png" alt="통계 그래프 예시" style="width:220px; background:#F5EEDD; border-radius:15px; padding:18px;">
+    <!-- Bar+Line 혼합형 차트 -->
+    <div style="position:relative; width:1200px; height:500px; margin:40px auto;">
+      <canvas id="shelterMixChart"></canvas>
+    </div>
+    <!-- Pie 차트 -->
+    <div style="position:relative; width:400px; height:400px; margin:40px auto;">
+      <canvas id="animalPie"></canvas>
+    </div>
+
+
   </section>
   <!-- 관리자 목록 -->
   <section class="section" id="section-admin-list">
@@ -775,9 +786,6 @@
         <td th:text="${admin.aId}"></td>
         <td th:text="${admin.aName}"></td>
         <td>
-          <button class="btn" type="button"
-                  th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}"
-                  onclick="openAdminEditModal()">수정</button>
           <form th:action="@{'/admin/delete/admin/' + ${admin.aId}}" method="post" style="display:inline;">
             <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')"class="btn btn-delete"th:if="${loginAdmin != null and loginAdmin.aId == admin.aId}">삭제</button>
           </form>
@@ -815,31 +823,8 @@
 
 </div>
 
-<!-- 관리자 정보 수정 모달 -->
-<div id="adminEditModal" class="modal-bg">
-  <div class="modal" style="min-width:320px;max-width:95vw;">
-    <span class="modal-close" onclick="closeAdminEditModal()">&times;</span>
-    <h4>관리자 정보 수정</h4>
-    <form id="adminEditForm" th:action="@{/admin/update}" method="post">
-      <div style="margin-bottom:10px;">
-        <label>아이디</label>
-        <input type="text" id="editAdminId" name="aId" class="form-control" required>
-      </div>
-      <div style="margin-bottom:10px;">
-        <label>이름</label>
-        <input type="text" id="editAdminName" name="aName" class="form-control" required>
-      </div>
-      <div style="margin-bottom:10px;">
-        <label>비밀번호</label>
-        <input type="password" id="editAdminPass" name="aPass" class="form-control" required>
-      </div>
-      <div style="text-align:right; margin-top:18px;">
-        <button type="submit" class="btn">저장</button>
-        <button type="button" class="btn btn-delete" onclick="closeAdminEditModal()">취소</button>
-      </div>
-    </form>
-  </div>
-</div>
+<
+<!-- Chart.js CDN (head나 body 맨 아래에 한 번만 추가) -->
 
 <script>
   document.querySelectorAll(
@@ -950,12 +935,163 @@
     document.getElementById('modal-comment-' + cmNo).classList.remove('active');
   }
 
+  let shelterMixChart = null;
+  let animalPieChart = null; // Pie 차트도 destroy 가능하게 변수 선언
 
+  document.querySelectorAll('.nav-menu li[data-section], .dropdown-content li[data-section]').forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      if (this.getAttribute('data-section') === 'stat') {
+        setTimeout(function() {
+          const shelterMixCanvas = document.getElementById('shelterMixChart');
+          const animalPieCanvas = document.getElementById('animalPie');
+          if (!shelterMixCanvas || !animalPieCanvas) {
+            console.error('canvas 태그가 없습니다!');
+            return;
+          }
+          // 기존 차트 파괴(중복 방지)
+          if (shelterMixChart) shelterMixChart.destroy();
+          if (animalPieChart) animalPieChart.destroy();
 
+          fetch('/data/animals.json')
+                  .then(response => {
+                    if (!response.ok) throw new Error('파일을 찾을 수 없습니다!');
+                    return response.json();
+                  })
+                  .then(data => {
+                    const items = data.response.body.items.item;
+                    // 보호소별 동물 종류별 집계
+                    const shelterStats = {};
+                    const stat = { "개": 0, "고양이": 0, "기타": 0 };
+                    items.forEach(animal => {
+                      // Pie 차트용 전체 집계
+                      if (animal.upKindNm === "개") stat["개"] += 1;
+                      else if (animal.upKindNm === "고양이") stat["고양이"] += 1;
+                      else stat["기타"] += 1;
+                      // Bar+Line 차트용 보호소별 집계
+                      const shelter = animal.careNm;
+                      const kind = animal.upKindNm;
+                      if (!shelterStats[shelter]) {
+                        shelterStats[shelter] = { "개": 0, "고양이": 0, "기타": 0 };
+                      }
+                      if (kind === "개") shelterStats[shelter]["개"] += 1;
+                      else if (kind === "고양이") shelterStats[shelter]["고양이"] += 1;
+                      else shelterStats[shelter]["기타"] += 1;
+                    });
 
+                    // Pie 차트 데이터
+                    const pieLabels = ["강아지", "고양이", "기타"];
+                    const pieData = [stat["개"], stat["고양이"], stat["기타"]];
+                    const pieColors = [
+                      "rgba(255,179,0,0.8)",
+                      "rgba(79,195,247,0.8)",
+                      "rgba(174,213,129,0.8)"
+                    ];
 
+                    // Bar+Line 차트 데이터
+                    const labels = Object.keys(shelterStats);
+                    const dogCounts = labels.map(name => shelterStats[name]["개"]);
+                    const catCounts = labels.map(name => shelterStats[name]["고양이"]);
+                    const etcCounts = labels.map(name => shelterStats[name]["기타"]);
+                    const totalCounts = labels.map(name =>
+                            shelterStats[name]["개"] + shelterStats[name]["고양이"] + shelterStats[name]["기타"]
+                    );
 
+                    // Bar+Line 혼합형 차트
+                    const ctx = shelterMixCanvas.getContext('2d');
+                    shelterMixChart = new Chart(ctx, {
+                      data: {
+                        labels: labels,
+                        datasets: [
+                          {
+                            type: 'bar',
+                            label: '강아지',
+                            data: dogCounts,
+                            backgroundColor: 'rgba(255,179,0,0.7)',
+                            borderRadius: 8,
+                            barPercentage: 0.8,
+                            categoryPercentage: 0.7
+                          },
+                          {
+                            type: 'bar',
+                            label: '고양이',
+                            data: catCounts,
+                            backgroundColor: 'rgba(79,195,247,0.7)',
+                            borderRadius: 8,
+                            barPercentage: 0.8,
+                            categoryPercentage: 0.7
+                          },
+                          {
+                            type: 'bar',
+                            label: '기타',
+                            data: etcCounts,
+                            backgroundColor: 'rgba(174,213,129,0.7)',
+                            borderRadius: 8,
+                            barPercentage: 0.8,
+                            categoryPercentage: 0.7
+                          },
+                          {
+                            type: 'line',
+                            label: '총 마릿수',
+                            data: totalCounts,
+                            borderColor: '#8C7B6B',
+                            backgroundColor: '#8C7B6B',
+                            tension: 0.4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#8C7B6B',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            yAxisID: 'y'
+                          }
+                        ]
+                      },
+                      options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { position: 'top' },
+                          title: { display: true, text: '보호소별 동물 현황 (Bar+Line 혼합)' }
+                        },
+                        scales: {
+                          x: { stacked: true },
+                          y: { stacked: true, beginAtZero: true }
+                        }
+                      }
+                    });
 
+                    // Pie 차트
+                    const pieCtx = animalPieCanvas.getContext('2d');
+                    animalPieChart = new Chart(pieCtx, {
+                      type: 'pie',
+                      data: {
+                        labels: pieLabels,
+                        datasets: [{
+                          data: pieData,
+                          backgroundColor: pieColors
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        plugins: {
+                          legend: { position: 'top', labels: { font: { size: 15 } } },
+                          title: { display: true, text: '전체 동물 종류별 비율', font: { size: 18 } },
+                          tooltip: {
+                            backgroundColor: '#fff',
+                            titleColor: '#8C7B6B',
+                            bodyColor: '#333',
+                            borderColor: '#8C7B6B',
+                            borderWidth: 1
+                          }
+                        }
+                      }
+                    });
+                  })
+                  .catch(err => {
+                    console.error('animals.json 불러오기 실패:', err);
+                  });
+        }, 100);
+      }
+    });
+  });
 
 
 

@@ -1,5 +1,6 @@
 package com.example.petbridge.service;
 
+import com.example.petbridge.DTO.MyPageApplicationDTO;
 import com.example.petbridge.entity.Adoption_application;
 import com.example.petbridge.entity.Animal;
 import com.example.petbridge.repository.Adoption_applicationRepository;
@@ -47,9 +48,6 @@ public class Adoption_applicationService {
         return adoptionApplicationRepository.countByUserIdAndAnimalId(uId, animal_id) > 0;
     }
 
-    public List<Adoption_application> findByUserIdAndStatus(String uId,String status) {
-        return adoptionApplicationRepository.findByUserIdAndStatus(uId,status);
-    }
 
     public List<Adoption_application> getAllApplications() {
         return adoptionApplicationRepository.findAll();
@@ -66,6 +64,12 @@ public class Adoption_applicationService {
     public Adoption_application findById(Long id) {
         return adoptionApplicationRepository.findById(id);
     }
+
+
+    public List<MyPageApplicationDTO> getMyAdoptionApplicationsWithAnimalAndUser(String userId) {
+        return adoptionApplicationRepository.findAdoptionApplicationsWithAnimalAndUser(userId);
+    }
+
 
 
 
