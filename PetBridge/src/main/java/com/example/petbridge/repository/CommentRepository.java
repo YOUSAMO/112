@@ -1,6 +1,5 @@
 package com.example.petbridge.repository;
 
-import com.example.petbridge.entity.AdoptionReview;
 import com.example.petbridge.entity.Comment;
 import com.example.petbridge.entity.Volunteer;
 import org.apache.ibatis.annotations.Mapper;
@@ -21,11 +20,13 @@ public interface CommentRepository {
 
     List<Comment> findByCommentUid(@Param("authorUid") String authorUid);
 
+
     List<Comment> getAllComments();
 
     void deleteBycmNo(Long cmNo);
 
 
     List<Comment> getMyComments(Map<String, Object> param);
+
     int getMyCommentsCount(String userId);
 }

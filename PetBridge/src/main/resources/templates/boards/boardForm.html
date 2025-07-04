@@ -3,108 +3,297 @@
 <head>
     <meta charset="UTF-8" />
     <title th:text="${isNew ? '게시글 작성' : '게시글 수정'}"></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
     <style>
-        .btn { padding: 0.625rem 1.25rem; border-radius: 0.375rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: background-color 0.2s; }
-        .btn-primary { background-color: #3b82f6; color: white; }
-        .btn-primary:hover { background-color: #2563eb; }
-        .btn-secondary { background-color: #e2e8f0; color: #2d3748; border: 1px solid #cbd5e1; }
-        .btn-secondary:hover { background-color: #cbd5e1; }
-        .btn-danger-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; background-color: #ef4444; color: white; border-radius: 0.375rem; }
-        .preview-container { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
-        .attachment-item { position: relative; }
-        .attachment-item > img { width: 150px; height: 150px; object-fit: cover; border-radius: 0.375rem; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            color: #333;
+            font-family: Arial, sans-serif, 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            margin-top: 110px;
+            padding: 10px;
+        }
 
-        .custom-file-input-wrapper { position: relative; overflow: hidden; display: inline-block; cursor: pointer; }
-        .custom-file-input { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .custom-file-label { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; background-color: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 0.375rem; font-weight: 500; color: #4a5568; cursor: pointer; transition: background-color 0.2s ease; }
-        .custom-file-label:hover { background-color: #e2e8f0; }
+        .container-wrapper {
+            max-width: 720px;
+            margin: 50px auto;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        form {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dcdcdc;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        input[readonly] {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+            border-color: #e0e0e0;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .button-group {
+            text-align: right;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1em;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-default {
+            background-color: #e0e0e0;
+            color: #555;
+        }
+        .btn-default:hover {
+            background-color: #ccc;
+        }
+
+        .btn-primary {
+            background-color: #4a90e2;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+
+        .btn-danger-sm {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            font-size: 0.75em;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-danger-sm:hover {
+            background-color: #c0392b;
+        }
+
+        .attachment-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .attachment-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .attachment-item {
+            position: relative;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .attachment-item img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 3px;
+        }
+
+        .no-attachment {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            border: 1px dashed #a0a0a0;
+            padding: 15px;
+            text-align: center;
+            background: #fdfdfd;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s ease-in-out;
+            color: #555;
+            font-weight: 500;
+        }
+        .file-input-wrapper:hover {
+            background: #eef5fc;
+            border-color: #4a90e2;
+            color: #4a90e2;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .preview-container {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .preview-container img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-
+<body>
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
-<main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-40 mb-12">
-    <div class="max-w-3xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center"
-            th:text="${isNew ? '게시글 작성' : '게시글 수정'}"></h1>
+<div class="container-wrapper">
+    <h1 th:text="${isNew ? '게시글 작성' : '게시글 수정'}"></h1>
 
-        <form th:action="${isNew ? '/boards' : '/boards/' + board.bNo + '/edit'}"
-              th:object="${board}" method="post" enctype="multipart/form-data"
-              class="bg-white shadow-xl rounded-lg p-6 sm:p-8 space-y-6">
+    <form th:action="${isNew ? '/boards' : '/boards/' + board.bNo + '/edit'}"
+          th:object="${board}" method="post" enctype="multipart/form-data">
 
-            <input type="hidden" th:if="${!isNew}" th:field="*{bNo}" />
+        <input type="hidden" th:if="${!isNew}" th:field="*{bNo}" />
 
-            <div class="form-group" th:if="${!isNew}">
-                <label class="block text-sm font-medium text-gray-700">작성자</label>
-                <input type="text" th:value="${board.authorName}" readonly class="w-full p-3 border-gray-200 bg-gray-100 rounded-md"/>
-            </div>
-            <div>
-                <label for="bTitle" class="block text-sm font-medium text-gray-700 mb-1">제목</label>
-                <input type="text" id="bTitle" th:field="*{bTitle}" required class="w-full p-3 border border-gray-300 rounded-md"/>
-            </div>
-            <div>
-                <label for="bContent" class="block text-sm font-medium text-gray-700 mb-1">내용</label>
-                <textarea id="bContent" th:field="*{bContent}" rows="12" required class="w-full p-3 border border-gray-300 rounded-md"></textarea>
-            </div>
+        <div class="form-group" th:if="${!isNew}">
+            <label>작성자</label>
+            <input type="text" th:value="${board.authorName}" readonly/>
+        </div>
 
-            <div th:if="${!isNew and board.attachments != null and !board.attachments.isEmpty()}">
-                <label class="block text-sm font-medium text-gray-700 mb-2">현재 첨부된 사진</label>
-                <div class="flex flex-wrap gap-4">
-                    <div th:each="att : ${board.attachments}" class="attachment-item" th:id="'attachment-' + ${att.id}">
-                        <img th:src="@{'/uploads/' + ${att.filePath}}" alt="첨부파일 이미지" />
-                        <button type="button" class="absolute top-1 right-1 btn-danger-sm"
-                                th:attr="data-id=${att.id}, data-board-type='board'"
-                                onclick="deleteAttachment(this)">삭제</button>
-                    </div>
+        <div class="form-group">
+            <label for="bTitle">제목</label>
+            <input type="text" id="bTitle" th:field="*{bTitle}" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="bContent">내용</label>
+            <textarea id="bContent" th:field="*{bContent}" required></textarea>
+        </div>
+
+        <div class="form-group" th:if="${!isNew}">
+            <label class="attachment-label">현재 첨부된 사진</label>
+            <div th:if="${board.attachments != null and !board.attachments.isEmpty()}" class="attachment-list">
+                <div th:each="att : ${board.attachments}" class="attachment-item" th:id="'attachment-' + ${att.id}">
+                    <img th:src="@{'/uploads/' + ${att.filePath}}" alt="첨부파일 이미지" />
+                    <button type="button"
+                            class="btn-danger-sm"
+                            th:attr="data-id=${att.id}, data-board-id=${board.bNo}, data-board-type='board'"
+                            onclick="deleteAttachment(this)">삭제</button>
                 </div>
             </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                       th:text="${isNew ? '사진 첨부' : '사진 추가 첨부'}"></label>
-                <div class="custom-file-input-wrapper w-full">
-                    <input type="file" id="files" name="files" multiple accept="image/*"
-                           class="custom-file-input"
-                           onchange="previewImages(event)" />
-                    <label for="files" class="custom-file-label w-full">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg>
-                        파일 선택...
-                    </label>
-                </div>
-                <div id="previewContainer" class="preview-container"></div>
+            <div th:unless="${board.attachments != null and !board.attachments.isEmpty()}">
+                <p class="no-attachment">현재 첨부된 사진이 없습니다.</p>
             </div>
+        </div>
 
-            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
-                <a th:href="@{/boards}" class="btn btn-secondary">취소</a>
-                <button type="submit" class="btn btn-primary" th:text="${isNew ? '등록하기' : '수정 완료'}"></button>
+        <div class="form-group">
+            <label th:text="${isNew ? '사진 첨부' : '사진 추가 첨부'}"></label>
+            <div class="file-input-wrapper">
+                파일 선택
+                <input type="file" id="files" name="files" multiple accept="image/*"
+                       onchange="previewImages(event)" />
             </div>
-        </form>
-    </div>
-</main>
+            <div id="previewContainer" class="preview-container"></div>
+        </div>
+
+        <div class="button-group">
+            <a th:href="@{/boards}" class="btn btn-default">취소</a>
+            <button type="submit" class="btn btn-primary" th:text="${isNew ? '등록하기' : '수정 완료'}"></button>
+        </div>
+    </form>
+</div>
 
 <script th:inline="javascript">
     function deleteAttachment(btn) {
         if (!confirm("이 파일을 정말 삭제하시겠습니까?")) return;
-
         const attachmentId = btn.getAttribute('data-id');
+        const boardId = btn.getAttribute('data-board-id');
         const boardType = btn.getAttribute('data-board-type');
 
-        // CSRF 토큰을 meta 태그에서 읽어와 헤더에 추가
         const csrfToken = document.querySelector("meta[name='_csrf']")?.content;
         const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content;
-        const headers = { }; // Content-Type은 multipart/form-data이므로 fetch가 자동으로 설정하도록 비워둡니다.
+        const headers = { };
         if (csrfToken && csrfHeader) {
             headers[csrfHeader] = csrfToken;
         }
 
-        // boardType을 URL에 포함시키는 새로운 API 엔드포인트로 변경
         fetch(`/attachments/${boardType}/${attachmentId}/delete`, {
             method: 'POST',
             headers: headers
-            // body는 필요 없음
         })
             .then(response => {
                 if (response.ok) {
@@ -129,9 +318,9 @@
 
     function previewImages(event) {
         const previewContainer = document.getElementById('previewContainer');
-        previewContainer.innerHTML = ''; // 기존 미리보기 초기화
+        previewContainer.innerHTML = '';
         Array.from(event.target.files).forEach(file => {
-            if (!file.type.startsWith('image/')) return; // 이미지 파일만 미리보기
+            if (!file.type.startsWith('image/')) return;
             const reader = new FileReader();
             reader.onload = e => {
                 const div = document.createElement('div');
@@ -139,11 +328,22 @@
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 div.appendChild(img);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'btn-danger-sm delete-new-attachment';
+                deleteButton.textContent = '삭제';
+                deleteButton.onclick = (e) => {
+                    e.target.closest('.attachment-item').remove();
+                };
+                div.appendChild(deleteButton);
+
                 previewContainer.appendChild(div);
             };
             reader.readAsDataURL(file);
         });
     }
 </script>
+
 </body>
 </html>

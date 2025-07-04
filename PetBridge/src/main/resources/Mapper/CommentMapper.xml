@@ -77,15 +77,6 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="getAllComments" resultType="com.example.petbridge.entity.Comment">
-        SELECT * FROM comment
-    </select>
-
-    <delete id="deleteBycmNo" parameterType="long">
-        DELETE FROM comment WHERE cm_no = #{cmNo}
-    </delete>
-
-
 
     <!-- CommentMapper.xml -->
     <select id="getMyComments" resultType="com.example.petbridge.entity.Comment">
@@ -101,6 +92,17 @@
         FROM comment
         WHERE author_uid = #{userId}
     </select>
+
+
+    <select id="getAllComments" resultType="com.example.petbridge.entity.Comment">
+        SELECT * FROM comment
+    </select>
+
+    <delete id="deleteBycmNo" parameterType="long">
+        DELETE FROM comment WHERE cm_no = #{cmNo}
+    </delete>
+
+
 
 
 

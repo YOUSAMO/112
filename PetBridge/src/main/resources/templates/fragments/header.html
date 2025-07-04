@@ -15,7 +15,7 @@
             </div>
         </div>
         <a th:href="${session.loginMember == null} ? @{/login} : @{/mypage}">마이페이지</a>
-        <a th:href="@{/faqs}">고객센터</a>
+        <a th:href="@{/faqs}">FAQ</a>
         <a th:href="@{/animals}">동물목록</a>
         <a th:href="${session.loginMember == null} ? @{/login} : @{/volunteer/apply}">봉사신청</a>
 

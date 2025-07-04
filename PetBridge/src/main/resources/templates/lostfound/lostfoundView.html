@@ -6,106 +6,416 @@
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding: 0; }
-        .container { max-width: 800px; margin: 80px auto 40px auto; background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
-        h1 { font-size: 2.2em; font-weight: 700; margin-top: 0; margin-bottom: 10px; color: #343a40; }
-        h3 { font-size: 1.4em; margin-top: 30px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #e9ecef; color: #495057; }
-        hr { border: none; border-top: 1px solid #e9ecef; margin: 30px 0; }
-        p { font-size: 1em; line-height: 1.7; color: #495057; }
-        p b { color: #343a40; font-weight: 500; }
-        .meta-info { display: flex; flex-wrap: wrap; gap: 20px; font-size: 0.9em; color: #868e96; margin-bottom: 20px; }
-        .meta-info b { color: #495057; font-weight: 500; }
-        .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px 20px; }
-        .content-box, .contact-info { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; }
-        .content-box pre { font-family: inherit; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 1em; line-height: 1.7; }
-        .attachment-section { margin-top: 30px; }
-        .attachment-gallery { display: flex; flex-wrap: wrap; gap: 15px; }
-        .image-container {
-            position: relative;
-            width: 250px;
-            height: 250px;
+        body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            margin: 120px;
+            padding-top: 80px;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 768px) {
+            .container {
+                padding: 2.5rem;
+            }
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2.25rem;
+                line-height: 2.5rem;
+            }
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #111827;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .comments-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+
+        hr {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        p {
+            font-size: 1em;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+
+        .meta-info {
             display: flex;
-            justify-content: center;
+            flex-wrap: wrap;
+            column-gap: 1.5rem;
+            row-gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: 0.375rem;
             align-items: center;
-            overflow: hidden;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .meta-info b {
+            color: #111827;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .details-grid p b { color: #495057; }
+
+
+        .content-box {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            max-width: 65ch;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+            font-size: 1em;
+            margin: 0;
+            color: #374151;
+        }
+
+        .contact-info {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            margin-top: 1rem;
+            color: #374151;
+        }
+        .contact-info p b { color: #495057; }
+
+        .attachment-section {
+            margin-top: 2rem;
+        }
+        .attachment-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        /* .image-container 제거 */
+
+        .attachment-image {
+            width: 180px;
+            height: 135px;
+            object-fit: cover;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            /* transition: transform 0.2s; 제거 */
+        }
+        /* .attachment-image:hover { transform: scale(1.05); } 제거 */
+
+        /* .image-info 제거 */
+
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.2s, transform 0.1s;
+            color: white;
+        }
+
+        .btn-primary { background-color: #0ea5e9; }
+        .btn-danger { background-color: #ef4444; }
+        .btn-secondary { background-color: #64748b; }
+
+        .btn-like {
+            background-color: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+        }
+        .btn-like.liked {
+            background-color: #ec4899;
+        }
+        .btn:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+
+        .comments-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .comments-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .comments-section h3::before {
+            margin-right: 0.75rem;
+            color: #2563eb;
+        }
+
+
+        .comment-input-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        .comment-input-form textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            resize: vertical;
+            min-height: 4rem;
+            line-height: 1.5;
+        }
+        .comment-input-form textarea:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            --tw-ring-color: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px var(--tw-ring-color);
+        }
+
+        .comment-input-form button {
+            align-self: flex-end;
+            padding: 0.5rem 1.5rem;
+            background-color: #2563eb;
+            color: #ffffff;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .comment-input-form button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .comments-section > p {
+            color: #4b5563;
+            font-size: 0.9em;
+            text-align: center;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            margin-top: 0;
+        }
+        .comments-section > p a {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .comment-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comment-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            background-color: #ffffff;
+            margin-bottom: 0.75rem;
+        }
+        .comment-item .comment-meta {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .comment-item .comment-meta .comment-author {
+            font-weight: 600;
+            color: #111827;
+        }
+        .comment-item .comment-meta span:last-child {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .comment-item .comment-content {
+            color: #374151;
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+        .comment-item .comment-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .comment-item .comment-actions button {
+            color: #2563eb;
+            background: none;
+            border: none;
+            padding: 0;
             cursor: pointer;
         }
-        .attachment-image {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            display: block;
+        .comment-item .comment-actions button:hover {
+            text-decoration: underline;
         }
-        .image-info {
-            position: absolute;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            color: white;
+
+        .replies-section {
+            margin-top: 0.75rem;
+            padding-left: 1rem;
+            border-left: 2px solid #e5e7eb;
+        }
+        .replies-section > .reply-input-form {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            background-color: #f0f4f8;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-top: 0.5rem;
+        }
+        .replies-section > .reply-input-form textarea {
             width: 100%;
-            text-align: center;
-            padding: 5px 0;
-            font-size: 0.8em;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            resize: vertical;
+            min-height: 3rem;
         }
-        .image-container:hover .image-info {
-            opacity: 1;
+        .replies-section > .reply-input-form button {
+            align-self: flex-end;
+            padding: 0.375rem 1rem;
+            background-color: #3b82f6;
+            color: #ffffff;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            margin-left: 0.5rem;
+        }
+        .replies-section > .reply-input-form button.cancel-reply-btn {
+            background-color: #9ca3af;
+        }
+        .replies-section > .reply-input-form button:hover {
+            background-color: #2563eb;
+        }
+        .replies-section > .reply-input-form button.cancel-reply-btn:hover {
+            background-color: #6b7280;
         }
 
-        .action-buttons { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
-        .btn { display: inline-block; padding: 10px 20px; font-size: 1em; font-weight: 500; text-decoration: none; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; text-align: center; }
-        .btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-like { background-color: white; color: #333; border: 1px solid #ccc; margin-right: auto; }
-        .btn-like:hover { background-color: #f0f0f0; }
-        .btn-like.liked { background-color: #ef4444; color: white; border-color: #ef4444; }
-        .like-text { margin-left: 8px; }
 
-        .comments-section { margin-top: 40px; }
-        .comment-input-form { display: flex; gap: 10px; margin-bottom: 20px; }
-        .comment-input-form textarea { flex-grow: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 60px; font-family: 'Noto Sans KR', sans-serif; }
-        .comment-input-form button { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
-        .comment-input-form button:hover { background-color: #218838; }
+        .reply-list {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
 
-        .comment-list { margin-top: 20px; }
-        .comment-item { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e9ecef; }
-        .comment-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9em; color: #6c757d; }
-        .comment-author { font-weight: 700; color: #343a40; }
-        .comment-content { line-height: 1.6; color: #495057; word-wrap: break-word; }
-        .comment-actions { display: flex; gap: 5px; margin-top: 10px; }
-        .comment-actions button { background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.9em; padding: 0 5px; }
-        .comment-actions button:hover { text-decoration: underline; }
-        .comment-edit-form { display: flex; gap: 5px; margin-top: 10px; }
-        .comment-edit-form textarea { flex-grow: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 50px; font-family: 'Noto Sans KR', sans-serif; }
-        .comment-edit-form button { padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
-        .comment-edit-form button:hover { background-color: #0056b3; }
-        .reply-toggle-btn { background: none; border: none; color: #6c757d; cursor: pointer; font-size: 0.85em; padding: 5px 0; margin-left: auto; display: block; }
-        .reply-toggle-btn:hover { text-decoration: underline; }
-
-        .replies-section { margin-left: 30px; border-left: 2px solid #e9ecef; padding-left: 15px; margin-top: 10px; }
-        .reply-input-form { display: flex; gap: 5px; margin-top: 15px; }
-        .reply-input-form textarea { flex-grow: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 40px; font-family: 'Noto Sans KR', sans-serif; }
-        .reply-input-form button { padding: 8px 15px; background-color: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
-        .reply-input-form button:hover { background-color: #138496; }
-        .reply-item { background-color: #f2f4f6; padding: 12px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #dee2e6; }
-        .reply-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.8em; color: #868e96; }
-        .reply-author { font-weight: 700; color: #343a40; }
-        .reply-content { line-height: 1.5; color: #495057; word-wrap: break-word; }
-        .reply-actions { display: flex; gap: 5px; margin-top: 8px; }
-        .reply-actions button { background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8em; padding: 0 5px; }
-        .reply-actions button:hover { text-decoration: underline; }
-        .reply-edit-form { display: flex; gap: 5px; margin-top: 8px; }
-        .reply-edit-form textarea { flex-grow: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 6px; resize: vertical; min-height: 40px; font-family: 'Noto Sans KR', sans-serif; }
-        .reply-edit-form button { padding: 6px 10px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
-        .reply-edit-form button:hover { background-color: #0056b3; }
+        .reply-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            background-color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+        .reply-item .reply-meta {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+        }
+        .reply-item .reply-meta .reply-author {
+            font-weight: 600;
+            color: #111827;
+        }
+        .reply-item .reply-meta span:last-child {
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        .reply-item .reply-content {
+            color: #374151;
+            margin-top: 0.25rem;
+            margin-bottom: 0;
+        }
+        .reply-item .reply-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+        }
+        .reply-item .reply-actions button {
+            color: #2563eb;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        .reply-item .reply-actions button:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -113,15 +423,27 @@
 <div class="container">
     <h1 th:text="${animal.title}"></h1>
     <div class="meta-info">
-        <span>게시판: <b th:text="${animal.boardType}"></b></span>
+        <span>게시판 분류: <b th:text="${animal.boardType}"></b></span>
         <span>작성자: <b th:text="${animal.authorName}"></b></span>
         <span>조회수: <b th:text="${animal.viewCount}"></b></span>
         <span>좋아요: <b id="likeCount" th:text="${animal.likeCount}"></b></span>
     </div>
     <hr>
     <div class="details-grid">
-        <p><b>동물 종류:</b> <span th:text="${animal.animalType}"></span></p>
-        <p><b>성별:</b> <span th:text="${animal.gender}"></span></p>
+        <p><b>동물 종류:</b>
+            <span th:switch="${animal.animalType}">
+                <span th:case="'dog'">강아지</span>
+                <span th:case="'cat'">고양이</span>
+                <span th:case="'other'">기타</span>
+                <span th:case="*" th:text="${animal.animalType}"></span>
+            </span>
+        </p>
+        <p><b>성별:</b> <span th:switch="${animal.gender}">
+            <span th:case="'male'">수컷</span>
+            <span th:case="'female'">암컷</span>
+            <span th:case="'unknown'">미상</span>
+        </span>
+        </p>
         <p><b>나이:</b> <span th:text="${animal.age}"></span></p>
         <p><b>위치:</b> <span th:text="${animal.location}"></span></p>
         <p><b>발견/분실 날짜:</b> <span th:text="${animal.eventDate != null ? #dates.format(animal.eventDate, 'yyyy-MM-dd') : '날짜 정보 없음'}"></span></p>
@@ -138,35 +460,32 @@
         <h3>첨부된 사진</h3>
         <div class="attachment-gallery">
             <th:block th:each="attachment : ${animal.attachments}">
-                <div class="image-container">
+                <a th:href="@{'/uploads/' + ${attachment.filePath}}" target="_blank">
                     <img th:src="${attachment.filePath}"
                          th:alt="${attachment.fileName}"
                          class="attachment-image"
                          th:data-original-filename="${attachment.fileName}"
-                         th:data-board-id="${attachment.boardId}"
-                         onerror="this.onerror=null; this.src='/images/no-image.png'; console.log('Image failed to load:', this.src);" />
-                    <div class="image-info" th:text="${attachment.fileName}"></div>
-                </div>
+                         th:data-board-id="${attachment.boardId}" />
+                </a>
             </th:block>
         </div>
     </div>
     <hr>
     <div class="action-buttons">
-        <th:block th:if="${session.loggedInUserId != null}">
-            <button id="likeBtn" type="button" class="btn btn-like" th:classappend="${animal.isLikedByCurrentUser ? 'liked' : ''}">
-                <span>👍</span><span class="like-text" th:text="${animal.isLikedByCurrentUser ? '좋아요 취소' : '좋아요'}"></span>
-            </button>
-        </th:block>
-        <th:block th:if="${session.loggedInUserId == null}">
-            <button type="button" class="btn btn-like" disabled title="로그인 후 이용 가능합니다.">👍 좋아요</button>
-        </th:block>
-
-        <div th:if="${currentUserId != null and #strings.equals(currentUserId, animal.userId)}" style="margin-left: auto;">
+        <th:block th:if="${currentUserId != null and #strings.equals(currentUserId, animal.userId)}" style="margin-left: auto;">
             <a th:href="@{/lostfound/modify/{id}(id=${animal.id})}" class="btn btn-primary">수정</a>
             <form th:action="@{/lostfound/remove/{id}(id=${animal.id})}" method="post" style="display:inline;" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
                 <button type="submit" class="btn btn-danger">삭제</button>
             </form>
-        </div>
+        </th:block>
+        <th:block th:if="${session.loggedInUserId != null}">
+            <button id="likeBtn" type="button" class="btn btn-like" th:classappend="${animal.isLikedByCurrentUser ? 'liked' : ''}">
+                <span class="like-text" th:text="${animal.isLikedByCurrentUser ? '좋아요 취소' : '좋아요'}"></span>
+            </button>
+        </th:block>
+        <th:block th:if="${session.loggedInUserId == null}">
+            <button type="button" class="btn btn-like" disabled title="로그인 후 이용 가능합니다.">좋아요</button>
+        </th:block>
         <a th:href="@{/lostfound/list}" class="btn btn-secondary">목록</a>
     </div>
 
@@ -174,9 +493,9 @@
         <h3>댓글</h3>
         <div class="comment-input-form">
             <textarea id="commentContent" placeholder="댓글을 입력하세요." th:disabled="${session.loggedInUserId == null}"></textarea>
-            <button id="addCommentBtn" type="button" th:disabled="${session.loggedInUserId == null}">등록</button>
+            <button id="addCommentBtn" type="button" th:disabled="${session.loggedInUserId == null}">댓글 등록</button>
         </div>
-        <p th:if="${session.loggedInUserId == null}" style="color: #6c757d; font-size: 0.9em;">댓글을 작성하려면 로그인해야 합니다.</p>
+        <p th:if="${session.loggedInUserId == null}" style="color: #6c757d; font-size: 0.9em;">댓글을 작성하려면 <a th:href="@{/login}" style="color: #007bff; text-decoration: underline;">로그인</a>해야 합니다.</p>
         <div id="commentList" class="comment-list">
         </div>
     </div>
@@ -207,7 +526,10 @@
                             throw new Error('Unauthorized');
                         }
                         if (!response.ok) {
-                            throw new Error('서버 응답 오류');
+                            return response.clone().json().then(errorData => {
+                                console.error("좋아요 요청 서버 오류 데이터:", errorData);
+                                throw new Error(errorData.message || '서버 응답 오류');
+                            });
                         }
                         return response.json();
                     })
@@ -238,28 +560,40 @@
         }
 
         const postId = /*[[${animal.id}]]*/ null;
-        const boardType = /*[[${animal.boardType}]]*/ null;
+        const boardTypeForComments = /*[[${commentApiBoardType}]]*/ 'lostfound';
+
         const currentUserId = /*[[${session.loggedInUserId}]]*/ null;
 
         const commentListDiv = document.getElementById('commentList');
         const commentContentInput = document.getElementById('commentContent');
         const addCommentBtn = document.getElementById('addCommentBtn');
 
+        const isAuthenticated = () => {
+            return currentUserId !== null && String(currentUserId).trim() !== '' && String(currentUserId).trim().toLowerCase() !== 'null';
+        };
+
+        const handleApiResponse = async (response) => {
+            if (response.status === 401) {
+                alert('로그인이 필요합니다.');
+                window.location.href = /*[[@{/login}]]*/ '/login';
+                throw new Error('Unauthorized');
+            }
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: '요청 처리 중 서버에서 오류가 발생했습니다.' }));
+                throw new Error(errorData.message || '서버 오류');
+            }
+            return response.json();
+        };
+
         function loadComments() {
-            if (!postId) {
+            if (!postId || !boardTypeForComments) {
+                console.warn("게시글 ID 또는 게시판 타입이 없어 댓글을 불러올 수 없습니다.");
                 return;
             }
 
-            const url = `/api/comments?postId=${postId}&boardType=${boardType}`;
+            const url = `/api/comments?postId=${postId}&boardType=${boardTypeForComments}`;
             fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errorData => {
-                            throw new Error(errorData.message || '댓글 목록을 불러오는 중 서버 오류 발생');
-                        });
-                    }
-                    return response.json();
-                })
+                .then(response => handleApiResponse(response))
                 .then(comments => {
                     commentListDiv.innerHTML = '';
                     if (comments.length === 0) {
@@ -272,207 +606,132 @@
                         commentItem.className = 'comment-item';
                         commentItem.dataset.cmNo = comment.cmNo;
 
-                        const authorDisplayName = comment.authorNameDisplay || comment.cmWriter;
-
-                        const isAuthor = currentUserId && currentUserId === comment.authorUid;
+                        const authorDisplayName = comment.authorNameDisplay || comment.cmWriter || '익명';
+                        const isAuthor = isAuthenticated() && currentUserId === comment.authorUid;
                         const formattedDate = new Date(comment.createdAt).toLocaleString('ko-KR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit'
                         });
                         const hasUpdatedAt = comment.updatedAt && new Date(comment.createdAt).getTime() !== new Date(comment.updatedAt).getTime();
                         const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
 
                         commentItem.innerHTML = `
-              <div class="comment-meta">
-                <span class="comment-author">${authorDisplayName}</span>
-                <span>${formattedDate}${updatedText}</span>
-              </div>
-              <div class="comment-content">${comment.cmContent}</div>
-              <div class="comment-actions">
-                ${isAuthor ? `
-                  <button type="button" class="delete-comment-btn">삭제</button>
-                ` : ''}
-                ${currentUserId ? `<button type="button" class="show-reply-input-btn">답글 달기</button>` : ''}
-                <button type="button" class="reply-toggle-btn">답글 보기 (0)</button>
-              </div>
-              <div class="replies-section" style="display: none;">
-                <div class="reply-input-form" data-cm-no="${comment.cmNo}">
-                  <textarea placeholder="답글을 입력하세요." class="reply-content-input"></textarea>
-                  <button type="button" class="add-reply-btn">등록</button>
-                </div>
-                <div class="reply-list"></div>
-              </div>
-            `;
+                            <div class="comment-meta">
+                                <span class="comment-author">${authorDisplayName}</span>
+                                <span>${formattedDate}${updatedText}</span>
+                            </div>
+                            <div class="comment-content">${comment.cmContent}</div>
+                            <div class="comment-actions">
+                                ${isAuthor ? `<button type="button" class="delete-comment-btn" data-cm-no="${comment.cmNo}">삭제</button>` : ''}
+                                ${isAuthenticated() ? `<button type="button" class="show-reply-input-btn" data-cm-no="${comment.cmNo}">답글 달기</button>` : ''}
+                            </div>
+                            <div class="replies-section">
+                                <div class="reply-input-form" data-cm-no="${comment.cmNo}" style="display: none;">
+                                    <textarea placeholder="답글을 입력하세요." class="reply-content-input"></textarea>
+                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                        <button type="button" class="add-reply-btn">등록</button>
+                                        <button type="button" class="cancel-reply-btn">취소</button>
+                                    </div>
+                                </div>
+                                <div class="reply-list"></div>
+                            </div>
+                        `;
                         commentListDiv.appendChild(commentItem);
 
-                        fetch(`/api/replies/count?cmNo=${comment.cmNo}`)
-                            .then(res => res.json())
-                            .then(data => {
-                                const replyCountBtn = commentItem.querySelector('.reply-toggle-btn');
-                                if (replyCountBtn) {
-                                    replyCountBtn.textContent = `답글 보기 (${data.count || 0})`;
-                                    commentItem.dataset.replyCount = data.count || 0;
-                                }
-                            })
-                            .catch(error => console.error('답글 수 로드 실패:', error));
+                        const replyListDiv = commentItem.querySelector('.reply-list');
+                        loadReplies(comment.cmNo, replyListDiv);
                     });
+                    attachCommentEventListeners();
                 })
                 .catch(error => {
-                    console.error('댓글을 불러오는 데 실패했습니다:', error);
-                    commentListDiv.innerHTML = `<p style="text-align: center; color: #dc3545;">댓글을 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
+                    if (error.message !== 'Unauthorized') {
+                        console.error('댓글을 불러오는 데 실패했습니다:', error);
+                        commentListDiv.innerHTML = `<p style="text-align: center; color: #dc3545;">댓글을 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
+                    }
                 });
         }
 
+        const attachCommentEventListeners = () => {
+            document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+                btn.onclick = (e) => deleteComment(e.target.dataset.cmNo);
+            });
+            document.querySelectorAll('.show-reply-input-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const replyInputForm = e.target.closest('.comment-item').querySelector('.reply-input-form');
+                    replyInputForm.style.display = replyInputForm.style.display === 'flex' ? 'none' : 'flex';
+                };
+            });
+            document.querySelectorAll('.add-reply-btn').forEach(btn => {
+                btn.onclick = (e) => addReply(e.target.closest('.reply-input-form').dataset.cmNo);
+            });
+            document.querySelectorAll('.cancel-reply-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const form = e.target.closest('.reply-input-form');
+                    form.style.display = 'none';
+                    form.querySelector('textarea').value = '';
+                };
+            });
+        };
+
         if (addCommentBtn) {
             addCommentBtn.addEventListener('click', () => {
-                if (!currentUserId) {
-                    alert('로그인이 필요합니다.');
-                    return;
-                }
                 const content = commentContentInput.value.trim();
                 if (!content) {
                     alert('댓글 내용을 입력하세요.');
                     return;
                 }
-
-                fetch('/api/comments', {
-                    method: 'POST',
-                    headers: getCsrfHeaders(),
-                    body: JSON.stringify({ postId: postId, cmContent: content, boardType: boardType })
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errorData => {
-                                throw new Error(errorData.message || '댓글 등록 중 서버 오류 발생');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            commentContentInput.value = '';
-                            loadComments();
-                            alert(data.message);
-                        } else {
-                            alert('댓글 등록 실패: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('댓글 등록 중 오류 발생:', error);
-                        alert('댓글 등록 실패: ' + error.message);
-                    });
+                addComment(content);
             });
         }
 
-        commentListDiv.addEventListener('click', function(event) {
-            const target = event.target;
-            const commentItem = target.closest('.comment-item');
-            if (!commentItem) return;
-            const cmNo = commentItem.dataset.cmNo;
-
-            if (target.classList.contains('delete-comment-btn')) {
-                if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
-                fetch(`/api/comments/${cmNo}`, {
-                    method: 'DELETE',
-                    headers: getCsrfHeaders()
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errorData => {
-                                throw new Error(errorData.message || '댓글 삭제 중 서버 오류 발생');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            loadComments();
-                            alert(data.message);
-                        } else {
-                            alert('댓글 삭제 실패: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('댓글 삭제 중 오류 발생:', error);
-                        alert('댓글 삭제 실패: ' + error.message);
-                    });
+        async function addComment(content) {
+            if (!isAuthenticated()) {
+                alert('로그인이 필요합니다.');
+                window.location.href = /*[[@{/login}]]*/ '/login';
+                return;
             }
-
-            if (target.classList.contains('reply-toggle-btn')) {
-                const repliesSection = commentItem.querySelector('.replies-section');
-                const replyListDiv = repliesSection.querySelector('.reply-list');
-                const replyToggleBtn = target;
-
-                if (repliesSection.style.display === 'none') {
-                    repliesSection.style.display = 'block';
-                    loadReplies(cmNo, replyListDiv);
-                    replyToggleBtn.textContent = '답글 숨기기';
-                } else {
-                    repliesSection.style.display = 'none';
-                    const currentReplyCount = commentItem.dataset.replyCount || 0;
-                    replyToggleBtn.textContent = `답글 보기 (${currentReplyCount})`;
-                }
-            }
-
-            if (target.classList.contains('show-reply-input-btn')) {
-                const repliesSection = commentItem.querySelector('.replies-section');
-                const replyInputForm = repliesSection.querySelector('.reply-input-form');
-                repliesSection.style.display = 'block';
-                replyInputForm.style.display = 'flex';
-                const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
-                if (replyToggleBtn) {
-                    replyToggleBtn.textContent = '답글 숨기기';
-                }
-            }
-
-            if (target.classList.contains('add-reply-btn')) {
-                const replyInputForm = target.closest('.reply-input-form');
-                const replyContentInput = replyInputForm.querySelector('.reply-content-input');
-                const content = replyContentInput.value.trim();
-                if (!content) {
-                    alert('답글 내용을 입력하세요.');
-                    return;
-                }
-
-                fetch('/api/replies', {
+            try {
+                const response = await fetch('/api/comments', {
                     method: 'POST',
                     headers: getCsrfHeaders(),
-                    body: JSON.stringify({ cmNo: cmNo, rpContent: content })
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errorData => {
-                                throw new Error(errorData.message || '답글 등록 중 서버 오류 발생');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            replyContentInput.value = '';
-                            loadReplies(cmNo, commentItem.querySelector('.reply-list'));
-                            const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
-                            let currentReplyCount = parseInt(commentItem.dataset.replyCount || '0');
-                            commentItem.dataset.replyCount = currentReplyCount + 1;
-                            replyToggleBtn.textContent = `답글 숨기기 (${commentItem.dataset.replyCount})`;
-                            alert(data.message);
-                        } else {
-                            alert('답글 등록 실패: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('답글 등록 중 오류 발생:', error);
-                        alert('답글 등록 실패: ' + error.message);
-                    });
+                    body: JSON.stringify({ postId: postId, cmContent: content, boardType: boardTypeForComments })
+                });
+                await handleApiResponse(response);
+                commentContentInput.value = '';
+                loadComments();
+            } catch (error) {
+                if (error.message !== 'Unauthorized') {
+                    console.error('댓글 등록 중 오류 발생:', error);
+                    alert('댓글 등록 실패: ' + error.message);
+                }
             }
-        });
+        }
+
+        async function deleteComment(cmNo) {
+            if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+            if (!isAuthenticated()) {
+                alert('로그인이 필요합니다.');
+                window.location.href = /*[[@{/login}]]*/ '/login';
+                return;
+            }
+            try {
+                const response = await fetch(`/api/comments/${cmNo}`, {
+                    method: 'DELETE',
+                    headers: getCsrfHeaders()
+                });
+                await handleApiResponse(response);
+                loadComments();
+            } catch (error) {
+                if (error.message !== 'Unauthorized') {
+                    console.error('댓글 삭제 중 오류 발생:', error);
+                    alert('댓글 삭제 실패: ' + error.message);
+                }
+            }
+        }
 
         function loadReplies(cmNo, replyListDiv) {
-            fetch(`/api/replies?cmNo=${cmNo}`)
-                .then(response => response.json())
+            fetch(`/api/replies?cmNo=${cmNo}&boardType=${boardTypeForComments}`)
+                .then(response => handleApiResponse(response))
                 .then(replies => {
                     replyListDiv.innerHTML = '';
                     if (replies.length === 0) {
@@ -485,82 +744,105 @@
                         replyItem.className = 'reply-item';
                         replyItem.dataset.rpNo = reply.rpNo;
 
-                        const isAuthor = currentUserId && currentUserId === reply.userId;
-                        const authorDisplayName = reply.userNameDisplay || reply.userId;
+                        const isAuthor = isAuthenticated() && currentUserId === reply.userId;
+                        const authorDisplayName = reply.userNameDisplay || reply.userId || '익명';
 
                         const formattedDate = new Date(reply.createdAt).toLocaleString('ko-KR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit'
                         });
                         const hasUpdatedAt = reply.updatedAt && new Date(reply.createdAt).getTime() !== new Date(reply.updatedAt).getTime();
                         const updatedText = hasUpdatedAt ? ' (수정됨)' : '';
 
                         replyItem.innerHTML = `
-              <div class="reply-meta">
-                <span class="reply-author">${authorDisplayName}</span>
-                <span>${formattedDate}${updatedText}</span>
-              </div>
-              <div class="reply-content">${reply.rpContent}</div>
-              <div class="reply-actions">
-                ${isAuthor ? `
-                  <button type="button" class="delete-reply-btn">삭제</button>
-                ` : ''}
-              </div>
-            `;
+                            <div class="reply-meta">
+                                <span class="reply-author">${authorDisplayName}</span>
+                                <span>${formattedDate}${updatedText}</span>
+                            </div>
+                            <div class="reply-content">${reply.rpContent}</div>
+                            <div class="reply-actions">
+                                ${isAuthor ? `<button type="button" class="delete-reply-btn" data-rp-no="${reply.rpNo}" data-cm-no="${cmNo}">삭제</button>` : ''}
+                            </div>
+                        `;
                         replyListDiv.appendChild(replyItem);
                     });
+                    attachReplyEventListeners();
                 })
-                .catch(error => console.error('답글을 불러오는 데 실패했습니다:', error));
+                .catch(error => {
+                    if (error.message !== 'Unauthorized') {
+                        console.error('답글을 불러오는 데 실패했습니다:', error);
+                        replyListDiv.innerHTML = `<p style="text-align: center; color: #dc3545;">답글을 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
+                    }
+                });
         }
 
-        commentListDiv.addEventListener('click', function(event) {
-            const target = event.target;
-            const replyItem = target.closest('.reply-item');
-            if (!replyItem) return;
+        const attachReplyEventListeners = () => {
+            document.querySelectorAll('.delete-reply-btn').forEach(btn => {
+                btn.onclick = (e) => deleteReply(e.target.dataset.rpNo, e.target.dataset.cmNo);
+            });
+        };
 
-            const rpNo = replyItem.dataset.rpNo;
-            const commentItem = target.closest('.comment-item');
-            const cmNo = commentItem ? commentItem.dataset.cmNo : null;
-
-            if (target.classList.contains('delete-reply-btn')) {
-                if (!confirm('정말로 이 답글을 삭제하시겠습니까?')) return;
-                fetch(`/api/replies/${rpNo}`, {
-                    method: 'DELETE',
-                    headers: getCsrfHeaders()
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errorData => {
-                                throw new Error(errorData.message || '답글 삭제 중 서버 오류 발생');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            replyItem.remove();
-                            alert(data.message);
-                            const replyToggleBtn = commentItem.querySelector('.reply-toggle-btn');
-                            let currentReplyCount = parseInt(commentItem.dataset.replyCount || '0');
-                            commentItem.dataset.replyCount = Math.max(0, currentReplyCount - 1);
-                            replyToggleBtn.textContent = `답글 보기 (${commentItem.dataset.replyCount})`;
-                            const remainingReplies = commentItem.querySelector('.reply-list').children.length;
-                            if (remainingReplies === 0) {
-                                commentItem.querySelector('.reply-list').innerHTML = '<p style="text-align: center; color: #6c757d; font-size: 0.8em;">아직 답글이 없습니다.</p>';
-                            }
-                        } else {
-                            alert('답글 삭제 실패: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('답글 삭제 중 오류 발생:', error);
-                        alert('답글 삭제 실패: ' + error.message);
-                    });
+        async function addReply(cmNo) {
+            const replyInputForm = document.querySelector(`.reply-input-form[data-cm-no="${cmNo}"]`);
+            const textarea = replyInputForm.querySelector('.reply-content-input');
+            const content = textarea.value.trim();
+            if (!content) {
+                alert('답글 내용을 입력하세요.');
+                return;
             }
-        });
+            if (!isAuthenticated()) {
+                alert('로그인이 필요합니다.');
+                window.location.href = /*[[@{/login}]]*/ '/login';
+                return;
+            }
+            try {
+                const response = await fetch('/api/replies', {
+                    method: 'POST',
+                    headers: getCsrfHeaders(),
+                    body: JSON.stringify({ cmNo: cmNo, rpContent: content, boardType: boardTypeForComments })
+                });
+                await handleApiResponse(response);
+                textarea.value = '';
+                replyInputForm.style.display = 'none';
+                loadReplies(cmNo, replyInputForm.closest('.replies-section').querySelector('.reply-list'));
+            } catch (error) {
+                if (error.message !== 'Unauthorized') {
+                    console.error('답글 등록 중 오류 발생:', error);
+                    alert('답글 등록 실패: ' + error.message);
+                }
+            }
+        }
+
+        async function deleteReply(rpNo, cmNo) {
+            if (!confirm('정말로 이 답글을 삭제하시겠습니까?')) return;
+            if (!isAuthenticated()) {
+                alert('로그인이 필요합니다.');
+                window.location.href = /*[[@{/login}]]*/ '/login';
+                return;
+            }
+            try {
+                const response = await fetch(`/api/replies/${rpNo}`, {
+                    method: 'DELETE',
+                    headers: getCsrfHeaders(),
+                    body: JSON.stringify({ boardType: boardTypeForComments })
+                });
+                await handleApiResponse(response);
+                const replyItem = document.querySelector(`.reply-item[data-rp-no="${rpNo}"]`);
+                if (replyItem) {
+                    replyItem.remove();
+                }
+                const commentItem = document.querySelector(`.comment-item[data-cm-no="${cmNo}"]`);
+                const replyListDiv = commentItem ? commentItem.querySelector('.reply-list') : null;
+                if (replyListDiv && replyListDiv.children.length === 0) {
+                    replyListDiv.innerHTML = '<p style="text-align: center; color: #6c757d; font-size: 0.8em;">아직 답글이 없습니다.</p>';
+                }
+            } catch (error) {
+                if (error.message !== 'Unauthorized') {
+                    console.error('답글 삭제 중 오류 발생:', error);
+                    alert('답글 삭제 실패: ' + error.message);
+                }
+            }
+        }
 
         loadComments();
     });

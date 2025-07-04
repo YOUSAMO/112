@@ -26,6 +26,8 @@ public class AdoptionReviewController {
     private final LikeService likeService;
 
     private static final String LOGGED_IN_USER_ID_SESSION_KEY = "loggedInUserId";
+    // ★★★ 추가: 로그인한 사용자 이름을 세션에서 가져올 키 정의 ★★★
+    private static final String LOGGED_IN_USER_NAME_SESSION_KEY = "loggedInUserName";
     private static final String LOGIN_PAGE_URL = "/login";
     public static final String ADOPTION_REVIEW_BOARD_TYPE = "adoptionReview";
 
@@ -87,16 +89,26 @@ public class AdoptionReviewController {
                                @RequestParam(value = "files", required = false) List<MultipartFile> files,
                                HttpSession session, RedirectAttributes redirectAttributes) {
         String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
-        if (loggedInUserUid == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+        // ★★★ 로그인한 사용자 이름을 세션에서 가져옵니다. ★★★
+        String loggedInUserName = (String) session.getAttribute(LOGGED_IN_USER_NAME_SESSION_KEY);
+
+        // ★★★ 사용자 ID 또는 이름이 없으면 로그인 페이지로 리다이렉트 ★★★
+        if (loggedInUserUid == null || loggedInUserName == null || loggedInUserName.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인 정보가 없거나 불완전합니다. 다시 로그인해주세요.");
             return "redirect:" + LOGIN_PAGE_URL;
         }
+
         try {
-            reviewService.createReview(review, loggedInUserUid, files);
+            // ★★★ service 메서드에 loggedInUserName을 추가하여 전달합니다. ★★★
+            reviewService.createReview(review, loggedInUserUid, loggedInUserName, files);
             redirectAttributes.addFlashAttribute("successMessage", "리뷰가 성공적으로 등록되었습니다.");
         } catch (IOException e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", "리뷰 등록 중 파일 오류 발생: " + e.getMessage());
+            return "redirect:/reviews/new";
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "게시글 등록 중 오류가 발생했습니다: " + e.getMessage());
             return "redirect:/reviews/new";
         }
         return "redirect:/reviews";
@@ -120,7 +132,7 @@ public class AdoptionReviewController {
     @GetMapping("/{arNo}/edit")
     public String showEditReviewForm(@PathVariable Long arNo, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         String loggedInUserUid = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
-        AdoptionReview review = reviewService.getReviewById(arNo); // ★★★ 이 메서드가 attachments를 로드하도록 수정됨 ★★★
+        AdoptionReview review = reviewService.getReviewById(arNo);
         if (loggedInUserUid == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
             return "redirect:" + LOGIN_PAGE_URL;
@@ -135,7 +147,6 @@ public class AdoptionReviewController {
         }
         model.addAttribute("review", review);
         model.addAttribute("isNew", false);
-        // HTML 템플릿에서 'adoptionReview' 타입이 필요하므로 추가 (만약 HTML에서 하드코딩되어 있다면 불필요)
         model.addAttribute("defaultBoardType", ADOPTION_REVIEW_BOARD_TYPE);
         return "review/reviewForm";
     }

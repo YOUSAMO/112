@@ -176,6 +176,7 @@
         </foreach>
     </select>
 
+
     <select id="getAllLostFoundAnimals" resultType="com.example.petbridge.entity.LostFoundAnimal">
         SELECT * FROM lost_found_animals
     </select>
@@ -183,6 +184,5 @@
     <delete id="deleteByid" parameterType="long">
         DELETE FROM lost_found_animal WHERE id = #{id}
     </delete>
-
 
 </mapper>

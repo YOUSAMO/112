@@ -171,7 +171,7 @@ public class AdminController {
     }
 
 
-    @PostMapping("/delete/application/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteAdoptionApplication(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             adoptionApplicationService.deleteApplication(id);

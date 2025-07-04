@@ -135,6 +135,7 @@ public class CommentService {
         return commentRepository.findByCommentUid(authorUid);
     }
 
+
     public List<Comment> getAllComment() {
         return commentRepository.getAllComments();
     }
@@ -143,8 +144,6 @@ public class CommentService {
         commentRepository.deleteBycmNo(cmNo);
     }
 
-
-
     public List<Comment> getMyComments(Map<String, Object> param) {
         return commentRepository.getMyComments(param);
     }
@@ -152,7 +151,6 @@ public class CommentService {
     public int getMyCommentsCount(String userId) {
         return commentRepository.getMyCommentsCount(userId);
     }
-
 
 
 }

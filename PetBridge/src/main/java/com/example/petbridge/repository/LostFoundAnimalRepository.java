@@ -34,13 +34,15 @@ public interface LostFoundAnimalRepository {
 
     //
 
-   // 전체 LostFoundAnimal 게시글의 개수를 조회합니다.
-   // @return 전체 게시글 개수*/
+    // 전체 LostFoundAnimal 게시글의 개수를 조회합니다.
+    // @return 전체 게시글 개수*/
     int countAll();
 
     List<LostFoundAnimal> getAllLostFoundAnimals();
 
     void deleteByid(Long id);
+
+
 
 
 }

@@ -23,7 +23,7 @@ public interface Adoption_applicationRepository {
  void deleteById(@Param("id") Long id);
  List<MyPageApplicationDTO> findAdoptionApplicationsWithAnimalAndUser(@Param("userId") String userId);
 
-
+ List<Adoption_application> findByUserId(@Param("uId") String uId);
 
 
 

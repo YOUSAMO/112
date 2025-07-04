@@ -5,6 +5,7 @@ import com.example.petbridge.DTO.MyPageApplicationDTO;
 import com.example.petbridge.DTO.SessionMemberDTO;
 import com.example.petbridge.entity.*;
 import com.example.petbridge.service.*;
+import com.example.petbridge.service.Adoption_applicationService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -208,6 +209,35 @@ public class MainController {
     }
 
 
+    @GetMapping("/mypage/comments")
+    public String myComments(
+            @RequestParam(defaultValue = "1") int page,
+            HttpSession session,
+            Model model
+    ) {
+        String userId = (String) session.getAttribute(LOGGED_IN_USER_ID_SESSION_KEY);
+        int pageSize = 10;
+        int offset = (page - 1) * pageSize;
+        Map<String, Object> param = new HashMap<>();
+        param.put("userId", userId);
+        param.put("offset", offset);
+        param.put("pageSize", pageSize);
+
+        List<Comment> myComments = commentService.getMyComments(param);
+        int totalCount = commentService.getMyCommentsCount(userId);
+        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
+
+        model.addAttribute("myComments", myComments);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("hasPrev", page > 1);
+        model.addAttribute("hasNext", page < totalPages);
+
+        return "mypage/MyPage";
+    }
+
+
+
 
 
     @PostMapping("/mypage/cancel/{id}")
@@ -215,6 +245,8 @@ public class MainController {
         volunteerService.deleteById(id);
         return "redirect:/mypage";
     }
+
+
 
 
 
@@ -327,6 +359,12 @@ public class MainController {
             return "member/memberupdate";
         }
     }
+
+
+
+
+
+
 
 
 

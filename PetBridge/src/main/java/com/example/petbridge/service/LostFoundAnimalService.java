@@ -30,10 +30,10 @@ public class LostFoundAnimalService {
 
     private final LostFoundAnimalRepository animalRepository;
     private final UserLikeRepository userLikeRepository;
+    private final LostFoundAnimalRepository lostFoundAnimalRepository;
 
     private static final String BOARD_TYPE = "lostfound";
     private static final String FOLDER_PREFIX = "LostFound_";
-    private final LostFoundAnimalRepository lostFoundAnimalRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -237,6 +237,7 @@ public class LostFoundAnimalService {
     }
 
 
+
     public List<LostFoundAnimal> getAllLostFoundAnimals() {
         return lostFoundAnimalRepository.getAllLostFoundAnimals();
     }
@@ -244,15 +245,5 @@ public class LostFoundAnimalService {
     public void deleteByid(Long id) {
         lostFoundAnimalRepository.deleteById(id);
     }
-
-
-
-
-
-
-
-
-
-
 
 }

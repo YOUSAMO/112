@@ -5,10 +5,38 @@
 
 <mapper namespace="com.example.petbridge.repository.Adoption_applicationRepository">
 
-    <insert id="insert" parameterType="com.example.petbridge.entity.Adoption_application">
+    <resultMap id="AdoptionApplicationMap" type="com.example.petbridge.entity.Adoption_application">
+        <id property="id" column="id"/>
+        <result property="uId" column="u_id"/>
+        <result property="motivation" column="motivation"/>
+        <result property="housingType" column="housing_type"/>
+        <result property="petAllowed" column="pet_allowed"/>
+        <result property="familyInfo" column="family_info"/>
+        <result property="allergyInfo" column="allergy_info"/>
+        <result property="currentPets" column="current_pets"/>
+        <result property="experience" column="experience"/>
+        <result property="job" column="job"/>
+        <result property="workType" column="work_type"/>
+        <result property="petCarePlan" column="pet_care_plan"/>
+        <result property="financialStatus" column="financial_status"/>
+        <result property="animalType" column="animal_type"/>
+        <result property="animalDetail" column="animal_detail"/>
+        <result property="careTime" column="care_time"/>
+        <result property="exercisePlan" column="exercise_plan"/>
+        <result property="travelPlan" column="travel_plan"/>
+        <result property="agreement" column="agreement"/> <result property="createdAt" column="created_at"/> <result property="pledge" column="pledge"/>     <result property="housing" column="housing"/>
+        <result property="animal_id" column="animal_id"/>
+        <result property="animalName" column="animal_name"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+
+    <insert id="insert" parameterType="com.example.petbridge.entity.Adoption_application" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO adoption_application (
             animal_id,
             animal_name,
+            animal_type,
+            animal_detail,
             u_id,
             housing,
             housing_type,
@@ -23,43 +51,41 @@
             work_type,
             pet_care_plan,
             financial_status,
-            animal_type,
-            animal_detail,
             care_time,
             exercise_plan,
             travel_plan,
-            agreement
-        ) VALUES (
-                     #{animal_id},
-                     #{animalName},
-                     #{uId},
-                     #{housing},
-                     #{housingType},
-                     #{petAllowed},
-                     #{familyInfo},
-                     #{allergyInfo},
-                     #{motivation},
-                     #{pledge},
-                     #{currentPets},
-                     #{experience},
-                     #{job},
-                     #{workType},
-                     #{petCarePlan},
-                     #{financialStatus},
-                     #{animalType},
-                     #{animalDetail},
-                     #{careTime},
-                     #{exercisePlan},
-                     #{travelPlan},
-                     #{agreement}
-                 )
+            agreement,
+            status,          created_at       ) VALUES (
+                                                           #{animal_id},
+                                                           #{animalName},
+                                                           #{animalType},
+                                                           #{animalDetail},
+                                                           #{uId},
+                                                           #{housing},
+                                                           #{housingType},
+                                                           #{petAllowed},
+                                                           #{familyInfo},
+                                                           #{allergyInfo},
+                                                           #{motivation},
+                                                           #{pledge},
+                                                           #{currentPets},
+                                                           #{experience},
+                                                           #{job},
+                                                           #{workType},
+                                                           #{petCarePlan},
+                                                           #{financialStatus},
+                                                           #{careTime},
+                                                           #{exercisePlan},
+                                                           #{travelPlan},
+                                                           #{agreement},
+                                                           #{status},         #{createdAt}       )
     </insert>
 
     <update id="update" parameterType="com.example.petbridge.entity.Adoption_application">
         UPDATE adoption_application
         SET
             animal_name = #{animalName},
-            housing = #{housing},
+            animal_type = #{animalType},     animal_detail = #{animalDetail}, housing = #{housing},
             housing_type = #{housingType},
             pet_allowed = #{petAllowed},
             family_info = #{familyInfo},
@@ -72,13 +98,11 @@
             work_type = #{workType},
             pet_care_plan = #{petCarePlan},
             financial_status = #{financialStatus},
-            animal_type = #{animalType},
-            animal_detail = #{animalDetail},
             care_time = #{careTime},
             exercise_plan = #{exercisePlan},
             travel_plan = #{travelPlan},
-            agreement = #{agreement}
-        WHERE id = #{id}
+            agreement = #{agreement},
+            status = #{status} WHERE id = #{id}
     </update>
 
     <delete id="delete" parameterType="com.example.petbridge.entity.Adoption_application">
@@ -92,36 +116,47 @@
           AND animal_id = #{animal_id}
     </select>
 
-    <select id="findByUserId" parameterType="string" resultType="com.example.petbridge.entity.Adoption_application">
-        SELECT * FROM adoption_application WHERE u_id = #{uId}
+    <select id="findByUserId" parameterType="string" resultMap="AdoptionApplicationMap">
+        SELECT
+            id, u_id, motivation, housing_type, pet_allowed, family_info, allergy_info,
+            current_pets, experience, job, work_type, pet_care_plan, financial_status,
+            animal_type, animal_detail, care_time, exercise_plan, travel_plan,
+            agreement, created_at, pledge, housing, animal_id, animal_name, status
+        FROM adoption_application
+        WHERE u_id = #{uId}
     </select>
 
 
-    <!-- 전체 입양신청서 조회 -->
-    <select id="findAll" resultType="com.example.petbridge.entity.Adoption_application">
-        SELECT *
+    <select id="findAll" resultMap="AdoptionApplicationMap">
+        SELECT
+            id, u_id, motivation, housing_type, pet_allowed, family_info, allergy_info,
+            current_pets, experience, job, work_type, pet_care_plan, financial_status,
+            animal_type, animal_detail, care_time, exercise_plan, travel_plan,
+            agreement, created_at, pledge, housing, animal_id, animal_name, status
         FROM adoption_application
     </select>
 
-    <!-- 입양신청서 상세 조회 -->
-    <select id="findById" resultType="com.example.petbridge.entity.Adoption_application">
-        SELECT *
+    <select id="findById" parameterType="long" resultMap="AdoptionApplicationMap">
+        SELECT
+            id, u_id, motivation, housing_type, pet_allowed, family_info, allergy_info,
+            current_pets, experience, job, work_type, pet_care_plan, financial_status,
+            animal_type, animal_detail, care_time, exercise_plan, travel_plan,
+            agreement, created_at, pledge, housing, animal_id, animal_name, status
         FROM adoption_application
         WHERE id = #{id}
     </select>
 
-    <!-- 입양신청서 상태 변경 -->
     <update id="updateStatus">
         UPDATE adoption_application
         SET status = #{status}
         WHERE id = #{id}
     </update>
 
-    <!-- 입양신청서 삭제 -->
     <delete id="deleteById">
         DELETE FROM adoption_application
         WHERE id = #{id}
     </delete>
+
 
     <select id="findAdoptionApplicationsWithAnimalAndUser" resultType="com.example.petbridge.DTO.MyPageApplicationDTO">
         SELECT
@@ -148,7 +183,5 @@
             aa.created_at DESC
 
     </select>
-
-
 
 </mapper>

@@ -3,110 +3,339 @@
 <head>
     <meta charset="UTF-8" />
     <title>입양 후기 목록</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <style>
-        .action-btn { font-size: 0.8rem; padding: 0.2rem 0.4rem; border-radius: 0.2rem; color: white; text-decoration: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
-        .edit-btn { background-color: #06b6d4; }
-        .delete-btn { background-color: #ef4444; }
-        .thumbnail-image { width: 48px; height: 48px; object-fit: cover; border-radius: 0.25rem; }
+        /*
+         * Basic Reset & Body
+         */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8; /* 유사: bg-gray-100 */
+            color: #333; /* 기본 텍스트 색상 */
+            font-family: Arial, sans-serif; /* 유사: Tailwind 기본 폰트 */
+            line-height: 1.6;
+        }
 
-        /* 페이징 버튼 스타일 추가 */
-        .pagination-link {
+        /*
+         * Main Container
+         */
+        main {
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;   /* px-4 */
+            padding-right: 1rem;  /* px-4 */
+            margin-top: 160px;    /* mt-40 (160px) - Header 높이 고려 */
+            margin-bottom: 48px;  /* mb-12 (48px) */
+        }
+
+        .container-wrapper { /* bg-white shadow-xl rounded-lg overflow-hidden */
+            background-color: #fff;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* shadow-xl */
+            border-radius: 0.5rem; /* rounded-lg */
+            overflow: hidden;
+        }
+
+        /*
+         * Header Section within Main Container
+         */
+        .header-section { /* px-6 py-5 border-b border-gray-200 */
+            padding: 1.25rem 1.5rem; /* px-6 py-5 */
+            border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+
+        .header-content { /* flex justify-between items-center */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title { /* text-2xl sm:text-3xl font-bold text-gray-900 */
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 700; /* font-bold */
+            color: #1f2937; /* text-gray-900 */
+        }
+        @media (min-width: 640px) { /* sm:text-3xl */
+            .header-title {
+                font-size: 1.875rem;
+            }
+        }
+
+        /*
+         * Buttons
+         */
+        .btn { /* px-4 py-2 rounded-md hover:bg-XXX transition-colors */
+            display: inline-block;
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            border-radius: 0.375rem; /* rounded-md */
+            text-decoration: none;
+            transition: background-color 0.15s ease-in-out; /* transition-colors */
+            white-space: nowrap;
+        }
+
+        .btn-green { /* bg-green-500 text-white hover:bg-green-600 */
+            background-color: #22c55e; /* bg-green-500 */
+            color: #fff;
+        }
+        .btn-green:hover {
+            background-color: #16a34a; /* hover:bg-green-600 */
+        }
+
+        .btn-blue { /* bg-blue-500 text-white hover:bg-blue-600 */
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: #fff;
+        }
+        .btn-blue:hover {
+            background-color: #2563eb; /* hover:bg-blue-600 */
+        }
+
+        /*
+         * Table Styles
+         */
+        .table-container { /* overflow-x-auto */
+            overflow-x: auto;
+        }
+
+        table { /* min-w-full text-sm text-center */
+            width: 100%;
+            min-width: 100%; /* min-w-full */
+            font-size: 0.875rem; /* text-sm */
+            text-align: center;
+            border-collapse: collapse;
+        }
+
+        thead { /* bg-gray-50 */
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+
+        th { /* px-4 py-3 font-semibold text-gray-600 */
+            padding: 0.75rem 1rem; /* px-4 py-3 */
+            font-weight: 600; /* font-semibold */
+            color: #4b5563; /* text-gray-600 */
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th.text-left { /* text-left */
+            text-align: left;
+        }
+
+        tbody.divide-y > tr:not(:last-child) { /* divide-y divide-gray-200 */
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:hover { /* hover:bg-gray-50 */
+            background-color: #f9fafb;
+            cursor: pointer;
+        }
+
+        td { /* px-4 py-3 */
+            padding: 0.75rem 1rem; /* px-4 py-3 */
+            vertical-align: middle;
+        }
+
+        /*
+         * Thumbnail Image
+         */
+        .thumbnail-image-wrapper { /* flex justify-center */
+            display: flex;
+            justify-content: center;
+        }
+        .thumbnail-image { /* width: 48px; height: 48px; object-fit: cover; border-radius: 0.25rem; */
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+            border: 1px solid #e5e7eb; /* Added for consistency */
+        }
+
+        /* "No Img" placeholder style */
+        .no-image-placeholder { /* flex justify-center items-center w-12 h-12 bg-gray-100 rounded text-xs text-gray-400 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 48px; /* w-12 */
+            height: 48px; /* h-12 */
+            background-color: #f3f4f6; /* bg-gray-100 */
+            border-radius: 0.25rem; /* rounded */
+            font-size: 0.75rem; /* text-xs */
+            color: #9ca3af; /* text-gray-400 */
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #e5e7eb; /* Added for consistency */
+        }
+
+        td.text-left a { /* text-indigo-600 hover:text-indigo-800 font-medium */
+            color: #4f46e5; /* text-indigo-600 */
+            font-weight: 500; /* font-medium */
+            text-decoration: none;
+        }
+        td.text-left a:hover {
+            color: #3730a3; /* hover:text-indigo-800 */
+            text-decoration: underline;
+        }
+
+        /*
+         * Action Buttons (수정/삭제)
+         */
+        .action-btn { /* font-size: 0.8rem; padding: 0.2rem 0.4rem; border-radius: 0.2rem; color: white; text-decoration: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; */
+            font-size: 0.8rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.2rem;
+            color: white;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .action-btn-group { /* flex justify-center space-x-2 */
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem; /* space-x-2 */
+        }
+        .edit-btn { background-color: #06b6d4; } /* bg-cyan-500 */
+        .edit-btn:hover { background-color: #0891b2; } /* hover:bg-cyan-600 */
+        .delete-btn { background-color: #ef4444; } /* bg-red-500 */
+        .delete-btn:hover { background-color: #dc2626; } /* hover:bg-red-600 */
+
+        /*
+         * Pagination
+         */
+        .pagination-container { /* flex justify-center p-4 border-t border-gray-200 */
+            display: flex;
+            justify-content: center;
+            padding: 1rem; /* p-4 */
+            border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
+        }
+
+        .pagination-links-group { /* flex space-x-1 */
+            display: flex;
+            gap: 0.25rem; /* space-x-1 */
+        }
+
+        .pagination-link { /* display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; color: #4b5563; text-decoration: none; transition: all 0.2s ease-in-out; */
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 2.5rem; /* 버튼 최소 너비 */
-            height: 2.5rem;   /* 버튼 높이 */
+            min-width: 2.5rem; /* 40px */
+            height: 2.5rem;   /* 40px */
             padding: 0.5rem 0.75rem;
             border: 1px solid #e5e7eb;
             color: #4b5563;
             text-decoration: none;
             transition: all 0.2s ease-in-out;
+            border-radius: 0; /* 기본값으로 설정 */
         }
-        .pagination-link:hover {
+        .pagination-link.rounded-l-lg { border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
+        .pagination-link.rounded-r-lg { border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
+
+        .pagination-link:hover { /* background-color: #e5e7eb; color: #1f2937; */
             background-color: #e5e7eb;
             color: #1f2937;
         }
-        .pagination-link.active {
-            background-color: #3b82f6; /* 파란색 */
+        .pagination-link.active { /* background-color: #3b82f6; color: white; border-color: #3b82f6; font-weight: 600; */
+            background-color: #3b82f6;
             color: white;
             border-color: #3b82f6;
             font-weight: 600;
         }
-        .pagination-link.disabled {
+        .pagination-link.disabled { /* opacity: 0.5; cursor: not-allowed; */
             opacity: 0.5;
             cursor: not-allowed;
+            background-color: #f9f9f9;
+            border-color: #eee;
+        }
+        .sr-only { /* Hidden text for screen readers */
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        /* SVG icon styling for pagination arrows (dummy SVG for pure CSS) */
+        .pagination-link svg {
+            width: 1.25rem; /* w-5 */
+            height: 1.25rem; /* h-5 */
+            fill: currentColor; /* SVG 색상을 텍스트 색상과 일치시킴 */
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
+
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
-<main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-40 mb-12">
+<main>
+    <div class="container-wrapper">
 
-    <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-
-        <div class="px-6 py-5 border-b border-gray-200">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">입양 후기 목록</h1>
+        <div class="header-section">
+            <div class="header-content">
+                <h1 class="header-title">입양 후기 목록</h1>
                 <div>
-                    <a th:if="${currentUserId != null}" th:href="@{/reviews/new}" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">새 후기 작성</a>
-                    <a th:unless="${currentUserId != null}" th:href="@{/login}" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">로그인 후 작성</a>
+                    <a th:if="${currentUserId != null}" th:href="@{/reviews/new}" class="btn btn-green">새 글 작성</a>
+                    <a th:unless="${currentUserId != null}" th:href="@{/login}" class="btn btn-blue">로그인 후 작성</a>
                 </div>
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-center">
-                <thead class="bg-gray-50">
+        <div class="table-container">
+            <table>
+                <thead>
                 <tr>
-                    <th class="px-4 py-3 font-semibold text-gray-600">번호</th>
-                    <th class="px-4 py-3 font-semibold text-gray-600">사진</th>
-                    <th class="px-4 py-3 font-semibold text-gray-600 text-left">제목</th>
-                    <th class="px-4 py-3 font-semibold text-gray-600">작성자</th>
-                    <th class="px-4 py-3 font-semibold text-gray-600">작성일</th>
-                    <th class="px-4 py-3 font-semibold text-gray-600">조회수</th>
-                    <th class="px-4 py-3 font-semibold text-gray-600">기능</th>
+                    <th>번호</th>
+                    <th>사진</th>
+                    <th class="text-left">제목</th>
+                    <th>작성자</th>
+                    <th>작성일</th>
+                    <th>조회수</th>
+                    <th>기능</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
-                <tr th:each="review, stat : ${reviews}" class="hover:bg-gray-50">
-                    <td class="px-4 py-3" th:text="${totalCount - ((pageInfo.currentPage - 1) * pageInfo.size) - stat.index}"></td>
-                    <td class="px-4 py-3">
-                        <div th:if="${!review.attachments.isEmpty()}" class="flex justify-center">
+                <tbody>
+                <tr th:each="review, stat : ${reviews}">
+                    <td th:text="${totalCount - ((pageInfo.currentPage - 1) * pageInfo.size) - stat.index}"></td>
+                    <td>
+                        <div th:if="${!review.attachments.isEmpty()}" class="thumbnail-image-wrapper">
                             <img th:src="@{'/uploads/' + ${review.attachments[0].filePath}}" alt="대표사진" class="thumbnail-image" />
                         </div>
+                        <div th:unless="${!review.attachments.isEmpty()}" class="no-image-placeholder">
+                            No Img
+                        </div>
                     </td>
-                    <td class="px-4 py-3 text-left">
-                        <a th:href="@{/reviews/{arNo}(arNo=${review.arNo})}" th:text="${review.arTitle}" class="text-indigo-600 hover:text-indigo-800 font-medium"></a>
+                    <td class="text-left">
+                        <a th:href="@{/reviews/{arNo}(arNo=${review.arNo})}" th:text="${review.arTitle}"></a>
                     </td>
-                    <td class="px-4 py-3" th:text="${review.authorName}"></td>
-                    <td class="px-4 py-3" th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}"></td>
-                    <td class="px-4 py-3" th:text="${review.viewCount}"></td>
-                    <td class="px-4 py-3">
-                        <div th:if="${currentUserId != null && review.authorUid == currentUserId}" class="flex justify-center space-x-2">
+                    <td th:text="${review.authorName}"></td>
+                    <td th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}"></td>
+                    <td th:text="${review.viewCount}"></td>
+                    <td>
+                        <div th:if="${currentUserId != null && review.authorUid == currentUserId}" class="action-btn-group">
                             <a th:href="@{/reviews/{arNo}/edit(arNo=${review.arNo})}" class="action-btn edit-btn">수정</a>
-                            <form th:action="@{/reviews/{arNo}/delete(arNo=${review.arNo})}" method="post" class="inline" onsubmit="return confirm('삭제하시겠습니까?');">
+                            <form th:action="@{/reviews/{arNo}/delete(arNo=${review.arNo})}" method="post" style="display:inline;" onsubmit="return confirm('삭제하시겠습니까?');">
                                 <button type="submit" class="action-btn delete-btn">삭제</button>
                             </form>
                         </div>
                     </td>
                 </tr>
                 <tr th:if="${reviews.isEmpty()}">
-                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">등록된 후기가 없습니다.</td>
+                    <td colspan="7" style="padding: 1.5rem; text-align: center; color: #6b7280;">등록된 후기가 없습니다.</td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="flex justify-center p-4 border-t border-gray-200">
-            <div class="flex space-x-1">
+        <div class="pagination-container" th:if="${pageInfo != null && pageInfo.totalPages > 1}">
+            <div class="pagination-links-group">
                 <a th:href="@{/reviews(page=${pageInfo.currentPage - 1}, size=${pageInfo.size})}"
-                   th:classappend="${pageInfo.currentPage <= 1} ? 'disabled pointer-events-none' : ''"
-                   class="pagination-link rounded-l-lg">
+                   th:classappend="${pageInfo.currentPage <= 1} ? 'disabled rounded-l-lg' : 'rounded-l-lg'"
+                   class="pagination-link">
                     <span class="sr-only">Previous</span>
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                    <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
                 </a>
                 <div th:each="i : ${#numbers.sequence(1, pageInfo.totalPages)}">
                     <a th:href="@{/reviews(page=${i}, size=${pageInfo.size})}"
@@ -116,51 +345,15 @@
                     </a>
                 </div>
                 <a th:href="@{/reviews(page=${pageInfo.currentPage + 1}, size=${pageInfo.size})}"
-                   th:classappend="${pageInfo.currentPage >= pageInfo.totalPages} ? 'disabled pointer-events-none' : ''"
-                   class="pagination-link rounded-r-lg">
+                   th:classappend="${pageInfo.currentPage >= pageInfo.totalPages} ? 'disabled rounded-r-lg' : 'rounded-r-lg'"
+                   class="pagination-link">
                     <span class="sr-only">Next</span>
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
                 </a>
             </div>
         </div>
     </div>
 </main>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    document.querySelectorAll('.like-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const reviewId = this.dataset.arNo;
-            const boardType = this.dataset.boardType;
-            const likeButton = this;
-            const likeCountSpan = this.querySelector('.like-count');
-
-            fetch(`/api/likes/${boardType}/${reviewId}`, { method: 'POST', headers: { "X-Requested-With": "XMLHttpRequest" }})
-                .then(response => {
-                    if (response.status === 401) {
-                        alert('로그인이 필요합니다.');
-                        window.location.href = /*[[@{/login}]]*/ '/login';
-                        throw new Error('로그인 필요');
-                    }
-                    if (!response.ok) {
-                        return response.json().then(err => { throw new Error(err.message || '좋아요 처리 실패'); });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        if(likeCountSpan) likeCountSpan.textContent = data.likeCount;
-                        likeButton.classList.toggle('liked', data.liked);
-                    } else {
-                        alert(data.message || '좋아요 처리에 실패했습니다.');
-                    }
-                })
-                .catch(error => {
-                    if (error.message !== '로그인 필요') console.error('Like Error:', error);
-                });
-        });
-    });
-    /*]]>*/
-</script>
 </body>
 </html>
