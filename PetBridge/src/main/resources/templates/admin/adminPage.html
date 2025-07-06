@@ -576,9 +576,13 @@
   </section>
   <!-- 게시판 관리 -->
   <!-- 자유 게시판 -->
+  <div class="board-title" id="title-board-free" style="display:none;">
+    <h3>자유 게시판</h3>
+  </div>
   <table class="member-table" id="board-free" style="display:none;">
 
     <thead>
+
     <tr>
       <th>번호</th>
       <th>제목</th>
@@ -620,7 +624,11 @@
   </table>
 
   <!-- 입양후기 게시판 -->
+  <div class="board-title" id="title-board-review" style="display:none;">
+    <h3>입양후기 게시판</h3>
+  </div>
   <table class="member-table" id="board-review" style="display:none;">
+
     <thead>
     <tr>
       <th>번호</th>
@@ -663,6 +671,9 @@
   </table>
 
   <!-- 유기동물/실종 보호 게시판 -->
+  <div class="board-title" id="title-board-missing" style="display:none;">
+    <h3>유기동물/실종 보호 게시판</h3>
+  </div>
   <table class="member-table" id="board-missing" style="display:none;">
     <thead>
     <tr>
@@ -865,9 +876,22 @@
         var boardView = document.getElementById('board-view');
         boardView.style.display = 'block';
         boardView.innerHTML = ''; // 기존 내용 비우기
-        var board = document.getElementById('board-' + boardType).cloneNode(true);
-        board.style.display = 'table';
-        boardView.appendChild(board);
+
+        // 제목 보이기
+        var titleDiv = document.getElementById('title-board-' + boardType);
+        if (titleDiv) {
+          var clonedTitle = titleDiv.cloneNode(true);
+          clonedTitle.style.display = 'block';
+          boardView.appendChild(clonedTitle);
+        }
+
+        // 테이블 보이기
+        var board = document.getElementById('board-' + boardType);
+        if (board) {
+          var clonedBoard = board.cloneNode(true);
+          clonedBoard.style.display = 'table';
+          boardView.appendChild(clonedBoard);
+        }
       }
       // 일반 메뉴 클릭 시
       else if (this.hasAttribute('data-section')) {
