@@ -43,7 +43,7 @@
 | 고강민   | 프론트엔드(UI/UX) · 동물 목록/슬라이더 · 커뮤니티(게시판, 댓글) · 공공데이터 API 파싱/활용 · 화면 구성 · WBS/플로우차트 |
 
 # 🛠 기술 스택
-- **Backend** : Spring Boot · Oracle · MyBatis · Lombok · MySQL
+- **Backend** : Spring Boot · MariaDB · MyBatis · Lombok · MySQL
 - **Frontend** : JavaScript · HTML · CSS · Thymeleaf
 - **API & Visualization** : 공공데이터 API · Chart.js
 - **기타** : 세션 · 권한관리 · RESTful 아키텍처 · 반응형 디자인
